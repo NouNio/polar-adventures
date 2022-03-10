@@ -9,6 +9,10 @@
 #include <vector>
 
 
+// this code is inspired by learnopengl.com as this is my main resource for opengl information
+// other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
+
+
 enum Camera_Movement {
     FORWARD,
     BACKWARD,
