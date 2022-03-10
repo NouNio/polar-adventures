@@ -33,7 +33,7 @@ uniform struct DirectionalLight {
 } dirL;
 
 
-
+//TODO: change this with 1D texture though not necessarily necessary
 float discretize(float f){
 if(f>=0.0&&f<0.2){
 f=0.2;}
@@ -61,17 +61,13 @@ vec3 phong(vec3 n, vec3 l, vec3 v, vec3 diffuseC, vec3 diffuseF, vec3 specularC,
 	specularF=specularF*att;
 	if(!isStatic){
 	light.r= (diffuseC.r * max(0, dot(n, l))); 
-	//first value is colour
-	light.r = discretize(light.r);
-	light.r=light.r*diffuseF.r;
-
 	light.g= (diffuseC.g * max(0, dot(n, l)));
-	light.g = discretize(light.g);
-	light.g=light.g*diffuseF.g;
-	
 	light.b= (diffuseC.b * max(0, dot(n, l)));
-	light.b = discretize(light.b);
-	light.b=light.b*diffuseF.b;
+	//translate to hsv, but only v needed, v is max of any rgb value
+	float value= max(light.r, light.g);
+	value=max(value, light.b);
+	value=discretize(value);
+	light=light*value;
 	}
 	if(isStatic){
 	//light+=texture(lightmap, normal_world).rgb;
