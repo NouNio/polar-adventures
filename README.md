@@ -17,6 +17,6 @@ A poster done for the game project, as it could be displayed in advertisments or
 - ...
 
 ### References and Resources
-[1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries)
+[1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
 [2] [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney)
 ...
