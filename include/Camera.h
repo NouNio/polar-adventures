@@ -26,7 +26,7 @@ const float PITCH = 0.0f;           // angle that describes how much the camera 
 const float MAX_PITCH = 89.0f;
 const float MAX_ZOOM = 45.0f;
 const float MIN_ZOOM = 1.0f;
-const float SPEED = 2.5f;
+const float SPEED = 10.0f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 
