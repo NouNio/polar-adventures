@@ -19,42 +19,47 @@ using namespace std;
 // since there can be arbitrary many textures, we use a naming convention to make iteration possible (s. learnopengl.com
 // name of texture: texture_typeN so e.g. texture_diffuse1 or texture_specular2
 
-struct MeshVertex {
+// so far we use .fbx objects from the artist Kenny from OpenGameArt
+// these have vertices with positions and normals and 
+// each mesh has one simple material with the respective color values (diff, spec, ambi, shini)
+
+struct Vertex {             
     glm::vec3 pos;
     glm::vec3 normal;
-    glm::vec2 texCoords;
 };
 
-struct MeshTexture {
-    unsigned int id;
-    string type;
-    string path;
+struct Material {
+    glm::vec3 diffuseCol;
+    glm::vec3 specularCol;
+    glm::vec3 ambientCol;
+    float shininess;
 };
-
-const string DIFF = "texture_diffuse";
-const string SPEC = "texture_specular";
-const string MATERIAL = "material.";     // materli. since in the shaders, we store textures in structs, so we need to set the uniforms using this prefix
 
 class Mesh {
 public:
     // mesh Data
-    vector<MeshVertex> vertices;    // all the vertices that form the mesh
-    vector<unsigned int> indices;   // indices for
-    vector<MeshTexture> textures;   // texture data for the mesh
+    vector<Vertex> vertices;        // all the vertices that form the mesh
+    vector<unsigned int> indices;   // indices for the mesh data
+    Material material;              // material data for the mesh
+
+    const string MAT_DIFF = "material.diffuse";
+    const string MAT_SPEC = "material.specular";
+    const string MAT_AMBI = "material.ambient";
+    const string MAT_SHIN = "material.shininess";
 
 
-    Mesh(vector<MeshVertex> vertices, vector<unsigned int> indices, vector<MeshTexture> textures)
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material)
     {
         this->vertices = vertices;
         this->indices = indices;
-        this->textures = textures;
+        this->material = material;
         setupMesh();   // use the mesh data to make OpenGL calls, i.e. set the vertex buffers and its attribute pointers
     }
 
 
     void draw(Shader& shader)
     {
-        extractAndActivateTexs(shader);
+        setMaterialValues(shader);  // set the materials color values in the fragment shader
 
         drawMesh();
     }
@@ -70,24 +75,13 @@ private:
     }
 
 
-    void extractAndActivateTexs(Shader& shader)
+    void setMaterialValues(Shader& shader)
     {
-        unsigned int nDiffTextures = 1;
-        unsigned int nSpecTextures = 1;
-        for (unsigned int i = 0; i < textures.size(); i++)
-        {
-            glActiveTexture(GL_TEXTURE0 + i);  // activate proper, i.e. i-th, texture unit before binding
-            string N;
-            string name = textures[i].type;
-            if (name == DIFF)
-                N = std::to_string(nDiffTextures++);  // first retrieve N, then increment
-            else if (name == SPEC)
-                N = std::to_string(nSpecTextures++);
-
-            shader.setFloat((MATERIAL + name + N).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
-        }
-        glActiveTexture(GL_TEXTURE0);
+        // material properties, the properties of the Light in the fragment shader are set once globally
+        shader.setVec3(MAT_DIFF, this->material.diffuseCol);
+        shader.setVec3(MAT_SPEC, this->material.specularCol);
+        shader.setVec3(MAT_AMBI, this->material.ambientCol);
+        shader.setFloat(MAT_SHIN, this->material.shininess);
     }
 
 
@@ -117,11 +111,10 @@ private:
         glBindVertexArray(VAO);
         
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(MeshVertex), &vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-                     &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
     }
 
 
@@ -129,13 +122,10 @@ private:
     {
         // vertex positions
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         // vertex normals
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, texCoords));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     }
 };
 #endif

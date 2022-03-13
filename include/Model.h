@@ -29,10 +29,7 @@ using namespace std;
 
 // NOTE: changed all appearances of '/' to '\\' as this is the only way that seems to work on my machine
 
-
-
-const string TEX_DIFF = "texture_diffuse";
-const string TEX_SPEC = "texture_specular";
+// here as well as in the Mesh class, we use Kenney Artwork so far, e.g. we do not have textures (yet)
 
 class Model
 {
@@ -49,14 +46,12 @@ public:
             meshes[i].draw(shader);
     }
 
+
 private:
-    // model data 
-    vector<Mesh> meshes;
-    vector<MeshTexture> textureCache;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+    vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     string directory;
     Assimp::Importer importer;
     const aiScene* scene;
-    bool inCache = false;
 
 
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -69,6 +64,7 @@ private:
         directory = path.substr(0, path.find_last_of('\\'));
 
         parseNode(scene->mRootNode);
+
     }
 
 
@@ -101,34 +97,28 @@ private:
     Mesh parseMesh(aiMesh* mesh)
     {
         // create the data to call the Mesh constructor
-        vector<MeshVertex> vertices;
+        vector<Vertex> vertices;
         vector<unsigned int> indices;
-        vector<MeshTexture> textures;
+        Material material{};
 
         // fill it with the data from the assimp meshes
         parseVertices(&vertices, mesh);   // 1. retrieve the vertice data from the assimp mesh
         parseIndices(&indices, mesh);     // 2. retrieve the indice data from the assimp mesh
-        parseMaterials(&textures, mesh);  // 3. retrieve texture data
-        return Mesh(vertices, indices, textures);
+        parseMaterials(&material, mesh);  // 3. retrieve material data
+        
+        return Mesh(vertices, indices, material);
     }
 
-    void parseVertices(vector<MeshVertex>* vertices, aiMesh* mesh)
+    void parseVertices(vector<Vertex>* vertices, aiMesh* mesh)
     {
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
-            MeshVertex vertex;
+            Vertex vertex;
             
-            vertex.pos = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);  // positions 
-            vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);  // normals
+            vertex.pos = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 
-            // texture coordinates - first check if the mesh contains them at all
-            // NOTE that atm this only allows for one, i.e. the first texture to be loaded
-            if (mesh->mTextureCoords[0])
-            {
-                vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-            }
-            else
-                vertex.texCoords = glm::vec2(0.0f, 0.0f);  // set to zero, if no texture coords provided
+            //TODO: if considering textures, would need TexCoords parsing here
 
             vertices->push_back(vertex);
         }
@@ -146,101 +136,21 @@ private:
         }
     }
 
-    void parseMaterials(vector<MeshTexture>* textures, aiMesh* mesh)  //TODO: add other materials here, e.g. normal or height maps
+    void parseMaterials(Material* material, aiMesh* mesh)  //TODO: add other materials here, e.g. normal or height maps
     {
-        if (mesh->mMaterialIndex >= 0)
-        {
-            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];  // again here the mesh only contains an idx which points to the specific pos in scene->mMaterials
+        aiMaterial* assimpMaterial = scene->mMaterials[mesh->mMaterialIndex];  // get the material associated to this mesh, via global scene array, this is since meshes can have the same material
+        aiColor4D diffCol, specCol, ambiCol;
+        float shini;
 
-            // diffuse texture
-            vector<MeshTexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, TEX_DIFF);
-            textures->insert(textures->end(), diffuseMaps.begin(), diffuseMaps.end());
-
-            // specular texture
-            vector<MeshTexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, TEX_SPEC);
-            textures->insert(textures->end(), specularMaps.begin(), specularMaps.end());
-        }
-    }
-
-
-    vector<MeshTexture> loadMaterialTextures(aiMaterial* material, aiTextureType texType, string typeName)
-    {
-        vector<MeshTexture> textures;
-        for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
-        {   
-            inCache = false;    // assume this texture is not in the cache yet
-            aiString textureFilename;
-            material->GetTexture(texType, i, &textureFilename);
-            
-            checkCache(&textures, textureFilename);
-
-            if (!inCache) // if inCache the texture was already pushed to textures in the checkCache() call
-            {
-                MeshTexture texture;
-                texture.id = textureFromFile(textureFilename.C_Str(), directory);
-                texture.type = typeName;
-                texture.path = textureFilename.C_Str();
-                textures.push_back(texture);
-                textureCache.push_back(texture);
-            }
-        }
-
-        return textures;
-    }
-
-    void checkCache(vector<MeshTexture>* textures, aiString textureFilename)
-    {
-        for (unsigned int j = 0; j < textureCache.size(); j++)  // check for all textures currently in the cache, if one of them equals the new one
-        {
-            if (std::strcmp(textureCache[j].path.data(), textureFilename.C_Str()) == 0)
-            {
-                textures->push_back(textureCache[j]);
-                inCache = true;
-                break;
-            }
-        }
-    }
-
-    // retrieve the id from a texture file and also call the corresponding OpenGL functions
-    unsigned int textureFromFile(const char* path, const string& directory)
-    {
-        string filename = directory + '\\' + string(path);
-        unsigned int textureID;
-        int width, height, nColorChannels;
-        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nColorChannels, 0);
-
-        if (data)
-        {
-            setupGLTextures(&textureID, width, height, nColorChannels, data);
-        }
-        else
-            std::cout << "There was an error loading the texture file: " << path << std::endl;
-
-        stbi_image_free(data);
-
-        return textureID;
-    }
-
-    void setupGLTextures(unsigned int* textureID, int width, int height, int nColorChannels, unsigned char* data)
-    {
-        glGenTextures(1, textureID);
-        glBindTexture(GL_TEXTURE_2D, *textureID);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);                       // wrapping params
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);                       //        ||
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);     // filtering params
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);                   //        ||
-
-        GLenum format = GL_RGBA;
-        if (nColorChannels == 1)
-            format = GL_RED;
-        else if (nColorChannels == 3)
-            format = GL_RGB;
-        else if (nColorChannels == 4)
-            format = GL_RGBA;
-
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        aiGetMaterialColor(assimpMaterial, AI_MATKEY_COLOR_DIFFUSE, &diffCol);
+        aiGetMaterialColor(assimpMaterial, AI_MATKEY_COLOR_SPECULAR, &specCol);
+        aiGetMaterialColor(assimpMaterial, AI_MATKEY_COLOR_AMBIENT, &ambiCol);
+        aiGetMaterialFloat(assimpMaterial, AI_MATKEY_SHININESS, &shini);
+        
+        material->diffuseCol = glm::vec3(diffCol.r, diffCol.g, diffCol.b);
+        material->specularCol = glm::vec3(specCol.r, specCol.g, specCol.b);
+        material->ambientCol = glm::vec3(ambiCol.r, ambiCol.g, ambiCol.b);
+        material->shininess = shini;
     }
 };
 #endif
