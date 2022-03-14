@@ -21,6 +21,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -47,66 +48,6 @@ float lastFrame = 0.0f;
 
 
 int main(void) {
-    // BEGIN ASSIMP TESTING
-    // ------------------------------
-    std::cout << "Testing colored .fbx models in ASSIMP:\n" << endl;
-
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\heart.fbx",
-                                aiProcess_Triangulate | aiProcess_FlipUVs);
-
-    // print some general data
-    std::cout << "Number of meshes: " << scene->mNumMeshes << endl;             // 2 or 1 
-    std::cout << "Number of materials: " << scene->mNumMaterials << endl;      // 2 or 1, the rest of the attributes don't occur
-    std::cout << "Number of textures: " << scene->mNumTextures << endl;
-    std::cout << "Number of animations: " << scene->mNumAnimations << endl;     
-    std::cout << "Number of lights: " << scene->mNumLights << endl;
-    std::cout << "Number of materials: " << scene->mNumCameras << "\n" << endl;
-
-    for(unsigned int i=0; i < scene->mNumMeshes; i++) 
-    {
-        aiMesh* mesh = scene->mMeshes[i];
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];  // get the material associated to this mesh, via global scene array, this is since meshes can have the same material
-        aiColor4D diffCol;
-        aiColor4D specCol;
-        aiColor4D ambiCol;
-        float shininess;
-
-        aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffCol);
-        aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specCol);
-        aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambiCol);
-        aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess);
-
-        std::cout << "Mesh " << i << " with " << mesh->mNumVertices << " vetices." << endl;
-        std::cout << "It's color materials name: " << scene->mMaterials[i]->GetName().C_Str() << endl;
-        std::cout << "The diff color values: r=" << diffCol.r << "  g=" << diffCol.g << "  b=" << diffCol.b << "  aplha=" << diffCol.a << endl;
-        std::cout << "The spec color values: r=" << specCol.r << "  g=" << specCol.g << "  b=" << specCol.b << "  aplha=" << specCol.a << endl;
-        std::cout << "The ambi color values: r=" << ambiCol.r << "  g=" << ambiCol.g << "  b=" << ambiCol.b << "  aplha=" << ambiCol.a << endl;
-        std::cout << "The shinines values: " << shininess << endl;
-        std::cout << "\n" << endl;
-    
-    
-    
-        // loop over all vertices of the mesh
-        if (false)
-        {
-            for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-            {
-                std::cout << "Vertex number: " << i << endl;
-                std::cout << "x=" << mesh->mVertices[i].x << "  y=" << mesh->mVertices[i].y << "  z=" << mesh->mVertices[i].z << endl;  // positions 
-                std::cout << "x=" << mesh->mNormals[i].x << "  y=" << mesh->mNormals[i].y << "  z=" << mesh->mNormals[i].z << endl;       // normals
-                std::cout << "\n" << endl;
-
-            }
-        }
-    }
-
-    
-
-
-    // ------------------------------
-    // END ASSIMP TESTING (program stops here)
-
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -148,15 +89,12 @@ int main(void) {
     //// configure global opengl state
     //// -----------------------------
     glEnable(GL_DEPTH_TEST);
-
-    Shader lightingShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\vertexShader.vert", 
-                            "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\fragmentShader.frag");
-    Shader directLightShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.vert", 
+    Shader lightShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.vert", 
                             "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.frag");
 
-    Model object1("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\heart.fbx");
-    Model object2("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\tree.fbx");
-    Model object3("C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\mini-level.fbx");
+    Model heart("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\heart.fbx");
+    Model tree("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\tree.fbx");
+    Model cubeWorld("C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx");
     Shader modelShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\vertexShader.vert",
                         "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\fragmentShader.frag");
 
@@ -164,47 +102,55 @@ int main(void) {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3(0.0f, -20.0f, 5.0f),
+        glm::vec3(60.f, -20.0f, 5.0f),
+        glm::vec3(30.0f,  -20.0f, 40.0f),
+        glm::vec3(30.0f,  -20.0f, -25.0f),
+        glm::vec3(30.0f,  -50.0f, 0.0f)
     };
     // first, configure the cube's VAO (and VBO)
     unsigned int VBO, cubeVAO;
@@ -215,14 +161,12 @@ int main(void) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindVertexArray(cubeVAO);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
     unsigned int lightCubeVAO;
@@ -231,7 +175,7 @@ int main(void) {
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
 
@@ -251,82 +195,48 @@ int main(void) {
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // be sure to activate shader when setting uniforms/drawing objects
-        lightingShader.use();
-        
-        lightingShader.setVec3("light.pos", directLightPos);
-        lightingShader.setVec3("viewPos", camera.pos);
+        modelShader.use();
+        modelShader.setVec3("viewPos", camera.pos);
+        modelShader.setFloat("material.shininess", 32.0f);
 
-        // light properties
-        glm::vec3 lightColor;
-        lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0));
-        lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7));
-        lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3));
-        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
-        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-        lightingShader.setVec3("light.ambient", ambientColor);
-        lightingShader.setVec3("light.diffuse", diffuseColor);
-        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-        // material properties
-        lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-        lightingShader.setFloat("material.shininess", 32.0f);
+        /*
+           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index
+           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
+           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
+           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
+        */
+        // directional light
+        modelShader.setVec3("directionalLight.direction", -20.2f, -21.0f, -20.3f);
+        modelShader.setVec3("directionalLight.ambient", 0.05f, 0.05f, 0.05f);
+        modelShader.setVec3("directionalLight.diffuse", 0.4f, 0.4f, 0.4f);
+        modelShader.setVec3("directionalLight.specular", 0.5f, 0.5f, 0.5f);
+       
+        setPointLightShaderParameters(modelShader, "0" , pointLightPositions[0]);  // point light 1
+        setPointLightShaderParameters(modelShader, "1" , pointLightPositions[1]);  // point light 2
+        setPointLightShaderParameters(modelShader, "2" , pointLightPositions[2]);  // point light 3
+        setPointLightShaderParameters(modelShader, "3" , pointLightPositions[3]);  // point light 4
+        setPointLightShaderParameters(modelShader, "4" , pointLightPositions[4]);  // point light 5
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
-        lightingShader.setMat4("projection", projection);
-        lightingShader.setMat4("view", view);
-
-        // world transformation
-        glm::mat4 model = glm::mat4(1.0f);
-        lightingShader.setMat4("model", model);
-
-        // render the cube
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-        // also draw the lamp object
-        directLightShader.use();
-        directLightShader.setMat4("projection", projection);
-        directLightShader.setMat4("view", view);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, directLightPos);
-        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        directLightShader.setMat4("model", model);
-
-        glBindVertexArray(lightCubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-        // also draw the loaded model1
-        modelShader.use();
-        modelShader.setVec3("light.pos", directLightPos);
-        modelShader.setVec3("viewPos", camera.pos);
-
-        // light properties
-        modelShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        modelShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
-        modelShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); ;
-
-        // view/projection transformations
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
 
+        
         // world transformation
+        glm::mat4 model = glm::mat4(1.0f);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(24.0f, 3.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::rotate(model, glm::radians(50.0f * float(glfwGetTime())), glm::vec3(0.0f, 1.0f, 0.0f));  // rotate heart over time
+        model = glm::rotate(model, glm::radians(200.0f * float(glfwGetTime())), glm::vec3(0.0f, 1.0f, 0.0f));  // rotate heart over time 
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         modelShader.setMat4("model", model);
 
-        object1.draw(modelShader);
+        heart.draw(modelShader);
 
 
         // also draw the loaded model2 4 times
@@ -338,7 +248,7 @@ int main(void) {
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	     // it's a bit too big for our scene, so scale it down
         modelShader.setMat4("model", model);
 
-        object2.draw(modelShader);
+        tree.draw(modelShader);
 
 
         modelShader.use();
@@ -349,7 +259,7 @@ int main(void) {
         model = glm::scale(model, glm::vec3(0.8f, 0.8f, 0.8f));	     // it's a bit too big for our scene, so scale it down
         modelShader.setMat4("model", model);
 
-        object2.draw(modelShader);
+        tree.draw(modelShader);
 
 
         modelShader.use();
@@ -360,29 +270,44 @@ int main(void) {
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	     // it's a bit too big for our scene, so scale it down
         modelShader.setMat4("model", model);
 
-        object2.draw(modelShader);
+        tree.draw(modelShader);
 
 
         modelShader.use();
         // NUMBER 4 !!!!!!!!!!!!!!!!!!!
         // world transformation
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(20.0f, 0.0f, 20.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	     // it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(20.0f, 0.0f, 20.0f)); 
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	    
         modelShader.setMat4("model", model);
 
-        object2.draw(modelShader);
+        tree.draw(modelShader);
 
 
         // try to use an exported model, with multiple disconnected meshes
         modelShader.use();
         // world transformation
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(20.0f, -10.0f, -9.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));	     // it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(18.0f, -56.0f, 8.0f));
+        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));	    
         modelShader.setMat4("model", model);
 
-        object3.draw(modelShader);
+        cubeWorld.draw(modelShader);
+
+
+        // we now draw as many light bulbs as we have point lights.
+        lightShader.use();
+        lightShader.setMat4("projection", projection);
+        lightShader.setMat4("view", view);
+        glBindVertexArray(lightCubeVAO);
+        for (unsigned int i = 0; i < 5; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+            lightShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -457,4 +382,17 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.processMouseScroll(static_cast<float>(yoffset));
+}
+
+
+void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion)
+{
+    // point light 5
+    shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
+    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.05f, 0.05f, 0.05f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].diffuse", 0.8f, 0.8f, 0.8f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].specular", 1.0f, 1.0f, 1.0f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.09f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.032f);
 }
