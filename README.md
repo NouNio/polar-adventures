@@ -14,9 +14,11 @@ A poster done for the game project, as it could be displayed in advertisments or
 - glm
 - assimp
 - stb_image
+- freetype
 - ...
 
 ### References and Resources
 [1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
-[2] [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney)
+[2] [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney) <br>
+[3] [Open fonts](https://www.fontspace.com/category/pixel), specifically this [pixel font](https://www.fontspace.com/datcub-font-f69195) <br>
 ...

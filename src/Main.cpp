@@ -1,3 +1,4 @@
+// open gl related libs
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -5,23 +6,27 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+//assimp included manually ...
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+// std libs
+#include <iostream>
+
+// self made libs
 #include <Shader.h>
 #include <Camera.h>
 #include <Model.h>
 
-#include <iostream>
-// TEST
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
 
-
+// prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
+int initFreetype(const char* fontPath);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -39,25 +44,28 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// file path
+// objects
+const char* heartPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer\\heart.fbx";
+const char* treePath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer\\tree.fbx";
+const char* worldPath = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx";
+// shader
+const char* modelVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\vertexShader.vert";
+const char* modelFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\fragmentShader.frag";
+const char* lightVertPath = "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.vert";
+const char* lightFragPath = "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.frag";
+// fonts
+const char* fontPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\fonts\\datcub\\datcub.ttf";
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/cimport.h>
-#include <assimp/material.h>
 
-
-int main(void) {
+int main(void)
+{
     // glfw: initialize and configure
-    // ------------------------------
+     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
     // glfw window creation
     // --------------------
@@ -75,7 +83,7 @@ int main(void) {
 
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
+
     //// Initialize GLEW
     //glewExperimental = true; // Needed in core profile
     if (glewInit() != GLEW_OK) {
@@ -89,14 +97,11 @@ int main(void) {
     //// configure global opengl state
     //// -----------------------------
     glEnable(GL_DEPTH_TEST);
-    Shader lightShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.vert", 
-                            "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.frag");
-
-    Model heart("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\heart.fbx");
-    Model tree("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\objects\\kenny-platformer\\tree.fbx");
-    Model cubeWorld("C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx");
-    Shader modelShader("C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\vertexShader.vert",
-                        "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\fragmentShader.frag");
+    Shader lightShader(lightVertPath, lightFragPath);
+    Model heart(heartPath);
+    Model tree(treePath);
+    Model cubeWorld(worldPath);
+    Shader modelShader(modelVertPath, modelFragPath);
 
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
@@ -214,12 +219,12 @@ int main(void) {
         modelShader.setVec3("directionalLight.ambient", 0.05f, 0.05f, 0.05f);
         modelShader.setVec3("directionalLight.diffuse", 0.4f, 0.4f, 0.4f);
         modelShader.setVec3("directionalLight.specular", 0.5f, 0.5f, 0.5f);
-       
-        setPointLightShaderParameters(modelShader, "0" , pointLightPositions[0]);  // point light 1
-        setPointLightShaderParameters(modelShader, "1" , pointLightPositions[1]);  // point light 2
-        setPointLightShaderParameters(modelShader, "2" , pointLightPositions[2]);  // point light 3
-        setPointLightShaderParameters(modelShader, "3" , pointLightPositions[3]);  // point light 4
-        setPointLightShaderParameters(modelShader, "4" , pointLightPositions[4]);  // point light 5
+
+        setPointLightShaderParameters(modelShader, "0", pointLightPositions[0]);  // point light 1
+        setPointLightShaderParameters(modelShader, "1", pointLightPositions[1]);  // point light 2
+        setPointLightShaderParameters(modelShader, "2", pointLightPositions[2]);  // point light 3
+        setPointLightShaderParameters(modelShader, "3", pointLightPositions[3]);  // point light 4
+        setPointLightShaderParameters(modelShader, "4", pointLightPositions[4]);  // point light 5
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -227,7 +232,7 @@ int main(void) {
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
 
-        
+
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::mat4(1.0f);
@@ -277,8 +282,8 @@ int main(void) {
         // NUMBER 4 !!!!!!!!!!!!!!!!!!!
         // world transformation
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(20.0f, 0.0f, 20.0f)); 
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	    
+        model = glm::translate(model, glm::vec3(20.0f, 0.0f, 20.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         modelShader.setMat4("model", model);
 
         tree.draw(modelShader);
@@ -289,7 +294,7 @@ int main(void) {
         // world transformation
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(18.0f, -56.0f, 8.0f));
-        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));	    
+        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
         modelShader.setMat4("model", model);
 
         cubeWorld.draw(modelShader);
@@ -343,7 +348,10 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.processKeyboard(UP, deltaTime);
 }
+
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -353,6 +361,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
+
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -377,6 +386,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     camera.processMouseMovement(xoffset, yoffset);
 }
 
+
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -395,4 +405,22 @@ void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm:
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.09f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.032f);
+}
+
+
+int initFreetype(const char* fontPath)
+{
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+    {
+        std::cout << "There was an error initializing freetype." << std::endl;
+        return -1;
+    }
+
+    FT_Face face;
+    if (FT_New_Face(ft, fontPath, 0, &face))
+    {
+        std::cout << "There was an error loading the font." << std::endl;
+        return -1;
+    }
 }
