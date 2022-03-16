@@ -1,0 +1,30 @@
+Description
+
+
+Implemented Functonalities
+
+
+Code Structure
+ Header only Classes
+ 	Shader.h
+	Camera.h
+	Mesh.h
+	Model.h
+
+ Shaders
+	envVert/Frag
+	lightSourceVert/Frag
+	celShaderVert/Frag
+
+
+Dependencies
+-- recommended to resolve all dependencies with vcpkg --
+glew
+glfw
+glm
+assimp
+stb
+freetype
+
+
+References
