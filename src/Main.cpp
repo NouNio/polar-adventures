@@ -18,6 +18,7 @@
 #include <Shader.h>
 #include <Camera.h>
 #include <Model.h>
+#include <HUD.h>
 
 
 // prototypes
@@ -26,11 +27,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
-int initFreetype(const char* fontPath);
+const char* showFPS();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+bool showHUD = false;
 
 // camera
 Camera camera(glm::vec3(75.0f, 7.0f, 20.0f));
@@ -39,10 +41,13 @@ glm::vec3 directLightPos(30.f, 36.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
+double lastHUDPress = glfwGetTime();
 
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+int nFrames = 0.0;
+double lastTime = glfwGetTime();
 
 // file path
 // objects
@@ -52,8 +57,10 @@ const char* worldPath = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\s
 // shader
 const char* modelVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\vertexShader.vert";
 const char* modelFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\fragmentShader.frag";
-const char* lightVertPath = "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.vert";
-const char* lightFragPath = "C:\\Users\\dittm\\source\\repos\\TestAssimp\\assets\\shader\\directLight.frag";
+const char* lightVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\directLight.vert";
+const char* lightFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\directLight.frag";
+const char* HUDVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\HUD.vert";
+const char* HUDFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\HUD.frag";
 // fonts
 const char* fontPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\fonts\\datcub\\datcub.ttf";
 
@@ -184,6 +191,15 @@ int main(void)
     glEnableVertexAttribArray(0);
 
 
+    // do HUD stuff 
+    Shader HUDShader(HUDVertPath, HUDFragPath);
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
+    HUDShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
+
+    HUD hud(fontPath);
+
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -193,6 +209,7 @@ int main(void)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        const char* FPS = showFPS();
 
         // input
         // -----
@@ -314,6 +331,15 @@ int main(void)
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+
+        // render our HUD
+        // HUD to render last so blending works properly, try it out in the beginning of the render loop ;)
+        if (showHUD)
+        {
+            hud.render(HUDShader, "awesome!", 200.0f, 300.0f, 1.0f, glm::vec3(0.3f, 0.6f, 0.9f));
+            hud.render(HUDShader, FPS, 400.0f, 100.0f, 1.0f, glm::vec3(0.3f, 0.6f, 0.9f));
+        }
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -336,7 +362,9 @@ int main(void)
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window)
-{
+{   
+    
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -350,6 +378,14 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         camera.processKeyboard(UP, deltaTime);
+
+
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= 0.2)
+    {
+        showHUD = !showHUD;
+        lastHUDPress = glfwGetTime();
+    }
+        
 }
 
 
@@ -408,19 +444,17 @@ void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm:
 }
 
 
-int initFreetype(const char* fontPath)
+const char * showFPS()
 {
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft))
-    {
-        std::cout << "There was an error initializing freetype." << std::endl;
-        return -1;
+    // Measure speed
+    double currentTime = glfwGetTime();
+    nFrames++;
+    if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
+        // printf and reset timer
+        printf("%f ms/frame\n", 1000.0 / double(nFrames));
+        printf("%fFPS\n", double(nFrames));
+        nFrames = 0;
+        lastTime += 1.0;
     }
-
-    FT_Face face;
-    if (FT_New_Face(ft, fontPath, 0, &face))
-    {
-        std::cout << "There was an error loading the font." << std::endl;
-        return -1;
-    }
+    return "FPS: ";
 }
