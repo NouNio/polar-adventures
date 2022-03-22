@@ -17,12 +17,13 @@ A poster done for the game project, as it could be displayed in advertisments or
 - freetype
 - bullet3
 - ...
+<br>
 It is recommended to resolve all dependencies using [vcpkg](https://vcpkg.io/en/index.html).
 
 ### References and Resources
 [1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
 [2] [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney) <br>
 [3] [Open fonts](https://www.fontspace.com/category/pixel), specifically this [pixel font](https://www.fontspace.com/datcub-font-f69195) <br>
-[4] Nischwitz, Alfred, et al. Computergrafik: Band I des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2019.
-[5] Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020.
-[6] Koster, Raph. Theory of fun for game design. O'Reilly, 2013.
+[4] Nischwitz, Alfred, et al. Computergrafik: Band I des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2019. <br>
+[5] Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020. <br>
+[6] Koster, Raph. Theory of fun for game design. O'Reilly, 2013. <br>
