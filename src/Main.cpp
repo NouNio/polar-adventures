@@ -11,23 +11,29 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <bullet/btBulletDynamicsCommon.h>
+
 // std libs
 #include <iostream>
+#include <string>
 
 // self made libs
 #include <Shader.h>
 #include <Camera.h>
 #include <Model.h>
 #include <HUD.h>
+#include <Constants.h>
 
 
 // prototypes
+GLFWwindow* initGLFWandGLEW();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
-const char* showFPS();
+void computeTimeLogic();
+void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -46,158 +52,39 @@ double lastHUDPress = glfwGetTime();
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-int nFrames = 0.0;
-double lastTime = glfwGetTime();
-
-// file path
-// objects
-const char* heartPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer\\heart.fbx";
-const char* treePath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer\\tree.fbx";
-const char* worldPath = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx";
-// shader
-const char* modelVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\vertexShader.vert";
-const char* modelFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\fragmentShader.frag";
-const char* lightVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\directLight.vert";
-const char* lightFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\directLight.frag";
-const char* HUDVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\HUD.vert";
-const char* HUDFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\HUD.frag";
-// fonts
-const char* fontPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\fonts\\datcub\\datcub.ttf";
+double FPS = 0.0;
+double msPerFrame = 0.0;
 
 
 int main(void)
 {
-    // glfw: initialize and configure
-     // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLFWwindow* window = initGLFWandGLEW();
 
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-
-    // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    //// Initialize GLEW
-    //glewExperimental = true; // Needed in core profile
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        return -1;
-    }
-
-    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
-
-    //// configure global opengl state
-    //// -----------------------------
+    stbi_set_flip_vertically_on_load(true);  // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     glEnable(GL_DEPTH_TEST);
+    
+    // load Shader, Models and HUD
     Shader lightShader(lightVertPath, lightFragPath);
+    Shader modelShader(modelVertPath, modelFragPath);
     Model heart(heartPath);
     Model tree(treePath);
+    Model lightpost(lightpostPath);
+    Model snowman(snowmanPath);
+    Model snowPatch(snowPatchPath);
+    Model treePine(treePinePath);
+    Model treePineSnow(treePineSnowPath);
+    Model treePineSnowed(treePineSnowedPath);
+    Model treePineSnowRound(treePineSnowRoundPath);
     Model cubeWorld(worldPath);
-    Shader modelShader(modelVertPath, modelFragPath);
-
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-    };
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3(0.0f, -20.0f, 5.0f),
-        glm::vec3(60.f, -20.0f, 5.0f),
-        glm::vec3(30.0f,  -20.0f, 40.0f),
-        glm::vec3(30.0f,  -20.0f, -25.0f),
-        glm::vec3(30.0f,  -50.0f, 0.0f)
-    };
-    // first, configure the cube's VAO (and VBO)
-    unsigned int VBO, cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindVertexArray(cubeVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
-    unsigned int lightCubeVAO;
-    glGenVertexArrays(1, &lightCubeVAO);
-    glBindVertexArray(lightCubeVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // note that we update the lamp's position attribute's stride to reflect the updated buffer data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-
     // do HUD stuff 
     Shader HUDShader(HUDVertPath, HUDFragPath);
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
-    glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); HUD hud(fontPath);
 
-    HUD hud(fontPath);
+
+    // do physics stuff  with bullet3
+    // TODO
 
 
     // render loop
@@ -205,11 +92,7 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
-        // --------------------
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        const char* FPS = showFPS();
+        computeTimeLogic();
 
         // input
         // -----
@@ -250,117 +133,89 @@ int main(void)
         modelShader.setMat4("view", view);
 
 
-        // world transformation
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(24.0f, 3.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::rotate(model, glm::radians(200.0f * float(glfwGetTime())), glm::vec3(0.0f, 1.0f, 0.0f));  // rotate heart over time 
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-        modelShader.setMat4("model", model);
+        // DRAW GAME OBJECTS
+        drawGameObject(&heart, glm::vec3(15.0f, 3.0f, 0.0f), 200.0f * float(glfwGetTime()), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
 
-        heart.draw(modelShader);
+        drawGameObject(&tree, glm::vec3(15.0f, -0.5f, 2.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&tree, glm::vec3(50.0f, -0.5f, 3.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.8f, 0.8f, 0.8f), &modelShader);
+        drawGameObject(&tree, glm::vec3(40.0f, -0.5f, 17.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.9f, 1.1f, 0.9f), &modelShader);
+        drawGameObject(&tree, glm::vec3(30.0f, -0.5f, 20.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), &modelShader);
 
+        drawGameObject(&treePine, glm::vec3(18.0f, 0.0f, 5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&treePineSnow, glm::vec3(15.0f, 0.0f, 22.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.9f, 1.9f, 1.9f), &modelShader);
+        drawGameObject(&treePineSnowed, glm::vec3(22.0f, 0.0f, -5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.9f, 1.9f, 1.9f), &modelShader);
+        drawGameObject(&treePineSnowRound, glm::vec3(47.0f, 0.0f, -2.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.1f, 1.6f, 1.1f), &modelShader);
 
-        // also draw the loaded model2 4 times
-        modelShader.use();
-        // NUMBER 1 !!!!!!!!!!!!!!!!!!!
-        // world transformation
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(50.0f, 0.0f, -8.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	     // it's a bit too big for our scene, so scale it down
-        modelShader.setMat4("model", model);
+        drawGameObject(&cubeWorld, glm::vec3(18.0f, -56.0f, 8.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(10.0f, 10.0f, 10.0f), &modelShader);
 
-        tree.draw(modelShader);
+        drawGameObject(&lightpost, glm::vec3(7.0f, -20.0f, 5.0f), 90.0f, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&snowman, glm::vec3(26.0f, 0.0f, 3.0f), 90.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&snowPatch, glm::vec3(25.0f, 0.0f, 5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.8f, 0.8f, 0.8f), &modelShader);
 
 
-        modelShader.use();
-        // NUMBER 2 !!!!!!!!!!!!!!!!!!!
-        // world transformation
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(50.0f, 0.0f, 3.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.8f, 0.8f, 0.8f));	     // it's a bit too big for our scene, so scale it down
-        modelShader.setMat4("model", model);
+        // PHYSICS
+        // TO DO
 
-        tree.draw(modelShader);
-
-
-        modelShader.use();
-        // NUMBER 3 !!!!!!!!!!!!!!!!!!!
-        // world transformation
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(40.0f, 0.0f, 20.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	     // it's a bit too big for our scene, so scale it down
-        modelShader.setMat4("model", model);
-
-        tree.draw(modelShader);
-
-
-        modelShader.use();
-        // NUMBER 4 !!!!!!!!!!!!!!!!!!!
-        // world transformation
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(20.0f, 0.0f, 20.0f));
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-        modelShader.setMat4("model", model);
-
-        tree.draw(modelShader);
-
-
-        // try to use an exported model, with multiple disconnected meshes
-        modelShader.use();
-        // world transformation
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(18.0f, -56.0f, 8.0f));
-        model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
-        modelShader.setMat4("model", model);
-
-        cubeWorld.draw(modelShader);
-
-
-        // we now draw as many light bulbs as we have point lights.
-        lightShader.use();
-        lightShader.setMat4("projection", projection);
-        lightShader.setMat4("view", view);
-        glBindVertexArray(lightCubeVAO);
-        for (unsigned int i = 0; i < 5; i++)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, pointLightPositions[i]);
-            model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-            lightShader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-
-        // render our HUD
+        // DRAW HUD
         // HUD to render last so blending works properly, try it out in the beginning of the render loop ;)
         if (showHUD)
         {
-            hud.render(HUDShader, "awesome!", 200.0f, 300.0f, 1.0f, glm::vec3(0.3f, 0.6f, 0.9f));
-            hud.render(HUDShader, FPS, 400.0f, 100.0f, 1.0f, glm::vec3(0.3f, 0.6f, 0.9f));
+            hud.render(HUDShader, "Snowballs 0/4", 10.0f, 560.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "--Data--", 10.0f, 530.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "Camera X: " + to_string(camera.pos.x), 10.0f, 510.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "Camera Y: " + to_string(camera.pos.y), 10.0f, 490.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "Camera Z: " + to_string(camera.pos.z), 10.0f, 470.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "FPS: " + to_string(FPS), 10.0f, 450.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "ms/frame: " + to_string(msPerFrame), 10.0f, 430.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
         }
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
+
+        // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteVertexArrays(1, &lightCubeVAO);
-    glDeleteBuffers(1, &VBO);
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
+// usual GLFW and GLEW initialization and some config settings
+GLFWwindow* initGLFWandGLEW()
+{
+    // init and config of glfw
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+
+    // creat the window, set as context and activate necessary callbacks
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "There was an error creating the GLFW window" << std::endl;
+        glfwTerminate();
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+   
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);   // make GLFW measure our mouse
+
+
+    // init GLEW
+    if (glewInit() != GLEW_OK) {
+        std::cout << "There was an error creating initializing GLEW" << std::endl;
+        glfwTerminate();
+    }
+
+    return window;
+}
+
+
+// process all input that is triggered by the keyboard
 void processInput(GLFWwindow* window)
 {   
     
@@ -389,8 +244,7 @@ void processInput(GLFWwindow* window)
 }
 
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
+// necessary for resizing the window
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
@@ -399,8 +253,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
+// process all input that is triggered by the mouse
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
@@ -423,17 +276,16 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 }
 
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
+// except scrolling, which is handled here
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
 
 
+// set the pointlights[] uniform values in the specified shader
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion)
 {
-    // point light 5
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
     shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.05f, 0.05f, 0.05f);
     shader.setVec3("pointLights[" + pointLightNumber + "].diffuse", 0.8f, 0.8f, 0.8f);
@@ -444,17 +296,27 @@ void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm:
 }
 
 
-const char * showFPS()
+// compute deltaTime, FPS and ms/Frame
+void computeTimeLogic()
 {
-    // Measure speed
-    double currentTime = glfwGetTime();
-    nFrames++;
-    if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
-        // printf and reset timer
-        printf("%f ms/frame\n", 1000.0 / double(nFrames));
-        printf("%fFPS\n", double(nFrames));
-        nFrames = 0;
-        lastTime += 1.0;
-    }
-    return "FPS: ";
+    float currentFrame = static_cast<float>(glfwGetTime());
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    msPerFrame = deltaTime * 1000;  // deltaTime is the time in s from frame to frame, i.e. taking to compute 1 frame; 1s = 1000ms
+    FPS = 1.0 / deltaTime;
+}
+
+
+// renders a model, by specifiyng the shader as well as transformation matrices 
+void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader *shader)
+{
+    shader->use();
+    // world transformation
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, translation);
+    model = glm::rotate(model, glm::radians(angle), rotationAxes);
+    model = glm::scale(model, scale);
+    shader->setMat4("model", model);
+
+    gameObj->draw(*shader);
 }
