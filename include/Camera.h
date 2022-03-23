@@ -100,7 +100,7 @@ public:
         this->yaw += xoffset;   // update euler angles w.r.t new mouse pos
         this->pitch += yoffset;
 
-        if (constrainPitch)  // if pitch (up / down angle) is woud leave bounds, the view would be inverted
+        if (constrainPitch)  // if pitch (up / down angle) would leave bounds, the view would be inverted
         {
             if (this->pitch > MAX_PITCH)
                 this->pitch = MAX_PITCH;
