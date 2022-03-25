@@ -75,19 +75,34 @@ public:
 
     // processes input received from any keyboard-like input system. 
     // Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems) (I think this a very nice idea from Joey de Vries)
-    void processKeyboard(Camera_Movement direction, float deltaTime)
+    void processKeyboard(Camera_Movement direction, float deltaTime, glm::vec3* playerTranslation)
     {
         float velocity = this->moveSpeed * deltaTime;
-        if (direction == FORWARD)
+        if (direction == FORWARD) 
+        {
             this->pos += this->front * velocity;
+            *playerTranslation += this->front * velocity;
+        }
         if (direction == BACKWARD)
+        {
             this->pos -= this->front * velocity;
+            *playerTranslation -= this->front * velocity;
+        }
         if (direction == LEFT)
+        {
             this->pos -= this->right * velocity;
+            *playerTranslation -= this->right * velocity;
+        }
         if (direction == RIGHT)
+        {
             this->pos += this->right * velocity;
+            *playerTranslation += this->right * velocity;
+        }
         if (direction == UP)
+        {
             this->pos += this->up * velocity;
+            *playerTranslation += this->up * velocity;
+        }
     }
 
     
@@ -107,6 +122,8 @@ public:
             if (this->pitch < -MAX_PITCH)
                 this->pitch = -MAX_PITCH;
         }
+
+        // TODO: add update of player left right rotation, with the yaw value
 
         updateCameraVectors();
     }
