@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -14,6 +15,7 @@
 
 #include <Mesh.h>
 #include <Shader.h>
+#include <Constants.h>
 
 #include <string>
 #include <fstream>
@@ -34,8 +36,10 @@ using namespace std;
 class Model
 {
 public:
-    Model(string const& path)
+    Model(string const& path, bool withTextures = false, const char* texFileType = "")
     {
+        this->withTextures = withTextures;
+        this->texFileType = texFileType;
         loadModel(path);
     }
 
@@ -47,11 +51,20 @@ public:
     }
 
 
+    bool hasTextures()
+    {
+        return this->withTextures;
+    }
+
 private:
     vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     string directory;
     Assimp::Importer importer;
     const aiScene* scene;
+    bool withTextures;
+    const char* texFileType;
+    const string TEX_DIFF = "texture_diffuse";
+    // add datastructure like map/hash to not load the same texture multiple times for each model, when all/some of the meshes use this texture
 
 
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -100,14 +113,22 @@ private:
         vector<Vertex> vertices;
         vector<unsigned int> indices;
         Material material{};
+        Texture texture;
 
         // fill it with the data from the assimp meshes
         parseVertices(&vertices, mesh);   // 1. retrieve the vertice data from the assimp mesh
         parseIndices(&indices, mesh);     // 2. retrieve the indice data from the assimp mesh
         parseMaterials(&material, mesh);  // 3. retrieve material data
-        
-        return Mesh(vertices, indices, material);
+
+        if (this->hasTextures())
+        {
+            parseTextures(&texture);   // 4. retireve the (correctly named) textures
+            return Mesh(vertices, indices, material, texture, this->hasTextures());
+        }
+        else
+            return Mesh(vertices, indices, material, this->hasTextures());
     }
+
 
     void parseVertices(vector<Vertex>* vertices, aiMesh* mesh)
     {
@@ -119,10 +140,18 @@ private:
             vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 
             //TODO: if considering textures, would need TexCoords parsing here
+            
+            if (this->hasTextures() && mesh->mTextureCoords[0]) {
+                vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+            }
+            else
+                vertex.texCoords = glm::vec2(0.0f, 0.0f); 
+
 
             vertices->push_back(vertex);
         }
     }
+
 
     void parseIndices(vector<unsigned int>* indices, aiMesh* mesh)
     {
@@ -135,6 +164,7 @@ private:
             }
         }
     }
+
 
     void parseMaterials(Material* material, aiMesh* mesh)  //TODO: add other materials here, e.g. normal or height maps
     {
@@ -151,6 +181,59 @@ private:
         material->specularCol = glm::vec3(specCol.r, specCol.g, specCol.b);
         material->ambientCol = glm::vec3(ambiCol.r, ambiCol.g, ambiCol.b);
         material->shininess = shini;
+    }
+
+
+    void parseTextures(Texture* texture)
+    {
+        texture->ID = textureFromFile();
+        texture->type = TEX_DIFF;
+    }
+
+
+    unsigned int textureFromFile()
+    {
+        string filename = directory + '\\' + TEX_DIFF + texFileType;
+
+        unsigned int textureID;
+        glGenTextures(1, &textureID);
+        std::cout << "trying to load file: " << filename << std::endl;
+        
+        int width, height, nComponents;
+        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nComponents, 0);
+        if (data)
+        {
+            glTextureConfig(nComponents,width,height, textureID, data);
+        }
+        else
+        {
+            std::cout << "There was an error loading the texture file: " << filename << std::endl;
+        }
+        
+        stbi_image_free(data);
+
+        return textureID;
+    }
+
+
+    void glTextureConfig(int nComponents, int width, int height, unsigned int textureID, unsigned char* data)
+    {
+        GLenum format = GL_RGB;
+        if (nComponents == 1)
+            format = GL_RED;
+        else if (nComponents == 3)
+            format = GL_RGB;
+        else if (nComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);  // can also move these 4 loc below glGenTextures() in textureFromFile()
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 };
 #endif

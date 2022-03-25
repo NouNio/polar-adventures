@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <Shader.h>
+#include <Model.h>
 
 #include <string>
 #include <vector>
@@ -26,6 +27,7 @@ using namespace std;
 struct Vertex {             
     glm::vec3 pos;
     glm::vec3 normal;
+    glm::vec2 texCoords;
 };
 
 struct Material {
@@ -35,12 +37,19 @@ struct Material {
     float shininess;
 };
 
+struct Texture {
+    unsigned int ID;
+    string type;
+};
+
 class Mesh {
 public:
     // mesh Data
     vector<Vertex> vertices;        // all the vertices that form the mesh
     vector<unsigned int> indices;   // indices for the mesh data
     Material material;              // material data for the mesh
+    Texture texture;                // texture data, for now we only have the snow bal with one texture
+    bool withTexture;                   // each mesh belongs to some Model obj
 
     const string MAT_DIFF = "material.diffuse";
     const string MAT_SPEC = "material.specular";
@@ -48,11 +57,23 @@ public:
     const string MAT_SHIN = "material.shininess";
 
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material)
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, bool withTexture=false)
     {
         this->vertices = vertices;
         this->indices = indices;
         this->material = material;
+        this->withTexture = withTexture;
+        setupMesh();   // use the mesh data to make OpenGL calls, i.e. set the vertex buffers and its attribute pointers
+    }
+
+
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, Texture texture, bool withTexture)
+    {
+        this->vertices = vertices;
+        this->indices = indices;
+        this->material = material;
+        this->texture = texture;
+        this->withTexture = withTexture;
         setupMesh();   // use the mesh data to make OpenGL calls, i.e. set the vertex buffers and its attribute pointers
     }
 
@@ -60,7 +81,10 @@ public:
     void draw(Shader& shader)
     {
         setMaterialValues(shader);  // set the materials color values in the fragment shader
-
+        
+        if (this->withTexture)
+            setTextureValues(shader);   // set the texture coord values in the correspoiding shader
+        
         drawMesh();
     }
 
@@ -72,6 +96,9 @@ private:
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+        if (this->withTexture)
+            glActiveTexture(GL_TEXTURE0);  // set back to default after configuration is done
     }
 
 
@@ -82,6 +109,16 @@ private:
         shader.setVec3(MAT_SPEC, this->material.specularCol);
         shader.setVec3(MAT_AMBI, this->material.ambientCol);
         shader.setFloat(MAT_SHIN, this->material.shininess);
+    }
+
+
+    void setTextureValues(Shader& shader)
+    {   
+       // if we were to process multiple textures, we would need to loop through the textures vector and set the appropriate values in the shader
+       glActiveTexture(GL_TEXTURE0);
+
+       glUniform1i(glGetUniformLocation(shader.ID, (texture.type).c_str()), 0);  // set the appropriate texture sampler variable in the fragment shader
+       glBindTexture(GL_TEXTURE_2D, texture.ID);
     }
 
 
@@ -123,9 +160,17 @@ private:
         // vertex positions
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        
         // vertex normals
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+        // vertex texture coordinates
+        if (this->withTexture)
+        {
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+        }
     }
 };
 #endif
