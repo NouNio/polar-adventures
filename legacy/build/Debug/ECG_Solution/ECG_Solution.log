@@ -1,0 +1,89 @@
+﻿  Geometry.cpp
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(467,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(468,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(469,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(476,23): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(477,23): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(486,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(487,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Geometry.cpp(488,28): warning C4244: "=": Konvertierung von "double" in "T", möglicher Datenverlust
+          with
+          [
+              T=float
+          ]
+  Main.cpp
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\general\opengl.h(2,10): warning C4067: Unerwartete Token nach Präprozessordirektive - Zeilenvorschub erwartet.
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Main.cpp(244,142): warning C4305: "Argument": Verkürzung von "double" in "float"
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\xutility(149,77): warning C4244: "Argument": Konvertierung von "_Ty" in "float", möglicher Datenverlust
+          with
+          [
+              _Ty=int
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\memory(2014): message : Siehe Verweis auf die gerade kompilierte Instanziierung "void std::_Construct_in_place<_Ty,glm::tvec3<float,glm::packed_highp>,int,int,float&,float,float,float&,float&,bool>(_Ty &,glm::tvec3<float,glm::packed_highp> &&,int &&,int &&,float &,float &&,float &&,float &,float &,bool &&) noexcept(false)" der Funktions-Vorlage.
+          with
+          [
+              _Ty=GameCamera
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\memory(2726): message : Siehe Verweis auf die gerade kompilierte Instanziierung "std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<glm::tvec3<float,glm::packed_highp>,int,int,float&,float,float,float&,float&,bool>(glm::tvec3<float,glm::packed_highp> &&,int &&,int &&,float &,float &&,float &&,float &,float &,bool &&)" der Funktions-Vorlage.
+          with
+          [
+              _Ty=GameCamera
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\memory(2726): message : Siehe Verweis auf die gerade kompilierte Instanziierung "std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<glm::tvec3<float,glm::packed_highp>,int,int,float&,float,float,float&,float&,bool>(glm::tvec3<float,glm::packed_highp> &&,int &&,int &&,float &,float &&,float &&,float &,float &,bool &&)" der Funktions-Vorlage.
+          with
+          [
+              _Ty=GameCamera
+          ]
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\Main.cpp(237): message : Siehe Verweis auf die gerade kompilierte Instanziierung "std::shared_ptr<GameCamera> std::make_shared<GameCamera,glm::vec3,int,int,float&,float,float,float&,float&,bool>(glm::vec3 &&,int &&,int &&,float &,float &&,float &&,float &,float &,bool &&)" der Funktions-Vorlage.
+  Material.cpp
+  Code wird generiert...
+C:\Users\henri\Desktop\polar-adventures\old code\ECG_Solution\src\general\opengl.h(133): warning C4715: "initializeFBOs": Nicht alle Codepfade geben einen Wert zurück.
+Geometry.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glDrawElements@16" in Funktion ""public: void __thiscall Geometry::draw(void)" (?draw@Geometry@@QAEXXZ)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glBindTexture@8" in Funktion ""public: __thiscall TwoDTexture::TwoDTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >)" (??0TwoDTexture@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)".
+Material.obj : error LNK2001: Nicht aufgelöstes externes Symbol "__imp__glBindTexture@8".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glBlendFunc@8" in Funktion "_main".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glClear@4" in Funktion "_main".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glClearColor@16" in Funktion ""int __cdecl initializeFBOs(int,int,unsigned int,unsigned int * const,unsigned int * const,unsigned int * const,unsigned int,unsigned int)" (?initializeFBOs@@YAHHHIQAI00II@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glDepthMask@4" in Funktion "_main".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glDisable@4" in Funktion ""void __cdecl key_callback(struct GLFWwindow *,int,int,int,int)" (?key_callback@@YAXPAUGLFWwindow@@HHHH@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glEnable@4" in Funktion ""int __cdecl initializeFBOs(int,int,unsigned int,unsigned int * const,unsigned int * const,unsigned int * const,unsigned int,unsigned int)" (?initializeFBOs@@YAHHHIQAI00II@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glFrontFace@4" in Funktion "_main".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glGenTextures@8" in Funktion ""public: __thiscall TwoDTexture::TwoDTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >)" (??0TwoDTexture@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glPolygonMode@8" in Funktion ""void __cdecl key_callback(struct GLFWwindow *,int,int,int,int)" (?key_callback@@YAXPAUGLFWwindow@@HHHH@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glTexImage2D@36" in Funktion ""public: __thiscall TwoDTexture::TwoDTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >)" (??0TwoDTexture@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glTexParameteri@12" in Funktion ""public: __thiscall TwoDTexture::TwoDTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >)" (??0TwoDTexture@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glViewport@16" in Funktion ""void __cdecl framebuffer_size_callback(struct GLFWwindow *,int,int)" (?framebuffer_size_callback@@YAXPAUGLFWwindow@@HH@Z)".
+Main.obj : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "_stbi_load" in Funktion ""public: __thiscall TwoDTexture::TwoDTexture(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >)" (??0TwoDTexture@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)".
+glew32s.lib(glew.obj) : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glGetIntegerv@8" in Funktion "_glewContextInit@0".
+glew32s.lib(glew.obj) : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__glGetString@4" in Funktion "_glewContextInit@0".
+glew32s.lib(glew.obj) : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__wglGetCurrentDC@0" in Funktion "_wglewGetExtension@4".
+glew32s.lib(glew.obj) : error LNK2019: Verweis auf nicht aufgelöstes externes Symbol "__imp__wglGetProcAddress@4" in Funktion "__glewInit_GL_3DFX_tbuffer".
+C:\Users\henri\Desktop\polar-adventures\old code\bin\Debug\ECG_Solution.exe : fatal error LNK1120: 19 nicht aufgelöste Externe

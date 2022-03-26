@@ -1,0 +1,3 @@
+C:/Users/henri/Desktop/cgue21-reflect/ECG_Framework/Task_5/external/include/glm/out/build/x64-Debug/CMakeFiles/glm_dummy.dir
+C:/Users/henri/Desktop/cgue21-reflect/ECG_Framework/Task_5/external/include/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/henri/Desktop/cgue21-reflect/ECG_Framework/Task_5/external/include/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
