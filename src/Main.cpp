@@ -11,6 +11,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <INIReader.h>
+
 #include <bullet/btBulletDynamicsCommon.h>
 
 // std libs
@@ -25,13 +27,8 @@
 #include <Constants.h>
 
 
-// testing
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-
-// prototypes
+// PROTOTYPES
+void readINI();
 GLFWwindow* initGLFWandGLEW();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -44,8 +41,6 @@ void drawPlayer(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 ro
 void activateShader(Shader* shader);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
 bool showHUD = false;
 
 // camera
@@ -67,6 +62,11 @@ double msPerFrame = 0.0;
 
 int main(void)
 {
+    /* ------------------------------------------------------------------------------------ */
+    // load setting.ini (screen resolution, full screen mode, refresh rate, brightness)
+    /* ------------------------------------------------------------------------------------ */
+    readINI();
+
     GLFWwindow* window = initGLFWandGLEW();
 
     //stbi_set_flip_vertically_on_load(true);  // tell stb_image.h to flip loaded texture's on the y-axis (before loading model); NOTE turn off for most the textures I saw don't need it
@@ -213,6 +213,19 @@ int main(void)
 }
 
 
+// read information from the settings.ini file
+void readINI()
+{
+
+    INIReader iniReader(iniPath);
+    SCR_WIDTH = iniReader.GetInteger("window", "width", 800);
+    SCR_HEIGHT = iniReader.GetInteger("window", "height", 600);
+    fullscreen = iniReader.GetBoolean("window", "fullscreen", false);
+    refreshRate = iniReader.GetInteger("window", "refresh_rate", 60);
+    brightness = float(iniReader.GetReal("window", "brightness", 1.0f));
+}
+
+
 // usual GLFW and GLEW initialization and some config settings
 GLFWwindow* initGLFWandGLEW()
 {
@@ -221,15 +234,23 @@ GLFWwindow* initGLFWandGLEW()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);               
 
 
-    // creat the window, set as context and activate necessary callbacks
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    // creat the window, set as context and activate necessary callbacks; the monitor is needed for fullscreen mode
+    GLFWmonitor* monitor = nullptr;
+    
+    if (fullscreen)
+        monitor = glfwGetPrimaryMonitor();
+    
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Polar Adventures Test", monitor, NULL);
+    
     if (window == NULL)
     {
         std::cout << "There was an error creating the GLFW window" << std::endl;
         glfwTerminate();
     }
+    
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -380,7 +401,7 @@ void activateShader(Shader *shader)
     // directional light
     shader->setVec3("directionalLight.direction", -20.2f, -21.0f, -20.3f);
     shader->setVec3("directionalLight.ambient", 0.2f, 0.2f, 0.2f);
-    shader->setVec3("directionalLight.diffuse", 1.0f, 1.0f, 1.0f);              // change here for scene brightness
+    shader->setVec3("directionalLight.diffuse", 1.0f*brightness, 1.0f*brightness, 1.0f*brightness);              // change here for scene brightness
     shader->setVec3("directionalLight.specular", 0.5f, 0.5f, 0.5f);
 
     setPointLightShaderParameters(*shader, "0", pointLightPositions[0]);  // point light 1

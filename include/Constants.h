@@ -3,6 +3,17 @@
 
 #include <glm/glm.hpp>
 
+/* ----------------------------------------------------------------- */
+// SETTINGS
+/* ----------------------------------------------------------------- */
+// FROM INI
+// WINDOW 
+unsigned int SCR_WIDTH = 800;
+unsigned int SCR_HEIGHT = 600;
+bool fullscreen = false;
+unsigned int refreshRate = 60;
+float brightness = 1.0f;
+
 // LIGHT POSITIONS
 glm::vec3 pointLightPositions[] = {
         glm::vec3(0.0f, -20.0f, 5.0f),
@@ -13,8 +24,10 @@ glm::vec3 pointLightPositions[] = {
 };
 
 
-//FILE PATH'
-//OBJECTS
+/* ----------------------------------------------------------------- */
+// FILE PATH
+/* ----------------------------------------------------------------- */
+// OBJECTS
 const char* worldPath             = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx";
 const char* playerPath            = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-block-characters\\player.fbx";
 const char* collectPointPath      = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-space-kit\\heart.fbx";      //fix here
@@ -29,7 +42,7 @@ const char* treePineSnowedPath    = "C:\\Users\\dittm\\Dev\\polar-adventures-tes
 const char* treePineSnowRoundPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-holiday-kit\\treePineSnowRound.fbx";
 const char* snowBallPath          = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\snowball\\snowball.fbx";
 
-// test objects
+// TEST OBJECTS
 const char* isoGroundSnowPath     = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\isometric-cubes\\groundSnow\\groundSnow.fbx";
 const char* matchBoxPath          = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\matchbox\\veb.fbx";
 const char* reptileMagePath       = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\reptile-mage\\LizPosed.obj";
@@ -55,9 +68,11 @@ const char* HUDFragPath   = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\asset
 const char* snowBallVertPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\snowBall.vert";
 const char* snowBallFragPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\shader\\snowBall.frag";
 
-
 // FONTS
 const char* fontPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\fonts\\datcub\\datcub.ttf";
+
+// INI 
+const char* iniPath = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\settings.ini";
 
 
 // FILE TYPES
