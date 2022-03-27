@@ -15,9 +15,10 @@ A poster done for the game project, as it could be displayed in advertisments or
 - assimp
 - stb_image
 - freetype
+- inih
 - bullet3
 - ...
-<br>
+
 It is recommended to resolve all dependencies using [vcpkg](https://vcpkg.io/en/index.html).
 
 ### References and Resources
