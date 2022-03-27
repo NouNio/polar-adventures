@@ -32,4 +32,8 @@
 *.app
 
 # Visual Studio
+*.vcxproj
+*.filters
+*.user
 .vs/
+.x64/
