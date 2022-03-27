@@ -20,6 +20,25 @@ A poster done for the game project, as it could be displayed in advertisments or
 - ...
 
 It is recommended to resolve all dependencies using [vcpkg](https://vcpkg.io/en/index.html).
+The package manager can be installed via: <br>
+```shell
+git clone https://github.com/Microsoft/vcpkg.git
+.\vcpkg\bootstrap-vcpkg.bat
+```
+Then add vcpkg to PATH (Environment Variables -> Path -> add absolute path to the cloned vcpkg directory) <br>
+and install any _package_ with:
+```
+vcpkg install package
+```
+Also make sure that vcpkg and VS are being connected with:
+```
+vcpkg integrate install
+```
+Assuming the above was done, the script add_depencies, will resolve all packages via vcpkg (Assuming the OS is WIN>=10 and 64-bit):
+```
+.\add_dependencies.bat
+```
+
 
 ### References and Resources
 [1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
