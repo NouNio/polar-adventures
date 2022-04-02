@@ -47,3 +47,4 @@ Assuming the above was done, the script add_depencies, will resolve all packages
 [4] Nischwitz, Alfred, et al. Computergrafik: Band I des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2019. <br>
 [5] Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020. <br>
 [6] Koster, Raph. Theory of fun for game design. O'Reilly, 2013. <br>
+[7] Kosarevsky, Sergey, et al. 3D Graphics Rendering Cookbook. Packt, 2021. <br>
