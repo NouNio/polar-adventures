@@ -15,6 +15,7 @@ unsigned int refreshRate = 60;
 float brightness = 1.0f;
 
 // LIGHT POSITIONS
+const unsigned int nPointLights = 5;  //5
 glm::vec3 pointLightPositions[] = {
         glm::vec3(0.0f, -20.0f, 5.0f),
         glm::vec3(60.f, -20.0f, 5.0f),
@@ -30,7 +31,8 @@ glm::vec3 pointLightPositions[] = {
 // OBJECTS
 const char* worldPath             = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx";
 const char* playerPath            = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-block-characters\\player.fbx";
-const char* collectPointPath      = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-space-kit\\heart.fbx";      //fix here
+const char* blockPath             = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\block.fbx";
+const char* largeBlockPath        = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\blockLarge.fbx";
 const char* heartPath             = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\heart.fbx";
 const char* treePath              = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\tree.fbx";
 const char* lightpostPath         = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-holiday-kit\\lightpost.fbx";
