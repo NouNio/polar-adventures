@@ -36,6 +36,8 @@ using namespace std;
 class Model
 {
 public:
+    vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
+
     Model(string const& path, bool withTextures = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
@@ -56,8 +58,13 @@ public:
         return this->withTextures;
     }
 
+
+    size_t getNumMeshes()
+    {
+        return this->meshes.size();
+    }
+
 private:
-    vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     string directory;
     Assimp::Importer importer;
     const aiScene* scene;

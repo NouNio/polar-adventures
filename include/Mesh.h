@@ -88,6 +88,13 @@ public:
         drawMesh();
     }
 
+
+    size_t getNumVertices()
+    {
+        return this->vertices.size();
+    }
+
+
 private: 
     unsigned int VAO, VBO, EBO;  // vertex array / buffer object | element buffer object
 
