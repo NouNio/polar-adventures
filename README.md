@@ -52,3 +52,4 @@ To resolve this, one needs to add `your-path-to-vcpkg\vcpkg\installed\x64-window
 [5] Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020. <br>
 [6] Koster, Raph. Theory of fun for game design. O'Reilly, 2013. <br>
 [7] Kosarevsky, Sergey, et al. 3D Graphics Rendering Cookbook. Packt, 2021. <br>
+[8] a general [character controller guide](https://digitalrune.github.io/DigitalRune-Documentation/html/7cc27ced-9a65-4ddd-8b8e-fa817b7fe6b7.htm) by digital rune
