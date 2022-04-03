@@ -38,7 +38,7 @@ Assuming the above was done, the script add_depencies, will resolve all packages
 ```
 .\add_dependencies.bat
 ```
-## Notes & Issues
+#### Notes & Issues
 There is currently an [issue with vcpkg and assimp](https://github.com/microsoft/vcpkg/issues/21605), until the issue is resolved it needs to be built manually. <br>
 <br>
 Also there is an [issue with bullet and vcpkg](https://github.com/microsoft/vcpkg/issues/7877), where old submodules don't get included by vcpkg automatically, due to a missing include command.<br>
