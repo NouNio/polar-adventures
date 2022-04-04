@@ -6,13 +6,14 @@
 #include <iostream>
 
 #include <bullet/btBulletDynamicsCommon.h>
+#include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <glm/glm.hpp>
 #include <BulletViewer.h>
 
 
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj0, int id0, int idx0, const btCollisionObjectWrapper* obj1, int id1, int idx1)
 {
-    std::cout << "collision" << std::endl;
+    //std::cout << "collision" << std::endl;
     return false;
 }
 
@@ -20,9 +21,9 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
 class Physics
 {
 public:
-    Physics(glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f), bool debug = false)
+    Physics(bool debug = false)
     {
-        this->initBullet(gravity, debug);
+        this->initBullet(debug);
     }
 
 
@@ -70,6 +71,18 @@ public:
     }
 
 
+    btDynamicsWorld* getWorld()
+    {
+        return this->world;
+    }
+
+
+    void activateColCallBack(btRigidBody* body)
+    {
+        body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);  // or-operator on the flags, to keep all flags that are already there and just add the new one
+    }
+
+
     // the below two functions are taken from / inspired by [7] p. 570
     inline btVector3 GlmVec3ToBulletVec3(const glm::vec3& v)
     {
@@ -95,14 +108,27 @@ public:
     }
 
 
-    /* ------------------------------------------------------------------------------------ */
-    // functions for adding shapes
-    /* ------------------------------------------------------------------------------------ */
-    btRigidBody* addBox(glm::vec3 position, glm::vec3 size, float mass)
+    btRigidBody* addBox(glm::vec3 position, float mass, glm::vec3 size)
     {
         btBoxShape* box = new btBoxShape(GlmVec3ToBulletVec3(size));  // collision shape  |  make this line generic for alle collision type, i.e. also change func params
         
         return this->setUpBody(position, mass, box);
+    }
+
+
+    btRigidBody* addSphere(glm::vec3 position, float mass, float radius)
+    {
+        btSphereShape* sphere = new btSphereShape(radius);
+
+        return this->setUpBody(position, mass, sphere);
+    }
+
+
+    btRigidBody* addCapsule(glm::vec3 position, float mass, float radius, float height)
+    {
+        btCapsuleShape* capsule = new btCapsuleShape(radius, height);
+
+        return this->setUpBody(position, mass, capsule);
     }
 
 
@@ -147,9 +173,9 @@ private:
     btCollisionConfiguration* collisionConfig;
     std::vector<btRigidBody*> rigidBodies;           //storage of all current rigidBodies for easy access
     BulletDebugDrawer_DeprecatedOpenGL debugDrawer;  // debug viewer for bullet
+    glm::vec3 gravity = glm::vec3(0, -9.81, 0);
 
-
-    void initBullet(glm::vec3 gravity, bool debug)
+    void initBullet(bool debug = false)
     {
         this->collisionConfig = new btDefaultCollisionConfiguration();
         this->dispatcher = new btCollisionDispatcher(collisionConfig);
@@ -191,44 +217,5 @@ private:
         return body;
     }
 };
-
-// MAYBE FOR LATER USE
-
-//
-//
-//btRigidBody* addSphere(float radius, glm::vec3 position, float mass)
-//{
-//    btTransform t;    // quaternion, i.e. position and rotation
-//    t.setIdentity();  // set pos to (0,0,0) and rotation to (0,0,0,1)
-//    t.setOrigin(GlmVec3ToBulletVec3(position));
-//
-//    btSphereShape* sphere = new btSphereShape(radius);  // collision shape
-//
-//    btVector3 inertia(0, 0, 0);
-//    if (mass != 0.0)
-//        sphere->calculateLocalInertia(mass, inertia);
-//
-//    btMotionState* motionState = new btDefaultMotionState(t);
-//    btRigidBody::btRigidBodyConstructionInfo info(
-//        mass,                      // mass:  static for 0 and dynamic else
-//        motionState,
-//        sphere,                     // collision shape
-//        inertia
-//    );
-//    btRigidBody* body = new btRigidBody(info);
-//    world->addRigidBody(body);
-//    rigidBodies.push_back(body);
-//
-//    return body;
-//}
-//
-//
-//void movePlayerBox(glm::vec3 moveDir)  // we also need to check if the boxes collide with any other box...
-//{
-//    btTransform t = playerBox->getWorldTransform();
-//    t.setOrigin(t.getOrigin() + GlmVec3ToBulletVec3(moveDir));
-//    //playerBox->setWorldTransform(t);
-//    playerBox->setLinearVelocity(GlmVec3ToBulletVec3(moveDir));
-//}
 
 #endif

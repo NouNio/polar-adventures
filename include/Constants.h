@@ -14,6 +14,19 @@ bool fullscreen = false;
 unsigned int refreshRate = 60;
 float brightness = 1.0f;
 
+// TIMING
+// timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+double FPS = 0.0;
+double msPerFrame = 0.0;
+
+// HUD
+bool showHUD = false;
+
+// PHYSICS
+bool debug = false;
+
 // LIGHT POSITIONS
 const unsigned int nPointLights = 5;  //5
 glm::vec3 pointLightPositions[] = {
@@ -31,6 +44,7 @@ glm::vec3 pointLightPositions[] = {
 // OBJECTS
 const char* worldPath             = "C:\\Users\\dittm\\Documents\\maya\\projects\\default\\scenes\\cube-world.fbx";
 const char* playerPath            = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-block-characters\\player.fbx";
+const char* speederAPath          = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-space-kit\\craft_speederA.fbx";
 const char* blockPath             = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\block.fbx";
 const char* largeBlockPath        = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\blockLarge.fbx";
 const char* heartPath             = "C:\\Users\\dittm\\Dev\\polar-adventures-test\\assets\\objects\\kenny-platformer-kit\\heart.fbx";

@@ -14,6 +14,13 @@
 
 #include <Shader.h>
 
+
+/* ------------------------------------------------------------------------------------ */
+// the HUD is inspired by and closely following the tutorial from [1], 
+// as also mentioned in Tips & Tricks
+/* ------------------------------------------------------------------------------------ */
+
+
 struct Glyph {
 	unsigned int TextureID;  // ID handle of the glyph texture
 	glm::ivec2 Size;         // size of the glyph
