@@ -3,6 +3,19 @@ Description
 
 Implemented Functonalities
 
+The Model.h file uses assimp and loads files of different file format. Furthermore one cann specify the model to come with (1) texture(s) and thus has to specify the file format (PNG, ...).
+It stores all the meshes of the model in an array of instances of Mesh.h, which is a class to store mesh specific data. This is vertices with position, normals and texture coordinates, as well as 
+material values, which most of the low poly object in our game world use. Mesh.h also handles the openGL and Shader calls, to render the objects into the game scene.
+
+The HUD.h loads a font file and makes it possible to render text above the game scene. This can be toggled with the H key.
+
+The Physics.h integrates bullet3 into our framework, this takes care of basic phyics computations, such as collision detection.
+Also it manages to create, for each static model we use, e.g. a tree, to create bullet physic meshes, such that each static model has a 1:1 representation in the physics world
+
+The KinematicPlayer.h takes the Physics.h and Model.h and manages a playable character by using the KinematicCharacterControllerInterface of bullet. Such that there is a character, which is
+pulled on the ground by gravity, can jump and move, turns around with the camera and collides with the statice objects.
+
+
 
 Code Structure
  Header only Classes
