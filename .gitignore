@@ -37,3 +37,14 @@
 *.user
 .vs/
 .x64/
+/polar-adventures.sln
+/Debug/polar-adventures.tlog
+/Debug/vcpkg.applocal.log
+/Debug/vc143.pdb
+/Debug/vc143.idb
+/Debug/polar-adventures.vcxproj.FileListAbsolute.txt
+/Debug/polar-adventures.pdb
+/Debug/polar-adventures.log
+/Debug/polar-adventures.ilk
+/Debug/polar-adventures.exe.recipe
+/x64/Debug
