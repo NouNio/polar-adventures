@@ -37,6 +37,7 @@
 *.user
 .vs/
 .x64/
+/x64
 /polar-adventures.sln
 /Debug/polar-adventures.tlog
 /Debug/vcpkg.applocal.log
