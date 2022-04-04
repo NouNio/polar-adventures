@@ -28,30 +28,32 @@
 #include <Model.h>
 #include <HUD.h>
 #include <Physics.h>
+#include <KinematicPlayer.h>
 #include <Constants.h>
 
 
-// PROTOTYPES
+/* ------------------------------------------------------------------------------------ */
+// Protottypes
+/* ------------------------------------------------------------------------------------ */
 void readINI();
 GLFWwindow* initGLFWandGLEW();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window, glm::vec3* playerTranslation);
+void mouseCallback(GLFWwindow* window, double xpos, double ypos);
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
 void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader);
-void drawPlayer(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader);
 void activateShader(Shader* shader);
 
 
-// settings
-bool showHUD = false;
-
-// camera
-Camera camera(glm::vec3(0.0f, 20.0f, 50.0f));
-glm::vec3 playerOffset(0.0, -6.0, -8.0); // the player is a little bit below and in front of the camera
-glm::vec3 playerPos = camera.pos + playerOffset;
+/* ------------------------------------------------------------------------------------ */
+// Create Objects and make settings
+/* ------------------------------------------------------------------------------------ */
+// camera & physics
+Camera camera(glm::vec3(-10.0f, 18.0f, 50.0f));
+Physics* pHandler;
+KinematicPlayer* playerController;
 
 // lighting
 glm::vec3 directLightPos(30.f, 36.0f, 10.0f);
@@ -61,39 +63,40 @@ bool firstMouse = true;
 double lastHUDPress = glfwGetTime();
 double lastShotPress = glfwGetTime();
 
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-double FPS = 0.0;
-double msPerFrame = 0.0;
-
-// physics
-glm::vec3 startGravity = glm::vec3(0.0f, 9.81f, 0.0f);
 
 int main(void)
 {
     /* ------------------------------------------------------------------------------------ */
-    // load setting.ini (screen resolution, full screen mode, refresh rate, brightness)
+    // load setting.ini and inititalize openGL & bullet
     /* ------------------------------------------------------------------------------------ */
     readINI();
 
     GLFWwindow* window = initGLFWandGLEW();
-    Physics pHandler(startGravity, true);
+    pHandler = new Physics(debug);
   
-    // load Shader, Models and HUD
+    /* ------------------------------------------------------------------------------------ */
+    // load shader
+    /* ------------------------------------------------------------------------------------ */
     Shader modelShader(modelVertPath, modelFragPath);
     Shader lightShader(lightVertPath, lightFragPath);
-    Shader snowBallShader(snowBallVertPath, snowBallFragPath);
+    Shader playerShader(snowBallVertPath, snowBallFragPath);
+
+    /* ------------------------------------------------------------------------------------ */
+    // load models related physics objects
+    /* ------------------------------------------------------------------------------------ */
     Model heart(heartPath);
     Model player(playerPath, true, PNG);
     Model largeBlock(largeBlockPath);
-    pHandler.addBox(glm::vec3(0, 0, 0), glm::vec3(4, 4, 4), 0);
 
-    btRigidBody* groundBody = pHandler.addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    // so 3 lines of code for extracting and scaling the colShape of a rigid body
-    btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );
-    pHandler.addScaledMeshShape(groundShape, glm::vec3(25, 0, 0), 0, glm::vec3(0.5, 0.5, 0.5));
+    btRigidBody* groundBody = pHandler->addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    
+    btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );  // so 2 lines of code for extracting and scaling the colShape of a rigid body
+    pHandler->addScaledMeshShape(groundShape, glm::vec3(0, 0, 0), 0, glm::vec3(4, 1, 4)); 
 
-    // do HUD stuff 
+    playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
+
+    /* ------------------------------------------------------------------------------------ */
+    // load HUD
+    /* ------------------------------------------------------------------------------------ */
     Shader HUDShader(HUDVertPath, HUDFragPath);
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
@@ -101,21 +104,18 @@ int main(void)
     HUD hud(fontPath);
 
 
-    // render loop
-    // -----------
-    float playerRotAngle = 0.0f;
-    glm::vec3 playerRotationAxes(0.0f, 1.0f, 0.0f);
+    /* ------------------------------------------------------------------------------------ */
+    // main & render loop
+    /* ------------------------------------------------------------------------------------ */
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
         computeTimeLogic();
 
-        // input
-        // -----
-        processInput(window, &playerPos);
+        // input & player
+        processInput(window);
 
         // render
-        // ------
         glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -130,55 +130,24 @@ int main(void)
 
 
         // DRAW GAME OBJECTS
-        drawGameObject(&largeBlock, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&largeBlock, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 4.0f), &modelShader);
 
-        //drawGameObject(&block, glm::vec3(0.0f, 12.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), &modelShader);
-        //drawGameObject(&heart, glm::vec3(0.0f, 12.0f, 0.0f), 200.0f * float(glfwGetTime()), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-
-        /*drawGameObject(&tree, glm::vec3(15.0f, -0.5f, 2.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        drawGameObject(&tree, glm::vec3(50.0f, -0.5f, 3.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.8f, 0.8f, 0.8f), &modelShader);
-        drawGameObject(&tree, glm::vec3(40.0f, -0.5f, 17.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.9f, 1.1f, 0.9f), &modelShader);
-        drawGameObject(&tree, glm::vec3(30.0f, -0.5f, 20.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f), &modelShader);*/
-
-        /*drawGameObject(&treePine, glm::vec3(18.0f, 0.0f, 5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        drawGameObject(&treePineSnow, glm::vec3(15.0f, 0.0f, 22.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.9f, 1.9f, 1.9f), &modelShader);
-        drawGameObject(&treePineSnowed, glm::vec3(22.0f, 0.0f, -5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.9f, 1.9f, 1.9f), &modelShader);
-        drawGameObject(&treePineSnowRound, glm::vec3(47.0f, 0.0f, -2.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.1f, 1.6f, 1.1f), &modelShader);*/
-
-        //drawGameObject(&cubeWorld, glm::vec3(18.0f, -56.0f, 8.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(10.0f, 10.0f, 10.0f), &modelShader);
-
-        /*drawGameObject(&lightpost, glm::vec3(7.0f, -20.0f, 5.0f), 90.0f, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        drawGameObject(&snowman, glm::vec3(26.0f, 0.0f, 3.0f), 90.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        drawGameObject(&snowPatch, glm::vec3(25.0f, 0.0f, 5.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.8f, 0.8f, 0.8f), &modelShader);*/
-
-        
-        /*activateShader(&snowBallShader);
-        float scale = 0.05f;
-        drawGameObject(&plinth, glm::vec3(28.0f, 0.0f, 16.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(scale, scale, scale), &snowBallShader);*/
-
-        activateShader(&snowBallShader);
-        snowBallShader.setMat4("projection", projection);
-        snowBallShader.setMat4("view", view);
-        float scale2 = 0.4f;
-        playerOffset = camera.front * glm::length(playerOffset);
-        playerPos = camera.pos + playerOffset + glm::vec3(0.0f, -5.0f, -1.0f);
-        playerRotAngle = -camera.yaw;
-        drawPlayer(&player, playerPos, playerRotAngle, playerRotationAxes, glm::vec3(scale2, scale2, scale2), &snowBallShader);
-
-        //activateShader(&snowBallShader);
-        //snowBallShader.setMat4("projection", projection);
-        //snowBallShader.setMat4("view", view);
-        //drawGameObject(&snowBall, glm::vec3(28.0f, 4.0f, 16.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), &snowBallShader);
 
         // PHYSICS
-        // TO DO
-        pHandler.stepSim(deltaTime);
-        pHandler.setDebugMatrices(view, projection);  // set debug draw matrices
-        pHandler.debugDraw();                         // call the debug drawer
+        pHandler->stepSim(deltaTime);
+        pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
+        pHandler->debugDraw();                         // call the debug drawer
 
+        playerController->update(pNONE, deltaTime);
+        activateShader(&playerShader);
+        playerController->drawPlayer(&playerShader);
 
+        
+        /* ------------------------------------------------------------------------------------ */
         // DRAW HUD
         // HUD to render last so blending works properly, try it out in the beginning of the render loop ;)
+        // NOTE: refactor this to HUD.h
+        /* ------------------------------------------------------------------------------------ */
         if (showHUD)
         {
             hud.render(HUDShader, "Snowballs 0/4", 10.0f, 560.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
@@ -190,10 +159,9 @@ int main(void)
             hud.render(HUDShader, "Camera.front Y: " + to_string(camera.front.y), 10.0f, 430.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
             hud.render(HUDShader, "Camera.front Z: " + to_string(camera.front.z), 10.0f, 410.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
             hud.render(HUDShader, "Camera.front len: " + to_string(glm::length(camera.front)), 10.0f, 390.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "playerOffset len: " + to_string(glm::length(playerOffset)), 10.0f, 370.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
             hud.render(HUDShader, "FPS: " + to_string(FPS), 10.0f, 350.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
             hud.render(HUDShader, "ms/frame: " + to_string(msPerFrame), 10.0f, 330.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "nRigiBodies: " + to_string(pHandler.getNumBodies()), 10.0f, 300.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+            hud.render(HUDShader, "nRigiBodies: " + to_string(pHandler->getNumBodies()), 10.0f, 300.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
         }
 
 
@@ -201,8 +169,13 @@ int main(void)
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    /* ------------------------------------------------------------------------------------ */
+    // proper termintaion
+    // NOTE: missing delete of objects in kinematicPlayer, that were dynamically allocated
+    /* ------------------------------------------------------------------------------------ */
     glfwTerminate();
-    pHandler.deleteAll();
+    pHandler->deleteAll();
     return 0;
 }
 
@@ -217,6 +190,8 @@ void readINI()
     fullscreen = iniReader.GetBoolean("window", "fullscreen", false);
     refreshRate = iniReader.GetInteger("window", "refresh_rate", 60);
     brightness = float(iniReader.GetReal("window", "brightness", 1.0f));
+
+    debug = iniReader.GetBoolean("physics", "debug", false);
 }
 
 
@@ -247,8 +222,8 @@ GLFWwindow* initGLFWandGLEW()
     
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetScrollCallback(window, scrollCallback);
 
    
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);   // make GLFW measure our mouse
@@ -265,35 +240,53 @@ GLFWwindow* initGLFWandGLEW()
 
 
 // process all input that is triggered by the keyboard
-void processInput(GLFWwindow* window, glm::vec3* playerTranslation)
+void processInput(GLFWwindow* window)
 {   
     
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
     {
-        camera.processKeyboard(FORWARD, deltaTime, playerTranslation);
+        camera.processKeyboard(FORWARD, deltaTime);
+        playerController->update(pFORWARD, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processKeyboard(BACKWARD, deltaTime, playerTranslation);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processKeyboard(LEFT, deltaTime, playerTranslation);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processKeyboard(RIGHT, deltaTime, playerTranslation);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.processKeyboard(UP, deltaTime, playerTranslation);
-
-    /*if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
+    
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
     {
-        btRigidBody* sphere = addSphere(1.0, playerPos, 1.0);
+        camera.processKeyboard(BACKWARD, deltaTime);
+        playerController->update(pBACKWARD, deltaTime);
+    }
+        
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        camera.processKeyboard(LEFT, deltaTime);
+        playerController->update(pLEFT, deltaTime);
+    }
+
+
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        camera.processKeyboard(RIGHT, deltaTime);
+        playerController->update(pRIGHT, deltaTime);
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        camera.processKeyboard(UP, deltaTime);
+        playerController->update(pUP, deltaTime);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
+    {
+        btRigidBody* sphere = pHandler->addSphere(playerController->getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);
 
         glm::vec3 look = (camera.front) * 20.0f;
         sphere->setLinearVelocity(btVector3(look.x, look.y, look.z));
         
         lastShotPress = glfwGetTime();
-    }*/
+    }
 
     if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= 0.2)
     {
@@ -314,7 +307,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 // process all input that is triggered by the mouse
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+void mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
@@ -337,7 +330,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
 
 // except scrolling, which is handled here
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.processMouseScroll(static_cast<float>(yoffset));
 }
@@ -362,27 +355,6 @@ void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, translation);
     model = glm::rotate(model, glm::radians(angle), rotationAxes);
-    model = glm::scale(model, scale);
-    shader->setMat4("model", model);
-
-    gameObj->draw(*shader);
-}
-
-
-// player rendering is differtent, as the player obj needs to be rotated around the camera object space y-axes (not around the player obj space y-axes
-void drawPlayer(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader)
-{
-    glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    shader->setMat4("projection", projection);
-    
-    glm::mat4 view = camera.GetViewMatrix();
-    shader->setMat4("view", view);
-
-    shader->use();
-    // world transformation
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, translation);
-    model = glm::rotate(model, glm::radians(angle+90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model, scale);
     shader->setMat4("model", model);
 

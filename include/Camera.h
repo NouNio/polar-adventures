@@ -8,6 +8,8 @@
 
 #include <vector>
 
+#include <Constants.h>
+
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
 // other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
@@ -73,39 +75,40 @@ public:
     }
 
 
+    void setPosition(glm::vec3 newPos)
+    {
+        this->pos = newPos;
+    }
+
+
     // processes input received from any keyboard-like input system. 
     // Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems) (I think this a very nice idea from Joey de Vries)
-    void processKeyboard(Camera_Movement direction, float deltaTime, glm::vec3* playerTranslation)
+    void processKeyboard(Camera_Movement direction, float deltaTime)
     {
         float velocity = this->moveSpeed * deltaTime;
         if (direction == FORWARD) 
         {
             this->pos += this->front * velocity;
-            *playerTranslation += this->front * velocity;
         }
         if (direction == BACKWARD)
         {
             this->pos -= this->front * velocity;
-            *playerTranslation -= this->front * velocity;
         }
         if (direction == LEFT)
         {
             this->pos -= this->right * velocity;
-            *playerTranslation -= this->right * velocity;
         }
         if (direction == RIGHT)
         {
             this->pos += this->right * velocity;
-            *playerTranslation += this->right * velocity;
         }
         if (direction == UP)
         {
             this->pos += this->up * velocity;
-            *playerTranslation += this->up * velocity;
         }
     }
 
-    
+
     // processes input received as the offset in x and y w.r.t. the last measured mouse pos.
     void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
