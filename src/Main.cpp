@@ -63,6 +63,9 @@ bool firstMouse = true;
 double lastHUDPress = glfwGetTime();
 double lastShotPress = glfwGetTime();
 
+//HUD
+float HUDstart;
+
 
 int main(void)
 {
@@ -70,7 +73,7 @@ int main(void)
     // load setting.ini and inititalize openGL & bullet
     /* ------------------------------------------------------------------------------------ */
     readINI();
-
+    HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
     pHandler = new Physics(debug);
   
@@ -102,6 +105,7 @@ int main(void)
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
     HUD hud(fontPath);
+    hud.update(&camera, FPS, msPerFrame, pHandler);
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -146,22 +150,11 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // DRAW HUD
         // HUD to render last so blending works properly, try it out in the beginning of the render loop ;)
-        // NOTE: refactor this to HUD.h
         /* ------------------------------------------------------------------------------------ */
+        hud.update(&camera, FPS, msPerFrame, pHandler);  //--> updates all HUD messages
         if (showHUD)
-        {
-            hud.render(HUDShader, "Snowballs 0/4", 10.0f, 560.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "--Data--", 10.0f, 530.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.pos X: " + to_string(camera.pos.x), 10.0f, 510.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.pos Y: " + to_string(camera.pos.y), 10.0f, 490.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.pos Z: " + to_string(camera.pos.z), 10.0f, 470.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.front X: " + to_string(camera.front.x), 10.0f, 450.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.front Y: " + to_string(camera.front.y), 10.0f, 430.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.front Z: " + to_string(camera.front.z), 10.0f, 410.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "Camera.front len: " + to_string(glm::length(camera.front)), 10.0f, 390.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "FPS: " + to_string(FPS), 10.0f, 350.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "ms/frame: " + to_string(msPerFrame), 10.0f, 330.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
-            hud.render(HUDShader, "nRigiBodies: " + to_string(pHandler->getNumBodies()), 10.0f, 300.0f, 0.5f, glm::vec3(0.1f, 0.6f, 0.9f));
+        {   
+            hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
 
 

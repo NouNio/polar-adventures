@@ -10,9 +10,12 @@
 #include FT_FREETYPE_H
 
 #include <iostream>
+#include <vector>
 #include <map>
 
 #include <Shader.h>
+#include <Physics.h>
+#include <Constants.h>
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -43,11 +46,11 @@ public:
 		createVAOandVBO();
 	}
 
-	void render(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color)
+	void renderLine(Shader& shader, std::string text, float x, float y)
 	{
 		// activate corresponding render state	
 		shader.use();
-		glUniform3f(glGetUniformLocation(shader.ID, "textColor"), color.x, color.y, color.z);
+		glUniform3f(glGetUniformLocation(shader.ID, "textColor"), textColor.x, textColor.y, textColor.z);
 		glActiveTexture(GL_TEXTURE0);
 		glBindVertexArray(VAO);
 
@@ -57,11 +60,11 @@ public:
 		{
 			Glyph ch = Alphabet[*c];
 
-			float xpos = x + ch.Bearing.x * scale;
-			float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+			float xpos = x + ch.Bearing.x * textScale;
+			float ypos = y - (ch.Size.y - ch.Bearing.y) * textScale;
 
-			float w = ch.Size.x * scale;
-			float h = ch.Size.y * scale;
+			float w = ch.Size.x * textScale;
+			float h = ch.Size.y * textScale;
 			// update VBO for each character
 			float vertices[6][4] = {
 				{ xpos,     ypos + h,   0.0f, 0.0f },
@@ -81,20 +84,46 @@ public:
 			// render quad
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-			x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+			x += (ch.Advance >> 6) * textScale; // bitshift by 6 to get value in pixels (2^6 = 64)
 		}
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+
+	void renderAll(Shader& shader, float x, float y)
+	{
+		for (unsigned int i = 0; i < messages.size(); i++)
+		{
+			renderLine(shader, messages[i], x, y - i * 20);   // set each message 20 below the first
+		}
+	}
+
+
+	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler)
+	{
+		this->messages[1] = "Camera.pos X: " + to_string(camera->pos.x);
+		this->messages[2] = "Camera.pos Y: " + to_string(camera->pos.y);
+		this->messages[3] = "Camera.pos Z: " + to_string(camera->pos.z);
+		this->messages[4] = "FPS : " + to_string(FPS);
+		this->messages[5] = "ms / frame: " + to_string(msPerFrame);
+		this->messages[6] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
+	}
+
+
 private:
 	unsigned int nSnowballs = 0;
 	const char* fontPath;
 	unsigned int pixelHeight = 48;
+	const float textScale = 0.5;
+	const glm::vec3 textColor = glm::vec3(0.1f, 0.6f, 0.9f);
 	FT_Library ft;
 	FT_Face face;
 	std::map<char, Glyph> Alphabet;
 	unsigned int VAO, VBO;
+	std::vector<string> messages = { "--Data--", 
+		                             "Camera.pos X: ", "Camera.pos Y: ", "Camera.pos Z: ",
+	                                 "FPS: ", "ms / frame: ", "Num RigidBodies: "};
 
 
 	void initFreetype()

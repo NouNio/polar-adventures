@@ -23,6 +23,9 @@ double msPerFrame = 0.0;
 
 // HUD
 bool showHUD = false;
+const float HUDxOffset = 10.0;
+const float HUDyOffset = 50.0;
+
 
 // PHYSICS
 bool debug = false;
