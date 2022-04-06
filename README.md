@@ -6,6 +6,10 @@ This is project designign and manufacturing a game using a low level GPU API. In
 The project is done for the Computer Graphics course at TU Wien. <br>
 <img src="https://github.com/NouNio/polar-adventures/blob/main/poster.jpg" width="250" height="375"> <br>
 A poster done for the game project, as it could be displayed in advertisments or packaging.
+
+### Documentation
+The documentation is written in Latex and can be found on Overleaf [here](https://www.overleaf.com/read/gjymnhtjwbmf).
+
 ### Dependencies
 ---
 - OpenGL v. >= 3.3
@@ -17,6 +21,7 @@ A poster done for the game project, as it could be displayed in advertisments or
 - freetype
 - inih
 - bullet3
+- boost
 - ...
 
 It is recommended to resolve all dependencies using [vcpkg](https://vcpkg.io/en/index.html).
