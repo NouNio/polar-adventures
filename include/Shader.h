@@ -30,12 +30,14 @@ class Shader
 {
 public:
     unsigned int ID;
+    string path;
 
-    Shader(const char* vertexShaderPath, const char* fragmentShaderPath)
+    Shader(string vertexShaderPath, string fragmentShaderPath)
     {
         // 1. first we need to read the source code in the shader files, basically char by char
         string vertexShaderCode = readShaderFile(vertexShaderPath);
         string fragmentShaderCode = readShaderFile(fragmentShaderPath);
+        this->path = vertexShaderPath;
         
         // 2. compile the shaders and 3. link the program (+ 4. delete the shaders)
         compileShadersAndLinkProgram(vertexShaderCode.c_str(), fragmentShaderCode.c_str());
@@ -122,7 +124,7 @@ public:
 
 private:
     // read the shader file and return the contained source code
-    string readShaderFile(const char* shaderPath)
+    string readShaderFile(string shaderPath)
     {
         string shaderCode;
         ifstream shaderFile;
@@ -183,7 +185,7 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, INFO_LOG_SIZE, NULL, infoLog);
-                cout << "There was an error compiling this shader: " << type << "\n" << infoLog << SEPARATOR << endl;
+                cout << "There was an error compiling this shader: " << type << "  path: " << this->path << "\n" << infoLog << SEPARATOR << endl;
             }
         }
         else

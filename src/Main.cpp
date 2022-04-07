@@ -11,11 +11,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
 #include <INIReader.h>
-
 #include <bullet/btBulletDynamicsCommon.h>
-
 #include <BulletViewer.h>
 
 // std libs
@@ -29,6 +26,7 @@
 #include <HUD.h>
 #include <Physics.h>
 #include <KinematicPlayer.h>
+#include <FileManager.h>
 #include <Constants.h>
 
 
@@ -66,12 +64,16 @@ double lastShotPress = glfwGetTime();
 //HUD
 float HUDstart;
 
+// file manager
+FileManager* fm;
+
 
 int main(void)
 {
     /* ------------------------------------------------------------------------------------ */
-    // load setting.ini and inititalize openGL & bullet
+    // load setting.ini and inititalize openGL & bullet as well as physics handler and file manager
     /* ------------------------------------------------------------------------------------ */
+    fm = new FileManager();
     readINI();
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
@@ -80,16 +82,16 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // load shader
     /* ------------------------------------------------------------------------------------ */
-    Shader modelShader(modelVertPath, modelFragPath);
-    Shader lightShader(lightVertPath, lightFragPath);
-    Shader playerShader(snowBallVertPath, snowBallFragPath);
+    Shader modelShader(fm->getShaderPath("modelVert"), fm->getShaderPath("modelFrag"));
+    Shader directLightShader(fm->getShaderPath("directLightVert"), fm->getShaderPath("directLightFrag"));
+    Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
-    Model heart(heartPath);
-    Model player(playerPath, true, PNG);
-    Model largeBlock(largeBlockPath);
+    Model heart(fm->getObjPath("heart"));
+    Model player(fm->getObjPath("player"), true, PNG);
+    Model largeBlock(fm->getObjPath("largeBlock"));
 
     btRigidBody* groundBody = pHandler->addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    
     btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );  // so 2 lines of code for extracting and scaling the colShape of a rigid body
@@ -100,11 +102,11 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // load HUD
     /* ------------------------------------------------------------------------------------ */
-    Shader HUDShader(HUDVertPath, HUDFragPath);
+    HUD hud(fm->getFontPath("arial"));
+    Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
-    HUD hud(fontPath);
     hud.update(&camera, FPS, msPerFrame, pHandler);
 
 
@@ -177,7 +179,7 @@ int main(void)
 void readINI()
 {
 
-    INIReader iniReader(iniPath);
+    INIReader iniReader(fm->getIniPath());
     SCR_WIDTH = iniReader.GetInteger("window", "width", 800);
     SCR_HEIGHT = iniReader.GetInteger("window", "height", 600);
     fullscreen = iniReader.GetBoolean("window", "fullscreen", false);

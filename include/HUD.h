@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cmath>
 
 #include <Shader.h>
 #include <Physics.h>
@@ -34,9 +35,9 @@ struct Glyph {
 class HUD
 {
 public:
-	HUD(const char* path)
+	HUD(string path)
 	{
-		this->fontPath = path;
+		this->fontPath = path.c_str();
 		initFreetype();
 		loadFont();
 		FT_Set_Pixel_Sizes(face, 0, pixelHeight);  // width = 0 makes it be computed from the provided height
@@ -95,33 +96,34 @@ public:
 	{
 		for (unsigned int i = 0; i < messages.size(); i++)
 		{
-			renderLine(shader, messages[i], x, y - i * 20);   // set each message 20 below the first
+			renderLine(shader, messages[i], x, y - i * newLineOffset);   // set each message 20 below the first
 		}
 	}
 
 
 	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler)
 	{
-		this->messages[1] = "Camera.pos X: " + to_string(camera->pos.x);
-		this->messages[2] = "Camera.pos Y: " + to_string(camera->pos.y);
-		this->messages[3] = "Camera.pos Z: " + to_string(camera->pos.z);
-		this->messages[4] = "FPS : " + to_string(FPS);
-		this->messages[5] = "ms / frame: " + to_string(msPerFrame);
+		this->messages[1] = "Camera.pos X: " + to_string(lround(camera->pos.x));
+		this->messages[2] = "Camera.pos Y: " + to_string(lround(camera->pos.y));
+		this->messages[3] = "Camera.pos Z: " + to_string(lround(camera->pos.z));
+		this->messages[4] = "FPS : " + to_string(lround(FPS));
+		this->messages[5] = "ms / frame: " + to_string(llround(msPerFrame));
 		this->messages[6] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
 	}
 
 
 private:
-	unsigned int nSnowballs = 0;
 	const char* fontPath;
+	unsigned int nSnowballs = 0;
 	unsigned int pixelHeight = 48;
 	const float textScale = 0.5;
+	const float newLineOffset = 25.0;
 	const glm::vec3 textColor = glm::vec3(0.1f, 0.6f, 0.9f);
 	FT_Library ft;
 	FT_Face face;
 	std::map<char, Glyph> Alphabet;
 	unsigned int VAO, VBO;
-	std::vector<string> messages = { "--Data--", 
+	std::vector<string> messages = { "----- Data -----", 
 		                             "Camera.pos X: ", "Camera.pos Y: ", "Camera.pos Z: ",
 	                                 "FPS: ", "ms / frame: ", "Num RigidBodies: "};
 
