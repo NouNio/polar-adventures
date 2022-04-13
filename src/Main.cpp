@@ -44,12 +44,11 @@ void computeTimeLogic();
 void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader);
 void activateShader(Shader* shader);
 
-
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
 // camera & physics
-Camera camera(glm::vec3(-10.0f, 18.0f, 50.0f));
+Camera camera(glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
 
@@ -67,6 +66,8 @@ float HUDstart;
 // file manager
 FileManager* fm;
 
+glm::vec3 worldMiddle = glm::vec3(-30, 15, 25);  //test world model  middle coordinate: (-30, 15, 25)
+string worldPath = "C:\\Users\\dittm\\Documents\\Computergraphik-UE\\maya-new-objects\\world.fbx";
 
 int main(void)
 {
@@ -92,10 +93,22 @@ int main(void)
     Model heart(fm->getObjPath("heart"));
     Model player(fm->getObjPath("player"), true, PNG);
     Model largeBlock(fm->getObjPath("largeBlock"));
+    Model tree(fm->getObjPath("tree"));
+    Model treeSnow(fm->getObjPath("treeSnow"));
+    Model world(worldPath);
 
-    btRigidBody* groundBody = pHandler->addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    
-    btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );  // so 2 lines of code for extracting and scaling the colShape of a rigid body
-    pHandler->addScaledMeshShape(groundShape, glm::vec3(0, 0, 0), 0, glm::vec3(4, 1, 4)); 
+    //btRigidBody* groundBody = pHandler->addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    
+    //btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );  // so 2 lines of code for extracting and scaling the colShape of a rigid body
+    //pHandler->addScaledMeshShape(groundShape, glm::vec3(0, 0, 0), 0, glm::vec3(4, 1, 4));
+
+    //btRigidBody* treeBody = pHandler->addMeshShape(&tree, glm::vec3(-20.0f, 10.0f, 0.0f), 0);
+    //btRigidBody* treeSnowBody = pHandler->addMeshShape(&treeSnow, glm::vec3(0.0f, 10.0f, 0.0f), 0);
+
+    btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);
+    btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape())); 
+    pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));
+    //pHandler->deleteBody(worldBody);
+    pHandler->getWorld()->removeRigidBody(worldBody);
 
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
@@ -136,10 +149,25 @@ int main(void)
 
 
         // DRAW GAME OBJECTS
-        drawGameObject(&largeBlock, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 4.0f), &modelShader);
+        //drawGameObject(&largeBlock, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 4.0f), &modelShader);
+        //drawGameObject(&tree, glm::vec3(-20.0f, 10.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        //drawGameObject(&treeSnow, glm::vec3(0.0f, 10.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
+        drawGameObject(&world, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f), &modelShader);
 
 
         // PHYSICS
+        // alter gravity due to edge cases, which subspace is the player on
+        /*if (playerController->getPos().y < 25) {
+            std::cout << playerController->getPos().y << endl;
+            playerController->controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
+        } 
+        else if (playerController->getPos().y > 25) {
+            playerController->controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
+        }*/
+            
+        // alternatively just get the vector pointing from the player to the world middle point
+
+
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
         pHandler->debugDraw();                         // call the debug drawer
@@ -170,6 +198,7 @@ int main(void)
     // NOTE: missing delete of objects in kinematicPlayer, that were dynamically allocated
     /* ------------------------------------------------------------------------------------ */
     glfwTerminate();
+    playerController->~KinematicPlayer();
     pHandler->deleteAll();
     return 0;
 }
@@ -345,7 +374,7 @@ void computeTimeLogic()
 // renders a model, by specifiyng the shader as well as transformation matrices 
 void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader *shader)    
 {
-    shader->use();
+    //shader->use();
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, translation);
