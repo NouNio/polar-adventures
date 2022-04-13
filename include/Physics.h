@@ -27,6 +27,19 @@ public:
     }
 
 
+    void deleteBody(btRigidBody* body) 
+    {
+        this->world->removeCollisionObject(body);
+        btMotionState* motionState = body->getMotionState();
+        btCollisionShape* shape = body->getCollisionShape();
+
+        rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), body), rigidBodies.end());
+        delete body;
+        delete motionState;
+        delete shape;
+    }
+
+
     void deleteAll()
     {
         for (unsigned int i = 0; i < this->rigidBodies.size(); i++)
