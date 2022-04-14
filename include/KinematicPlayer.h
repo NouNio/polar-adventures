@@ -106,7 +106,7 @@ private:
 		// check if on RIGHT
 		else if (currPos.y < 56 && currPos.y > 26
 			&& currPos.z < 38 && currPos.z > 8
-			&& currPos.x > -24) {
+			&& currPos.x > -22.9) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
@@ -114,7 +114,7 @@ private:
 		// check if on FRONT
 		else if (currPos.x > -54 && currPos.x < -24
 			&& currPos.y < 56 && currPos.y > 26
-			&& currPos.z > 34) {
+			&& currPos.z > 33) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
@@ -122,18 +122,18 @@ private:
 		// check if on BACK
 		else if (currPos.x > -54 && currPos.x < -24
 			&& currPos.y < 56 && currPos.y > 26
-			&& currPos.z < 4) {
+			&& currPos.z < 2) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 		}
 		// check if on TOP
-		else if (currPos.y > 52) {
+		else if (currPos.y > 51) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 		}
 		// check if on BOTTOM
-		else if (currPos.y < 26) {
+		else if (currPos.y < 22) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 		}
