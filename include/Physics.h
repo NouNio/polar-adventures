@@ -40,10 +40,10 @@ public:
             delete shape;
         }
         delete this->dispatcher;
-        delete this->collisionConfig;
+        delete this->world;
         delete this->solver;
         delete this->broadphase;
-        delete this->world;
+        delete this->collisionConfig;
     }
 
 
