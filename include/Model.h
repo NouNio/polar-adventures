@@ -37,12 +37,32 @@ class Model
 {
 public:
     vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
+    Camera* camera;
 
-    Model(string const& path, bool withTextures = false, const char* texFileType = "")
+    Model(string const& path, Camera* camera, bool withTextures = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
         this->texFileType = texFileType;
+        this->camera = camera;
         loadModel(path);
+    }
+
+
+    void draw(Shader& shader, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale)
+    {   
+        glm::mat4 projection = glm::perspective(glm::radians(camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera->GetViewMatrix();
+        shader.setMat4("projection", projection);
+        shader.setMat4("view", view);
+
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+        modelMatrix = glm::translate(modelMatrix, translation);
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), rotationAxes);
+        modelMatrix = glm::scale(modelMatrix, scale);
+        shader.setMat4("model", modelMatrix);
+
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].draw(shader);
     }
 
 
