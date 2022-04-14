@@ -2,7 +2,6 @@
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
-#include <filesystem>
 #include <map>
 #include <boost/assign.hpp>
 #include <filesystem>
