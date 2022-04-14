@@ -16,6 +16,7 @@
 
 #include <Shader.h>
 #include <Physics.h>
+#include <KinematicPlayer.h>
 #include <Constants.h>
 
 
@@ -101,14 +102,15 @@ public:
 	}
 
 
-	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler)
+	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler, KinematicPlayer* controller)
 	{
-		this->messages[1] = "Camera.pos X: " + to_string(lround(camera->pos.x));
-		this->messages[2] = "Camera.pos Y: " + to_string(lround(camera->pos.y));
-		this->messages[3] = "Camera.pos Z: " + to_string(lround(camera->pos.z));
-		this->messages[4] = "FPS : " + to_string(lround(FPS));
-		this->messages[5] = "ms / frame: " + to_string(llround(msPerFrame));
-		this->messages[6] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
+		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmu());
+		this->messages[2] = "Camera.pos X: " + to_string(lround(camera->pos.x));
+		this->messages[3] = "Camera.pos Y: " + to_string(lround(camera->pos.y));
+		this->messages[4] = "Camera.pos Z: " + to_string(lround(camera->pos.z));
+		this->messages[5] = "FPS : " + to_string(lround(FPS));
+		this->messages[6] = "ms / frame: " + to_string(llround(msPerFrame));
+		this->messages[7] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
 	}
 
 
@@ -124,6 +126,7 @@ private:
 	std::map<char, Glyph> Alphabet;
 	unsigned int VAO, VBO;
 	std::vector<string> messages = { "----- Data -----", 
+									 "Snowballs in pocket: ",
 		                             "Camera.pos X: ", "Camera.pos Y: ", "Camera.pos Z: ",
 	                                 "FPS: ", "ms / frame: ", "Num RigidBodies: "};
 

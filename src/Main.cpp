@@ -118,7 +118,7 @@ int main(void)
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
-    hud.update(&camera, FPS, msPerFrame, pHandler);
+    hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -172,7 +172,7 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */      
         // HUD
         /* ------------------------------------------------------------------------------------ */
-        hud.update(&camera, FPS, msPerFrame, pHandler);  //--> updates all HUD messages
+        hud.update(&camera, FPS, msPerFrame, pHandler, playerController);  //--> updates all HUD messages
         if (showHUD)
         {   
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
@@ -294,11 +294,7 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
     {
-        btRigidBody* sphere = pHandler->addSphere(playerController->getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);
-
-        glm::vec3 look = (camera.front) * 20.0f;
-        sphere->setLinearVelocity(btVector3(look.x, look.y, look.z));
-        
+        playerController->shootSnowball();
         lastShotPress = glfwGetTime();
     }
 

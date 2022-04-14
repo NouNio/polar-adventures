@@ -4,6 +4,7 @@
 
 #include <Model.h>
 #include <Physics.h>
+#include <Snowball.h>
 #include <Constants.h>
 
 #include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -58,6 +59,7 @@ private:
 	const glm::vec3 playerScale = glm::vec3(0.2f);
 	float playerRotAngle = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
+	unsigned int snowBallAmmu = 4;
 
 	void activatePlayer()
 	{
@@ -245,6 +247,22 @@ public:
 	glm::vec3 getPos()
 	{
 		return pHandler->BulletVec3ToGlmVec3(ghostObject->getWorldTransform().getOrigin());
+	}
+
+
+	unsigned int getSnowBallAmmu() {
+		return this->snowBallAmmu;
+	}
+
+
+	void shootSnowball() {
+		if (this->snowBallAmmu > 0) {
+
+			btRigidBody* newSnowball = pHandler->addSphere(getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);
+			newSnowball->setLinearVelocity( pHandler->GlmVec3ToBulletVec3(this->camera->front * 20.0f) );
+
+			this->snowBallAmmu--;
+		}
 	}
 };
 
