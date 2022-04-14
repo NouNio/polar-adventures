@@ -30,16 +30,26 @@ enum Movement {
 };
 
 
+enum worldSide {
+	cFRONT,
+	cBACK,
+	cLEFT,
+	cRIGHT,
+	cTOP,
+	cBOTTOM,
+};
+
+
 class KinematicPlayer
 {
 private:
 	Camera* camera;
-	glm::vec3 pos;
 	btTransform transform;
-	btKinematicCharacterController* controller;
+	glm::vec3 pos;
 	glm::vec3 cameraOffset;
 	float velocity = 10.0f;
-	const btVector3 jumpDir = btVector3(0.0f, 6.0f, 0.0f);
+	btVector3 jumpDir = btVector3(0.0f, 30.0f, 0.0f);
+	float fallSpeed = 40.0;
 	float maxJumpHeight = 1.5f;
 	const float radius = 0.5f, height = 2.0f, mass = 1.0f;
 	const float stepHeight = 0.35;
@@ -64,7 +74,7 @@ private:
 		controller = new btKinematicCharacterController(ghostObject, capsule, stepHeight);
 		controller->setGravity( pHandler->GlmVec3ToBulletVec3(pHandler->getGravity()) );
 		controller->setMaxJumpHeight(maxJumpHeight);
-		controller->setFallSpeed(1.0);
+		controller->setFallSpeed(fallSpeed);
 
 		pHandler->getWorld()->addCollisionObject(ghostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter);
 		pHandler->getWorld()->addAction(controller);
@@ -79,11 +89,59 @@ private:
 	}
 
 
+	void updateGravity() {
+		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
+		glm::vec3 currPos = this->getPos();
+		// check if on LEFT
+		if (currPos.y < 56 && currPos.y > 26
+			&& currPos.z < 38 && currPos.z > 8
+			&& currPos.x < -54) {
+			std::cout << currPos.y << endl;
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
+			jumpDir = btVector3(-30.0f, 0.0f, 0.0f);
+		}
+		// check if on RIGHT
+		else if (currPos.y < 56 && currPos.y > 26
+			&& currPos.z < 38 && currPos.z > 8
+			&& currPos.x > -24) {
+			std::cout << currPos.y << endl;
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
+			jumpDir = btVector3(30.0f, 0.0f, 0.0f);
+		}
+		// check if on FRONT
+		else if (currPos.x > -54 && currPos.x < -24
+			&& currPos.y < 56 && currPos.y > 26
+			&& currPos.z > 34) {
+			std::cout << currPos.y << endl;
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
+			jumpDir = btVector3(0.0f, 0.0f, 30.0f);
+		}
+		// check if on BACK
+		else if (currPos.x > -54 && currPos.x < -24
+			&& currPos.y < 56 && currPos.y > 26
+			&& currPos.z < 4) {
+			std::cout << currPos.y << endl;
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
+			jumpDir = btVector3(0.0f, 0.0f, -30.0f);
+		}
+		// check if on TOP
+		else if (currPos.y > 52) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
+			jumpDir = btVector3(0.0f, 30.0f, 0.0f);
+		}
+		// check if on BOTTOM
+		else if (currPos.y < 26) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
+			jumpDir = btVector3(0.0f, -30.0f, 0.0f);
+		}
+	}
+
+
 public:
 	Physics* pHandler;
 	Model* player;
-	btRigidBody* body;
 	btPairCachingGhostObject* ghostObject;  // according to bullet docs, good for player controller, makes use of AABB
+	btKinematicCharacterController* controller;
 
 
 	KinematicPlayer(Physics* pHandler, glm::vec3 position, Camera* camera, Model* model)
@@ -93,6 +151,14 @@ public:
 		this->pos = position;
 		this->player = model;
 		this->activatePlayer();
+	}
+
+
+	~KinematicPlayer()
+	{
+		// the ghost object is delete in the physics handlers deleteAll(), which also deletes the corresponding collision shape
+		// the new btGhostPairCallback() gets delete in the p Handler as well, with delete broadPhase in deleteAll()
+		delete this->controller;
 	}
 
 
@@ -135,6 +201,8 @@ public:
 		}
 
 		updateCameraPos();
+
+		updateGravity();
 	}
 
 
