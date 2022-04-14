@@ -26,6 +26,7 @@
 #include <HUD.h>
 #include <Physics.h>
 #include <KinematicPlayer.h>
+#include <Snowball.h>
 #include <FileManager.h>
 #include <Constants.h>
 
@@ -41,7 +42,6 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
-void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader* shader);
 void activateShader(Shader* shader);
 
 /* ------------------------------------------------------------------------------------ */
@@ -51,6 +51,7 @@ void activateShader(Shader* shader);
 Camera camera(glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
+vector<Snowball> snowballs;
 
 // lighting
 glm::vec3 directLightPos(30.f, 36.0f, 10.0f);
@@ -90,27 +91,24 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
-    Model heart(fm->getObjPath("heart"));
-    Model player(fm->getObjPath("player"), true, PNG);
-    Model largeBlock(fm->getObjPath("largeBlock"));
-    Model tree(fm->getObjPath("tree"));
-    Model treeSnow(fm->getObjPath("treeSnow"));
-    Model world(worldPath);
+    // world
+    Model world(worldPath, &camera);                                                                    // load world model
+    btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);                     // create a physics obj
+    btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape()));   // now create an easily scalable version of that body
+    pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));      // add to world
+    pHandler->getWorld()->removeRigidBody(worldBody);                                                   // removw the inital physcics obj
 
-    //btRigidBody* groundBody = pHandler->addMeshShape(&largeBlock, glm::vec3(0, 0, 0), 0);                    
-    //btBvhTriangleMeshShape* groundShape = ( (btBvhTriangleMeshShape*) (groundBody->getCollisionShape()) );  // so 2 lines of code for extracting and scaling the colShape of a rigid body
-    //pHandler->addScaledMeshShape(groundShape, glm::vec3(0, 0, 0), 0, glm::vec3(4, 1, 4));
-
-    //btRigidBody* treeBody = pHandler->addMeshShape(&tree, glm::vec3(-20.0f, 10.0f, 0.0f), 0);
-    //btRigidBody* treeSnowBody = pHandler->addMeshShape(&treeSnow, glm::vec3(0.0f, 10.0f, 0.0f), 0);
-
-    btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);
-    btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape())); 
-    pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));
-    //pHandler->deleteBody(worldBody);
-    pHandler->getWorld()->removeRigidBody(worldBody);
-
+    // player
+    Model player(fm->getObjPath("player"), &camera, true, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
+
+    //snowballs
+    Snowball snowball1(fm->getObjPath("heart"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);     // on BACK side (platform)
+    snowballs.push_back(snowball1);
+    Snowball snowball2(fm->getObjPath("heart"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
+    snowballs.push_back(snowball2);
+    Snowball snowball3(fm->getObjPath("heart"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
+    snowballs.push_back(snowball3);
 
     /* ------------------------------------------------------------------------------------ */
     // load HUD
@@ -148,26 +146,20 @@ int main(void)
         modelShader.setMat4("view", view);
 
 
-        // DRAW GAME OBJECTS
-        //drawGameObject(&largeBlock, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 4.0f), &modelShader);
-        //drawGameObject(&tree, glm::vec3(-20.0f, 10.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        //drawGameObject(&treeSnow, glm::vec3(0.0f, 10.0f, 0.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), &modelShader);
-        drawGameObject(&world, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f), &modelShader);
+        /* ------------------------------------------------------------------------------------ */
+        // GAME OBJECTS
+        /* ------------------------------------------------------------------------------------ */
+        world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
+        
+        for (unsigned int i = 0; i < snowballs.size(); i++) {
+            snowballs[i].shrink(deltaTime);
+            snowballs[i].draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        }
+        
 
-
-        // PHYSICS
-        // alter gravity due to edge cases, which subspace is the player on
-        /*if (playerController->getPos().y < 25) {
-            std::cout << playerController->getPos().y << endl;
-            playerController->controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
-        } 
-        else if (playerController->getPos().y > 25) {
-            playerController->controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
-        }*/
-            
-        // alternatively just get the vector pointing from the player to the world middle point
-
-
+        /* ------------------------------------------------------------------------------------ */
+        // PHYSICS & PLAYER
+        /* ------------------------------------------------------------------------------------ */
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
         pHandler->debugDraw();                         // call the debug drawer
@@ -177,9 +169,8 @@ int main(void)
         playerController->drawPlayer(&playerShader);
 
         
-        /* ------------------------------------------------------------------------------------ */
-        // DRAW HUD
-        // HUD to render last so blending works properly, try it out in the beginning of the render loop ;)
+        /* ------------------------------------------------------------------------------------ */      
+        // HUD
         /* ------------------------------------------------------------------------------------ */
         hud.update(&camera, FPS, msPerFrame, pHandler);  //--> updates all HUD messages
         if (showHUD)
@@ -194,8 +185,7 @@ int main(void)
     }
 
     /* ------------------------------------------------------------------------------------ */
-    // proper termintaion
-    // NOTE: missing delete of objects in kinematicPlayer, that were dynamically allocated
+    // TERMINATE
     /* ------------------------------------------------------------------------------------ */
     glfwTerminate();
     playerController->~KinematicPlayer();
@@ -368,21 +358,6 @@ void computeTimeLogic()
     lastFrame = currentFrame;
     msPerFrame = deltaTime * 1000;  // deltaTime is the time in s from frame to frame, i.e. taking to compute 1 frame; 1s = 1000ms
     FPS = 1.0 / deltaTime;
-}
-
-
-// renders a model, by specifiyng the shader as well as transformation matrices 
-void drawGameObject(Model* gameObj, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale, Shader *shader)    
-{
-    //shader->use();
-    // world transformation
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, translation);
-    model = glm::rotate(model, glm::radians(angle), rotationAxes);
-    model = glm::scale(model, scale);
-    shader->setMat4("model", model);
-
-    gameObj->draw(*shader);
 }
 
 

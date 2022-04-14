@@ -16,7 +16,7 @@ private:
 	float mass, radius;
 	glm::vec3 modelScale = glm::vec3(0.5f);
 	btVector3 bodyScale;
-	double shrinkFactor = 0.1;
+	double shrinkFactor = 0.01;
 	
 public:
 	Snowball(string const& path, glm::vec3 pos, float mass, float radius, glm::vec3 g, Physics* pHandler, Camera* camera) {
