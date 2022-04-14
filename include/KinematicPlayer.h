@@ -47,8 +47,9 @@ private:
 	btTransform transform;
 	glm::vec3 pos;
 	glm::vec3 cameraOffset;
-	float velocity = 10.0f;
-	btVector3 jumpDir = btVector3(0.0f, 30.0f, 0.0f);
+	float moveSpeed = 100.0f;
+	btScalar jumpForce = 20.0;
+	btVector3 jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 	float fallSpeed = 40.0;
 	float maxJumpHeight = 1.5f;
 	const float radius = 0.5f, height = 2.0f, mass = 1.0f;
@@ -98,7 +99,7 @@ private:
 			&& currPos.x < -54) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
-			jumpDir = btVector3(-30.0f, 0.0f, 0.0f);
+			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
 		}
 		// check if on RIGHT
 		else if (currPos.y < 56 && currPos.y > 26
@@ -106,7 +107,7 @@ private:
 			&& currPos.x > -24) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
-			jumpDir = btVector3(30.0f, 0.0f, 0.0f);
+			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
 		}
 		// check if on FRONT
 		else if (currPos.x > -54 && currPos.x < -24
@@ -114,7 +115,7 @@ private:
 			&& currPos.z > 34) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
-			jumpDir = btVector3(0.0f, 0.0f, 30.0f);
+			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
 		}
 		// check if on BACK
 		else if (currPos.x > -54 && currPos.x < -24
@@ -122,17 +123,17 @@ private:
 			&& currPos.z < 4) {
 			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
-			jumpDir = btVector3(0.0f, 0.0f, -30.0f);
+			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 		}
 		// check if on TOP
 		else if (currPos.y > 52) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
-			jumpDir = btVector3(0.0f, 30.0f, 0.0f);
+			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 		}
 		// check if on BOTTOM
 		else if (currPos.y < 26) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
-			jumpDir = btVector3(0.0f, -30.0f, 0.0f);
+			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 		}
 	}
 
@@ -161,7 +162,7 @@ public:
 		delete this->controller;
 	}
 
-
+	int count = 0;
 	void update(Movement direction, float deltaTime) 
 	{
 		btTransform t = controller->getGhostObject()->getWorldTransform();
@@ -178,27 +179,40 @@ public:
 		if (direction == pUP)
 			if (controller->canJump())
 				controller->jump(jumpDir);
-		
-		if (true)  //controller->onGround
+
+	
+		float velocity = this->moveSpeed * deltaTime;
+		glm::vec3 walkDir(0,0,0);
+		switch(direction)
 		{
-			switch(direction)
-			{
-				case pFORWARD:
-					controller->applyImpulse( this->pHandler->GlmVec3ToBulletVec3(this->camera->front).normalize() * velocity);
-					break;
-				case pBACKWARD:
-					controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->front).normalize() * velocity);
-					break;
-				case pLEFT:
-					controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->right).normalize() * velocity);
-					break;
-				case pRIGHT:
-					controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(this->camera->right).normalize() * velocity);
-					break;
-				case pNONE:
-					break;
-			}
+			case pFORWARD:
+				//controller->applyImpulse( this->pHandler->GlmVec3ToBulletVec3(this->camera->front).normalize() * velocity);
+				walkDir += this->camera->front * velocity;
+				break;
+			case pBACKWARD:
+				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->front).normalize() * velocity);
+				walkDir -= this->camera->front * velocity;
+				break;
+			case pLEFT:
+				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->right).normalize() * velocity);
+				walkDir -= this->camera->right * velocity;
+				break;
+			case pRIGHT:
+				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(this->camera->right).normalize() * velocity);
+				walkDir += this->camera->right * velocity;
+				break;
+			case pNONE:
+				break;
 		}
+
+		if (walkDir != glm::vec3(0, 0, 0)) {
+			if(controller->onGround())
+				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 5);
+			else
+				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 10);
+		}
+		else
+			controller->setWalkDirection(btVector3(0, 0, 0));
 
 		updateCameraPos();
 
