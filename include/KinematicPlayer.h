@@ -162,7 +162,7 @@ public:
 		delete this->controller;
 	}
 
-	int count = 0;
+
 	void update(Movement direction, float deltaTime) 
 	{
 		btTransform t = controller->getGhostObject()->getWorldTransform();
