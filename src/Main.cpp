@@ -48,7 +48,7 @@ void activateShader(Shader* shader);
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
 // camera & physics
-Camera camera(glm::vec3(-30.0f, 58.0f, 30.0f));
+Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
 

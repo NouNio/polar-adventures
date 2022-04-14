@@ -234,4 +234,4 @@ public:
 	}
 };
 
-#endif // !KINEMATICPLAYER_H
+#endif !KINEMATICPLAYER_H
