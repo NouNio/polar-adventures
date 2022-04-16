@@ -106,7 +106,7 @@ public:
 
 	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler, KinematicPlayer* controller)
 	{
-		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmu());
+		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmo());
 		this->messages[2] = "Snowballs in  world: " + to_string(snowballs.size());
 		this->messages[3] = "Player.pos X: " + to_string(lround(controller->getPos().x));
 		this->messages[4] = "Player.pos Y: " + to_string(lround(controller->getPos().y));

@@ -15,13 +15,14 @@
 /* ------------------------------------------------------------------------------------ */
 // the player controller part of this file is inspired and following 4 different srcs
 // 1 the official bullet character demo: https://github.com/kripken/bullet/blob/master/Demos/CharacterDemo/CharacterDemo.cpp
-// 2 an well wirtten character controller: https://github.com/lokesh-sharma/GameEngine/blob/master/src/Player.cpp
+// 2 an well written character controller: https://github.com/lokesh-sharma/GameEngine/blob/master/src/Player.cpp
 // 3 a general structure was inspired by [8]
 // 4 it also uses ideas from here https://github.com/222464/EvolvedVirtualCreaturesRepo/blob/master/VirtualCreatures/Volumetric_SDL/Source/SceneObjects/Physics/DynamicCharacterController.h
 /* ------------------------------------------------------------------------------------ */
 
 extern map<unsigned int, Snowball*> snowballs;
 extern vector<Snowball*> collectedSnowballs;
+
 
 enum Movement {
 	pFORWARD,
@@ -61,7 +62,8 @@ private:
 	const glm::vec3 playerScale = glm::vec3(0.2f);
 	float playerRotAngle = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
-	unsigned int snowBallAmmu = 0;
+	unsigned int snowBallAmmo = 0;
+	unsigned int cubeSide = CUBE_TOP;
 
 	void activatePlayer()
 	{
@@ -94,6 +96,12 @@ private:
 	}
 
 
+	void updateCameraViewPoint() {
+		this->camera->setWorldUp(-glm::normalize(pHandler->BulletVec3ToGlmVec3(controller->getGravity())));
+		this->camera->setCubeSide(this->cubeSide);
+	}
+
+
 	void updateGravity() {
 		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
 		glm::vec3 currPos = this->getPos();
@@ -103,6 +111,7 @@ private:
 			&& currPos.x < -54) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
 			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
+			cubeSide = CUBE_LEFT;
 		}
 		// check if on RIGHT
 		else if (currPos.y < 56 && currPos.y > 26
@@ -110,6 +119,7 @@ private:
 			&& currPos.x > -22.9) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
+			cubeSide = CUBE_RIGHT;;
 		}
 		// check if on FRONT
 		else if (currPos.x > -54 && currPos.x < -24
@@ -117,6 +127,7 @@ private:
 			&& currPos.z > 33) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
+			cubeSide = CUBE_FRONT;
 		}
 		// check if on BACK
 		else if (currPos.x > -54 && currPos.x < -24
@@ -124,22 +135,25 @@ private:
 			&& currPos.z < 2) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
+			cubeSide = CUBE_BACK;
 		}
 		// check if on TOP
 		else if (currPos.y > 51) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
+			cubeSide = CUBE_TOP;
 		}
 		// check if on BOTTOM
 		else if (currPos.y < 22) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
+			cubeSide = CUBE_BOTTOM;
 		}
 	}
 
 
-	void updateSnowballAmmu() {
-		this->snowBallAmmu = collectedSnowballs.size();
+	void updateSnowballAmmo() {
+		this->snowBallAmmo = collectedSnowballs.size();
 	}
 
 
@@ -191,19 +205,15 @@ public:
 		switch(direction)
 		{
 			case pFORWARD:
-				//controller->applyImpulse( this->pHandler->GlmVec3ToBulletVec3(this->camera->front).normalize() * velocity);
 				walkDir += this->camera->front * velocity;
 				break;
 			case pBACKWARD:
-				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->front).normalize() * velocity);
 				walkDir -= this->camera->front * velocity;
 				break;
 			case pLEFT:
-				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(-this->camera->right).normalize() * velocity);
 				walkDir -= this->camera->right * velocity;
 				break;
 			case pRIGHT:
-				//controller->applyImpulse(this->pHandler->GlmVec3ToBulletVec3(this->camera->right).normalize() * velocity);
 				walkDir += this->camera->right * velocity;
 				break;
 			case pNONE:
@@ -223,7 +233,9 @@ public:
 
 		updateGravity();
 
-		updateSnowballAmmu();
+		updateCameraViewPoint(); 
+
+		updateSnowballAmmo();
 	}
 
 
@@ -255,13 +267,13 @@ public:
 	}
 
 
-	unsigned int getSnowBallAmmu() {
-		return this->snowBallAmmu;
+	unsigned int getSnowBallAmmo() {
+		return this->snowBallAmmo;
 	}
 
 
 	void shootSnowball() {
-		if (this->snowBallAmmu > 0) {
+		if (this->snowBallAmmo > 0) {
 
 			Snowball* snowball = collectedSnowballs[collectedSnowballs.size()-1];							// retrieve the last collected snow ball
 			collectedSnowballs.pop_back();																	// and remove it from the list of collected snowballs
@@ -279,7 +291,7 @@ public:
 			newSphere->setGravity(controller->getGravity());												// set gravity to match with the player one
 			newSphere->setLinearVelocity( pHandler->GlmVec3ToBulletVec3(this->camera->front * 10.0f) );		// and then set some shooting velocity
 
-			this->snowBallAmmu--;																			// reduce ammo by one
+			this->snowBallAmmo--;																			// reduce ammo by one
 		}
 	}
 };
