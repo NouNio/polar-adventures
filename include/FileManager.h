@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/assign.hpp>
 #include <filesystem>
+using namespace std;
 namespace fs = std::filesystem;
 using namespace boost::assign;
 
