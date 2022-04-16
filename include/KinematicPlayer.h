@@ -20,6 +20,8 @@
 // 4 it also uses ideas from here https://github.com/222464/EvolvedVirtualCreaturesRepo/blob/master/VirtualCreatures/Volumetric_SDL/Source/SceneObjects/Physics/DynamicCharacterController.h
 /* ------------------------------------------------------------------------------------ */
 
+extern map<unsigned int, Snowball*> snowballs;
+extern vector<Snowball*> collectedSnowballs;
 
 enum Movement {
 	pFORWARD,
@@ -59,7 +61,7 @@ private:
 	const glm::vec3 playerScale = glm::vec3(0.2f);
 	float playerRotAngle = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
-	unsigned int snowBallAmmu = 4;
+	unsigned int snowBallAmmu = 0;
 
 	void activatePlayer()
 	{
@@ -72,7 +74,7 @@ private:
 		pHandler->getWorld()->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());  // set the callback for the ghost object
 		btConvexShape* capsule = new btCapsuleShape(this->radius, this->height);
 		ghostObject->setCollisionShape(capsule);
-		ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+		ghostObject->setCollisionFlags(ghostObject->getCollisionFlags() | btCollisionObject::CF_CHARACTER_OBJECT);
 
 		controller = new btKinematicCharacterController(ghostObject, capsule, stepHeight);
 		controller->setGravity( pHandler->GlmVec3ToBulletVec3(pHandler->getGravity()) );
@@ -99,7 +101,6 @@ private:
 		if (currPos.y < 56 && currPos.y > 26
 			&& currPos.z < 38 && currPos.z > 8
 			&& currPos.x < -54) {
-			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
 			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
 		}
@@ -107,7 +108,6 @@ private:
 		else if (currPos.y < 56 && currPos.y > 26
 			&& currPos.z < 38 && currPos.z > 8
 			&& currPos.x > -22.9) {
-			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
 		}
@@ -115,7 +115,6 @@ private:
 		else if (currPos.x > -54 && currPos.x < -24
 			&& currPos.y < 56 && currPos.y > 26
 			&& currPos.z > 33) {
-			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
 		}
@@ -123,7 +122,6 @@ private:
 		else if (currPos.x > -54 && currPos.x < -24
 			&& currPos.y < 56 && currPos.y > 26
 			&& currPos.z < 2) {
-			std::cout << currPos.y << endl;
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 		}
@@ -137,6 +135,11 @@ private:
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 		}
+	}
+
+
+	void updateSnowballAmmu() {
+		this->snowBallAmmu = collectedSnowballs.size();
 	}
 
 
@@ -219,6 +222,8 @@ public:
 		updateCameraPos();
 
 		updateGravity();
+
+		updateSnowballAmmu();
 	}
 
 
@@ -258,10 +263,23 @@ public:
 	void shootSnowball() {
 		if (this->snowBallAmmu > 0) {
 
-			btRigidBody* newSnowball = pHandler->addSphere(getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);
-			newSnowball->setLinearVelocity( pHandler->GlmVec3ToBulletVec3(this->camera->front * 20.0f) );
+			Snowball* snowball = collectedSnowballs[collectedSnowballs.size()-1];							// retrieve the last collected snow ball
+			collectedSnowballs.pop_back();																	// and remove it from the list of collected snowballs
 
-			this->snowBallAmmu--;
+			btRigidBody* newSphere = pHandler->addSphere(getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);	// create a new sphere object (since apparently this is more desirable, then translating an existing object
+			snowballs.insert(std::pair<unsigned int, Snowball*>(snowball->getID(), snowball));				// insert it into the list of snowballs in the world
+			
+			// TODO the below 5 lines can be refactored to Snowball.h
+			snowball->setBody(newSphere);																	// set the snowballs rigidBody to this new sphere
+			pHandler->activateColCallBack(newSphere);														// activate collision callback for the sphere
+			newSphere->setUserPointer(snowball->getIDptr());												// update the userPtr for collision call back, as this is a new sphere
+			newSphere->getCollisionShape()->setLocalScaling(snowball->getBodyScale());						// also update the amount the snow ball --
+			pHandler->getWorld()->updateSingleAabb(newSphere);												// --> has already shrunk
+			
+			newSphere->setGravity(controller->getGravity());												// set gravity to match with the player one
+			newSphere->setLinearVelocity( pHandler->GlmVec3ToBulletVec3(this->camera->front * 10.0f) );		// and then set some shooting velocity
+
+			this->snowBallAmmu--;																			// reduce ammo by one
 		}
 	}
 };
