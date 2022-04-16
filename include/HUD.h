@@ -1,3 +1,4 @@
+#pragma once
 #ifndef HUD_H
 #define HUD_H
 
@@ -25,6 +26,7 @@
 // as also mentioned in Tips & Tricks
 /* ------------------------------------------------------------------------------------ */
 
+extern vector<Snowball*> collectedSnowballs;
 
 struct Glyph {
 	unsigned int TextureID;  // ID handle of the glyph texture
@@ -105,12 +107,13 @@ public:
 	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler, KinematicPlayer* controller)
 	{
 		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmu());
-		this->messages[2] = "Player.pos X: " + to_string(lround(controller->getPos().x));
-		this->messages[3] = "Player.pos Y: " + to_string(lround(controller->getPos().y));
-		this->messages[4] = "Player.pos Z: " + to_string(lround(controller->getPos().z));
-		this->messages[5] = "FPS : " + to_string(lround(FPS));
-		this->messages[6] = "ms / frame: " + to_string(llround(msPerFrame));
-		this->messages[7] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
+		this->messages[2] = "Snowballs in  world: " + to_string(snowballs.size());
+		this->messages[3] = "Player.pos X: " + to_string(lround(controller->getPos().x));
+		this->messages[4] = "Player.pos Y: " + to_string(lround(controller->getPos().y));
+		this->messages[5] = "Player.pos Z: " + to_string(lround(controller->getPos().z));
+		this->messages[6] = "FPS : " + to_string(lround(FPS));
+		this->messages[7] = "ms / frame: " + to_string(llround(msPerFrame));
+		this->messages[8] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
 	}
 
 
@@ -127,6 +130,7 @@ private:
 	unsigned int VAO, VBO;
 	std::vector<string> messages = { "----- Data -----", 
 									 "Snowballs in pocket: ",
+									 "Snowballs in  world: ",
 		                             "Player.pos X: ", "Player.pos Y: ", "Player.pos Z: ",
 	                                 "FPS: ", "ms / frame: ", "Num RigidBodies: "};
 

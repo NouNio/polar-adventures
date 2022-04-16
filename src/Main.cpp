@@ -1,3 +1,4 @@
+#pragma once
 // open gl related libs
 #include <GL/glew.h>
 #include <gl/GLU.h>
@@ -51,7 +52,8 @@ void activateShader(Shader* shader);
 Camera camera(glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
-vector<Snowball> snowballs;
+map<unsigned int, Snowball*> snowballs;
+vector<Snowball*> collectedSnowballs;
 
 // lighting
 glm::vec3 directLightPos(30.f, 36.0f, 10.0f);
@@ -103,12 +105,14 @@ int main(void)
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     //snowballs
-    Snowball snowball1(fm->getObjPath("heart"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);     // on BACK side (platform)
-    snowballs.push_back(snowball1);
-    Snowball snowball2(fm->getObjPath("heart"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
-    snowballs.push_back(snowball2);
-    Snowball snowball3(fm->getObjPath("heart"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
-    snowballs.push_back(snowball3);
+    Snowball snowball2(PALM_TREE, fm->getObjPath("heart"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(PALM_TREE, &snowball2));
+    Snowball snowball3(LABYRINTH, fm->getObjPath("heart"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(LABYRINTH, &snowball3));
+    Snowball snowball1(PLATFORM, fm->getObjPath("heart"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);     // on BACK side (platform)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(PLATFORM, &snowball1));
+    Snowball snowball4(LEVER, fm->getObjPath("heart"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);  // test
+    snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
 
     /* ------------------------------------------------------------------------------------ */
     // load HUD
@@ -151,15 +155,25 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
         
-        for (unsigned int i = 0; i < snowballs.size(); i++) {
-            snowballs[i].shrink(deltaTime);
-            snowballs[i].draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        for (const auto& item : snowballs) {  // item.second == Snowball*
+            item.second->shrink(deltaTime);
+            item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         }
         
 
         /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
         /* ------------------------------------------------------------------------------------ */
+        // remove the rigidBodies of the collected snowballs from the world
+
+        for (Snowball* snowball : collectedSnowballs) {
+            if (snowball->getBody() != nullptr) {
+                btRigidBody* tempBody = snowball->getBody();
+                pHandler->getWorld()->removeCollisionObject(tempBody);
+            }
+            
+        }
+
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
         pHandler->debugDraw();                         // call the debug drawer

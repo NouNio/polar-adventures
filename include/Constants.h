@@ -27,6 +27,13 @@ const float HUDxOffset = 10.0;
 const float HUDyOffset = 50.0;
 
 
+// SNOWBALL KEYS
+unsigned int PALM_TREE = 0;
+unsigned int LABYRINTH = 1;
+unsigned int PLATFORM = 2;
+unsigned int LEVER = 3;
+
+
 // PHYSICS
 bool debug = false;
 
