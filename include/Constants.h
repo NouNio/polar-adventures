@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 
+
 /* ----------------------------------------------------------------- */
 // SETTINGS
 /* ----------------------------------------------------------------- */
@@ -25,6 +26,15 @@ double msPerFrame = 0.0;
 bool showHUD = false;
 const float HUDxOffset = 10.0;
 const float HUDyOffset = 50.0;
+
+
+// CUBE SIDES
+#define CUBE_LEFT 0
+#define CUBE_RIGHT 1
+#define CUBE_FRONT 2
+#define CUBE_BACK 3
+#define CUBE_TOP 4
+#define CUBE_BOTTOM 5
 
 
 // SNOWBALL KEYS

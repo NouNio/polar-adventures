@@ -72,13 +72,23 @@ public:
     {
         return glm::lookAt(this->pos,                   // position of the camera
                            this->pos + this->front,     // target position, where should the camera look to, i.e. a vector pointing from pos to targetPos
-                           this->up);                   // represents "up" in world space
+                           this->up);                   //
+    }
+
+
+    void setCubeSide(unsigned int newCubeSide){
+        this->cubeSide = newCubeSide;
     }
 
 
     void setPosition(glm::vec3 newPos)
     {
         this->pos = newPos;
+    }
+
+
+    void setWorldUp(glm::vec3 newWorldUp) {
+        this->worldUp = newWorldUp;
     }
 
 
@@ -144,6 +154,8 @@ public:
     }
 
 private:
+    unsigned int cubeSide = CUBE_TOP;
+
     // update the camera vectors, i.e. FRONT, UP, RIGHT. Note that order matters here, as the UP values uses the new RIGHT value & RIGHT uses the new FRONT.
     void updateCameraVectors()
     {
@@ -153,14 +165,43 @@ private:
     }
 
 
-    void updateFrontVector()  // update the cameras front vector using eulers formula
+    void updateFrontVector()  // update the cameras front vector using eulers formula --> different order of eulers values for different cube sides
     {
-        this->front = glm::normalize(glm::vec3( cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
-                                                sin(glm::radians(this->pitch)),
-                                                sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)) ));
+        switch (this->cubeSide) {
+            case CUBE_LEFT:
+                this->front = glm::normalize( -glm::vec3(sin(glm::radians(this->pitch)),
+                                              (cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))),
+                                              sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+                break;
+            case CUBE_RIGHT:
+                this->front = glm::normalize( glm::vec3(sin(glm::radians(this->pitch)),
+                                              -(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))),
+                                              sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+                break;
+            case CUBE_FRONT:
+                this->front = glm::normalize(glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                             -sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                             sin(glm::radians(this->pitch))));
+                break;
+            case CUBE_BACK:
+                this->front = glm::normalize(glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                             sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                             -sin(glm::radians(this->pitch))));
+                break;
+            case CUBE_TOP:
+                this->front = glm::normalize( glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                              sin(glm::radians(this->pitch)),
+                                              sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+                break;
+            case CUBE_BOTTOM:
+                this->front = glm::normalize(glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+                                             -sin(glm::radians(this->pitch)),
+                                             sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+                break;  
+        }
     }
 
-
+        
     void updateRightVector()
     {
         this->right = glm::normalize(glm::cross(this->front, this->worldUp));  // normalize, cause the length gets closer to 0 the more you look up or down, which would result in slower movement
