@@ -145,6 +145,11 @@ public:
         if (this->zoom > MAX_ZOOM)
             this->zoom = MAX_ZOOM;
     }
+    bool isInFrustum(Mesh h) {
+        frustum.get()->isInside(h.bound.getPoints());
+        return false;
+
+    }
 
 private:
     // update the camera vectors, i.e. FRONT, UP, RIGHT. Note that order matters here, as the UP values uses the new RIGHT value & RIGHT uses the new FRONT.

@@ -92,6 +92,11 @@ private:
     bool withTextures;
     const char* texFileType;
     const string TEX_DIFF = "texture_diffuse";
+    //boundaries initalized with max / min values to make sure max/min-search runs properly
+    std::vector<float>xBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
+    std::vector<float>yBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
+    std::vector<float>zBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
+
     // add datastructure like map/hash to not load the same texture multiple times for each model, when all/some of the meshes use this texture
 
 
@@ -151,10 +156,10 @@ private:
         if (this->hasTextures())
         {
             parseTextures(&texture);   // 4. retireve the (correctly named) textures
-            return Mesh(vertices, indices, material, texture, this->hasTextures());
+            return Mesh(vertices, indices, material, texture, xBound, yBound, zBound, this->hasTextures());
         }
         else
-            return Mesh(vertices, indices, material, this->hasTextures());
+            return Mesh(vertices, indices, material, xBound, yBound, zBound, this->hasTextures());
     }
 
 
@@ -166,7 +171,24 @@ private:
             
             vertex.pos = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
             vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-
+            if (vertex.pos.x > xBound[1]) {
+                xBound[1] = vertex.pos.x;
+            }
+            if (vertex.pos.y >yBound[1]) {
+                yBound[1] = vertex.pos.y;
+            }
+            if (vertex.pos.z > zBound[1]) {
+                zBound[1] = vertex.pos.z;
+            }
+            if (vertex.pos.x < xBound[0]) {
+                xBound[0] = vertex.pos.x;
+            }
+            if (vertex.pos.y < yBound[0]) {
+                yBound[0] = vertex.pos.y;
+            }
+            if (vertex.pos.z < zBound[0]) {
+                zBound[0] = vertex.pos.z;
+            }
             //TODO: if considering textures, would need TexCoords parsing here
             
             if (this->hasTextures() && mesh->mTextureCoords[0]) {

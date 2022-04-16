@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <Boundary.h>
 using namespace std;
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
@@ -49,7 +50,9 @@ public:
     vector<Vertex> vertices;        // all the vertices that form the mesh
     vector<unsigned int> indices;   // indices for the mesh data
     Material material;              // material data for the mesh
-    Texture texture;                // texture data, for now we only have the snow bal with one texture
+    Texture texture;   
+    Boundary bound;
+    // texture data, for now we only have the snow bal with one texture
     bool withTexture;                   // each mesh belongs to some Model obj
 
     const string MAT_DIFF = "material.diffuse";
@@ -58,8 +61,8 @@ public:
     const string MAT_SHIN = "material.shininess";
 
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, bool withTexture=false)
-    {
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false )
+        :bound(xBound, yBound, zBound) {
         this->vertices = vertices;
         this->indices = indices;
         this->material = material;
@@ -68,8 +71,8 @@ public:
     }
 
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, Texture texture, bool withTexture)
-    {
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, Texture texture, std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
+    :bound(xBound,yBound,zBound) {
         this->vertices = vertices;
         this->indices = indices;
         this->material = material;

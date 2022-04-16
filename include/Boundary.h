@@ -10,13 +10,13 @@ private:
 			{
 				for (size_t k = 0; k < zBounds.size(); k++)
 				{
-					points.pushback(glm::vec3(xBounds[i], yBounds[j], zBounds[k]));
+					points.push_back(glm::vec3(xBounds[i], yBounds[j], zBounds[k]));
 				}
 			}
 		}
 	}
 public:
-	Boundary(std::vector < float> xBounds, std::vector < float > yBounds, std::vector < float > zBounds) :xBounds(xBounds), yBounds(yBounds) zBounds(zBounds) {
+	Boundary(std::vector < float> xBounds, std::vector < float > yBounds, std::vector < float > zBounds) :xBounds(xBounds), yBounds(yBounds), zBounds(zBounds) {
 		resetPoints();
 	}
 		void reset() {
@@ -28,11 +28,10 @@ public:
 		void transform(glm::mat4 transformation) {
 			for (size_t i = 0; i < points.size(); i++)
 			{
-				glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z,, 1.0f);
+				glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
 				temp = transformation * temp;
-				points[i] = glm::vec3(temp.x, temp.y.temp.z);
+				points[i] = glm::vec3(temp.x, temp.y, temp.z);
 			}
-		}
-
+		};
 
 };
