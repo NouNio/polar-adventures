@@ -1,14 +1,14 @@
 #pragma once
 #ifndef CAMERA_H
 #define CAMERA_H
-
+#pragma once
 #include <GL/glew.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-
+#include <Frustum.h>
 #include <Constants.h>
 
 
@@ -42,13 +42,16 @@ public:
     glm::vec3 pos, front, up, right;
     // world attribute
     glm::vec3 worldUp;
+    //projection Matrix
+    glm::mat4 projection;
     // euler Angles
     float yaw, pitch;
     // camera options
     float moveSpeed, mouseSensitivity, zoom;
+    std::unique_ptr<Frustum> frustum;
 
+    Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(fov, aspect, near, far))
 
-    Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM)
     {
         this->pos = pos;
         this->worldUp = up;
