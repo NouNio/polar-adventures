@@ -16,7 +16,6 @@ uniform vec3 materialDiffuse;
 uniform vec3 materialSpecular;
 uniform float specularAlpha;
 
-uniform float specularAlpha;
 uniform sampler2D diffuseTexture;
 
 void main() {	
