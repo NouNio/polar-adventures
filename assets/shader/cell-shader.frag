@@ -12,7 +12,7 @@ in VertexData {
 } vert;
 
 layout(location=0) out vec4 color;
-layout(location=1) out vec4 glow;
+layout(location=1) out vec4 normal;
 uniform vec3 camera_world;
 
 //uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
@@ -91,14 +91,9 @@ void main() {
 	
 	vec3 texColor = texture(diffuseTexture, vert.uv).rgb;
 	color= vec4(texColor.r * materialAmbient.r, texColor.g * materialAmbient.g,texColor.b * materialAmbient.b,1) ; // ambient
-	if(glowing==true){
-	glow=color;
-	}
-	else{glow=vec4(vec3(0),1);}
+	normal=vec4(n,1);
 	// add directional light contribution
 	color.rgb += phong(n, -dirL.direction, v, dirL.color * texColor, materialDiffuse, dirL.color, materialSpecular, specularAlpha, false, vec3(0));
-			
-
-	if(dot(v, n)<cos(radians(90))){color.rgb= vec3(0,1,1);}
+	//if(dot(v, n)<cos(radians(90))){color.rgb= vec3(0,1,1);}
 }
 

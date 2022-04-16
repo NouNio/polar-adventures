@@ -20,12 +20,12 @@ out vec4 color;
 uniform vec3 materialAmbient; 
 uniform vec3 materialDiffuse;
 uniform vec3 materialSpecular;
-
 uniform float specularAlpha;
+
 uniform sampler2D diffuseTexture;
-uniform sampler2D bloom;
+uniform sampler2D edge;
+
 uniform float brightness;
-uniform vec3 originpoint;
 
 void main() {	
 

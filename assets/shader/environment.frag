@@ -2,7 +2,7 @@
 in vec3 pos;
 
 layout(location=0) out vec4 color;
-layout(location=1) out vec4 glow;
+layout(location=1) out vec4 normal;
 
 //uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
 uniform samplerCube environment;
@@ -17,5 +17,5 @@ uniform vec3 originpoint;
 
 void main(){
 color=vec4(texture(environment, pos).rgb, 1);
-glow=vec4(0,0,0,1);
+normal=vec4(0,0,0,1);
 }

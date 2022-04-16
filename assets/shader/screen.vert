@@ -27,8 +27,6 @@ uniform mat4 viewProjMatrix;
 uniform mat3 normalMatrix;
 
 
-uniform vec3 originpoint;
-
 void main() {
 
 	 vert.position_world=position;
