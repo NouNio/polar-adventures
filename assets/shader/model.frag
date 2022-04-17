@@ -1,7 +1,7 @@
 #version 330 core
 // NOTE: frag shader with multiple lights: 1 dir light and n point lights (spotlight to come)
-out vec4 FragColor;
-
+layout(location=0) out vec4 FragColor;
+layout(location=1) out vec4 normal;
 struct Material {   
     vec3 ambient;
     vec3 diffuse;
@@ -37,10 +37,12 @@ uniform PointLight pointLights[N_PT_LIGHTS];
 
 vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material);
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
+float discretize(float f);
 
 void main()
 {
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
+    normal=vec4(norm,1.0);
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
     
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
@@ -49,6 +51,22 @@ void main()
         result += computePointLight(pointLights[i], norm, FragPos, viewDir, material);     // compute influence on the vertex from all the point lights
    
     FragColor = vec4(result, 1.0);
+}
+
+//TODO: change this with 1D texture though not necessarily necessary
+float discretize(float f){
+if(f>=0.0&&f<0.2){
+f=0.2;}
+else if(f>=0.2&&f<0.4){
+f=0.4;}
+else if(f>=0.4&&f<0.6){
+f=0.6;}
+else if(f>=0.6&&f<0.8){
+f=0.8;}
+else if(f>=0.8&&f<1.0){
+f=1.0;}
+
+return f;
 }
 
 
@@ -60,7 +78,10 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
-    
+    float value= max(diffuse.r, diffuse.g);
+	value=max(value, diffuse.b);
+	value=discretize(value);
+	diffuse=diffuse*value;
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
@@ -89,6 +110,10 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
     ambient *= attenuation;
     diffuse *= attenuation;
+    float value= max(diffuse.r, diffuse.g);
+	value=max(value, diffuse.b);
+	value=discretize(value);
+	diffuse=diffuse*value;
     specular *= attenuation;
     
     return (ambient + diffuse + specular);  // combine results
