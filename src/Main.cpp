@@ -56,7 +56,7 @@ map<unsigned int, Snowball*> snowballs;
 vector<Snowball*> collectedSnowballs;
 
 // lighting
-glm::vec3 directLightPos(30.f, 36.0f, 10.0f);
+glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -105,13 +105,13 @@ int main(void)
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     //snowballs
-    Snowball snowball2(PALM_TREE, fm->getObjPath("heart"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
+    Snowball snowball2(PALM_TREE, fm->getObjPath("snowball"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
     snowballs.insert(std::pair<unsigned int, Snowball*>(PALM_TREE, &snowball2));
-    Snowball snowball3(LABYRINTH, fm->getObjPath("heart"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
+    Snowball snowball3(LABYRINTH, fm->getObjPath("snowball"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
     snowballs.insert(std::pair<unsigned int, Snowball*>(LABYRINTH, &snowball3));
-    Snowball snowball1(PLATFORM, fm->getObjPath("heart"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);     // on BACK side (platform)
+    Snowball snowball1(PLATFORM, fm->getObjPath("snowball"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);      // on BACK side (platform)
     snowballs.insert(std::pair<unsigned int, Snowball*>(PLATFORM, &snowball1));
-    Snowball snowball4(LEVER, fm->getObjPath("heart"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);  // test
+    Snowball snowball4(LEVER, fm->getObjPath("snowball"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);      // test
     snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
 
     /* ------------------------------------------------------------------------------------ */

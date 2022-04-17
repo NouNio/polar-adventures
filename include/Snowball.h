@@ -14,7 +14,7 @@ private:
 	btRigidBody* s_body;
 	glm::vec3 s_pos;
 	float s_mass, s_radius;
-	glm::vec3 s_modelScale = glm::vec3(0.5f);
+	glm::vec3 s_modelScale = glm::vec3(0.01f);
 	btVector3 s_bodyScale;
 	double s_shrinkFactor = 0.01;
 	

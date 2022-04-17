@@ -11,6 +11,8 @@ private:
 	float pitch, yaw, fov, hfov, near, far;
 	//length 6 = top, bottom, right, left, front, back
 	std::vector<glm::vec3> normals;
+	
+	
 	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
 		for (size_t i = 0; i < points.size(); i++)
 		{
@@ -24,10 +26,14 @@ private:
 		}
 		return true;
 	}
+
+
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 point, glm::vec3 normal) {
 		return false;
 	};
+
+
 public:
 	Frustum(float fov, float near, float far, float aspect, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 viewDir = glm::vec3(0, 0, -1), glm::vec3 up = glm::vec3(0, 1, 0), float pitch = 0, float yaw = 0) :
 		fov(fov),
@@ -61,12 +67,18 @@ public:
 		this->near=near;
 		this->far = far;
 	}
+	
+	
 	~Frustum() {
 
 	}
+	
+	
 	bool isInside(std::vector<glm::vec3> points) {
 		return !FacesFromAllPlanes(points);
 	};
+	
+	
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{
 		for (size_t i = 0; i < normals.size(); i++)
@@ -83,6 +95,8 @@ public:
 		yaw += yaw;
 		pitch += pitch;
 	};
+	
+	
 	void reset(float pitch, float yaw, glm::vec3 position, glm::vec3 up, glm::vec3 viewDir) {
 		this->yaw = yaw;
 		this->pitch = pitch;

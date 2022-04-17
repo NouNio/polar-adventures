@@ -56,7 +56,8 @@ private:
 	const string SHADER = "shader\\";
 	
 	const char* fontPath;
-	map<string, string> pathToObject = map_list_of	("player", "kenny-block-characters\\player.fbx") 
+	map<string, string> pathToObject = map_list_of	("player", "kenny-block-characters\\player.fbx")
+													("snowball", "snowball\\snowball.fbx")
 													("heart", "kenny-platformer-kit\\heart.fbx")
 													("largeBlock", "kenny-platformer-kit\\blockLarge.fbx")
 													("tree", "kenny-platformer-kit\\tree.fbx")

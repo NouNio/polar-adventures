@@ -155,11 +155,13 @@ public:
         if (this->zoom > MAX_ZOOM)
             this->zoom = MAX_ZOOM;
     }
-    bool isInFrustum(Mesh h) {
+
+
+    /*bool isInFrustum(Mesh h) {
         frustum.get()->isInside(h.bound.getPoints());
         return false;
 
-    }
+    }*/
 
 private:
     unsigned int cubeSide = CUBE_TOP;
