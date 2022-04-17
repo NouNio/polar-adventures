@@ -16,7 +16,7 @@ unsigned int refreshRate = 60;
 float brightness = 1.0f;
 
 // WIN / LOOSE
-double points = 0.0;
+double score = 0.0;
 
 // TIMING
 // timing

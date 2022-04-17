@@ -27,7 +27,7 @@
 /* ------------------------------------------------------------------------------------ */
 
 extern vector<Snowball*> collectedSnowballs;
-extern double points;
+extern double score;
 
 struct Glyph {
 	unsigned int TextureID;  // ID handle of the glyph texture
@@ -109,7 +109,7 @@ public:
 	{
 		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmo());
 		this->messages[2] = "Snowballs in  world: " + to_string(snowballs.size());
-		this->messages[3] = "Points: " + to_string(lround(points));
+		this->messages[3] = "Points: " + to_string(lround(score));
 		this->messages[4] = "Player.pos X: " + to_string(lround(controller->getPos().x));
 		this->messages[5] = "Player.pos Y: " + to_string(lround(controller->getPos().y));
 		this->messages[6] = "Player.pos Z: " + to_string(lround(controller->getPos().z));

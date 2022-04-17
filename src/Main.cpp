@@ -182,11 +182,11 @@ int main(void)
             }
         }
 
-        for (Snowball* snowball : savedSnowballs) {  // here also add the points directly to the record
+        for (Snowball* snowball : savedSnowballs) {  // here also add the score directly to the record
             if (snowball->getBody()->isInWorld()) {
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
-                points += snowball->getBodyScale().x() * 100;
+                score += snowball->getBodyScale().x() * 100;
             }
         }
 
