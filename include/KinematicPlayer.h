@@ -138,7 +138,7 @@ private:
 			cubeSide = CUBE_BACK;
 		}
 		// check if on TOP
-		else if (currPos.y > 51) {
+		else if (currPos.y > 52) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 			cubeSide = CUBE_TOP;

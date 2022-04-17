@@ -54,6 +54,7 @@ Physics* pHandler;
 KinematicPlayer* playerController;
 map<unsigned int, Snowball*> snowballs;
 vector<Snowball*> collectedSnowballs;
+vector<Snowball*> savedSnowballs;
 
 // lighting
 glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
@@ -104,7 +105,7 @@ int main(void)
     Model player(fm->getObjPath("player"), &camera, true, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
-    //snowballs
+    // snowballs
     Snowball snowball2(PALM_TREE, fm->getObjPath("snowball"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
     snowballs.insert(std::pair<unsigned int, Snowball*>(PALM_TREE, &snowball2));
     Snowball snowball3(LABYRINTH, fm->getObjPath("snowball"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
@@ -113,6 +114,13 @@ int main(void)
     snowballs.insert(std::pair<unsigned int, Snowball*>(PLATFORM, &snowball1));
     Snowball snowball4(LEVER, fm->getObjPath("snowball"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);      // test
     snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
+
+    // collection point place holder
+    Model collectionPoint(fm->getObjPath("obelisk"), &camera);
+    btRigidBody* colPntBody = pHandler->addCylinder(glm::vec3(-37.5f, 53.5f, 20.0f), 0, glm::vec3(0.5, 2, 0.5));
+    pHandler->activateColCallBack(colPntBody);
+    colPntBody->setUserPointer(&cpPtr);
+
 
     /* ------------------------------------------------------------------------------------ */
     // load HUD
@@ -154,6 +162,7 @@ int main(void)
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
         world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
+        collectionPoint.draw(modelShader, glm::vec3(-37.5f, 51.5f, 20.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f));
         
         for (const auto& item : snowballs) {  // item.second == Snowball*
             item.second->shrink(deltaTime);
@@ -164,14 +173,21 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
         /* ------------------------------------------------------------------------------------ */
-        // remove the rigidBodies of the collected snowballs from the world
+        // remove the rigidBodies of the collected and saved snowballs from the world to avoid null ptr exceptions (i.e. crashs) when collision callbacks are called
 
         for (Snowball* snowball : collectedSnowballs) {
-            if (snowball->getBody() != nullptr) {
+            if (snowball->getBody()->isInWorld()) {
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
             }
-            
+        }
+
+        for (Snowball* snowball : savedSnowballs) {  // here also add the points directly to the record
+            if (snowball->getBody()->isInWorld()) {
+                btRigidBody* tempBody = snowball->getBody();
+                pHandler->getWorld()->removeCollisionObject(tempBody);
+                points += snowball->getBodyScale().x() * 100;
+            }
         }
 
         pHandler->stepSim(deltaTime);

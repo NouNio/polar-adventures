@@ -15,6 +15,9 @@ bool fullscreen = false;
 unsigned int refreshRate = 60;
 float brightness = 1.0f;
 
+// WIN / LOOSE
+double points = 0.0;
+
 // TIMING
 // timing
 float deltaTime = 0.0f;
@@ -43,6 +46,8 @@ unsigned int LABYRINTH = 1;
 unsigned int PLATFORM = 2;
 unsigned int LEVER = 3;
 
+// COLLECTION POINT
+string cpPtr = "collectionPoint";
 
 // PHYSICS
 bool debug = false;

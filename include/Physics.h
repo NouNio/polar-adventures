@@ -9,13 +9,14 @@
 #include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <glm/glm.hpp>
 #include <BulletViewer.h>
+#include <Constants.h>
 
 class Snowball;
 
 extern map<unsigned int, Snowball*> snowballs;
 extern vector<Snowball*> collectedSnowballs;
+extern vector<Snowball*> savedSnowballs;
 
-unsigned int colCnt = 0;
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj1, int id1, int idx1, const btCollisionObjectWrapper* obj2, int id2, int idx2);
 
 
@@ -124,9 +125,16 @@ public:
 
     btRigidBody* addBox(glm::vec3 position, float mass, glm::vec3 size)
     {
-        btBoxShape* box = new btBoxShape(GlmVec3ToBulletVec3(size));  // collision shape  |  make this line generic for alle collision type, i.e. also change func params
+        btBoxShape* box = new btBoxShape(GlmVec3ToBulletVec3(size));
         
         return this->setUpBody(position, mass, box);
+    }
+
+
+    btRigidBody* addCylinder(glm::vec3 position, float mass, glm::vec3 size) {
+        btCylinderShape* cylinder = new btCylinderShape(GlmVec3ToBulletVec3(size));
+
+        return this->setUpBody(position, mass, cylinder);
     }
 
 
@@ -233,28 +241,25 @@ private:
 };
 
 
+unsigned int colCnt = 0;
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj1, int id1, int idx1, const btCollisionObjectWrapper* obj2, int id2, int idx2)
 {
-    // 1st object is the snowball
-    if (obj1->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE && obj2->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE) {
-        colCnt++;
-        std::cout << "collision between player and snowball number: " << colCnt << std::endl;
-        std::cout << "calling 1st if statement\n" << std::endl;
-        //pHandler->deleteBody((btRigidBody*)obj1->getCollisionObject());
-    }
-    // 2nd object is the snowball WE PROBABLY ONLY NEED THIS
-    else if (obj1->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
-        colCnt++;
-        std::cout << "collision between player and snowball number: " << colCnt << std::endl;
-        std::cout << "calling 2nd if statement\n" << std::endl;
-        std::cout << "snowballs active: " << snowballs.size() << std::endl;
-        std::cout << "snowballs inactive: " << collectedSnowballs.size() << std::endl;
-        
+    // somehow the snowball is always obj2, when colliding with the player
+    if (obj1->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
         unsigned int* p_snowballID = (unsigned int*)obj2->getCollisionObject()->getUserPointer();
-        std::cout << "Id of the currently touched snowball: " << *p_snowballID << std::endl;
+        std::cout << "Id of the currently touched snowball: " << *p_snowballID << "\n " << std::endl;
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         collectedSnowballs.push_back(p_snowball);
+    }
+    // and somehow the shot snowball is also always obj2, when colliding with the collection point
+    else if (obj1->getCollisionObject()->getUserPointer() == &cpPtr && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
+        cout << "snowball 2 hit collection point 1";
+        unsigned int* p_snowballID = (unsigned int*)obj2->getCollisionObject()->getUserPointer();
+        std::cout << "Id of the currently saved snowball: " << *p_snowballID << "\n " << std::endl;
+        Snowball* p_snowball = snowballs[*p_snowballID];
+        snowballs.erase(*p_snowballID);
+        savedSnowballs.push_back(p_snowball);
     }
 
     return false;
