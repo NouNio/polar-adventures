@@ -58,9 +58,9 @@ private:
 	float maxJumpHeight = 1.5f;
 	const float radius = 0.5f, height = 2.0f, mass = 1.0f;
 	const float stepHeight = 0.35;
-	const glm::vec3 playerOffset = glm::vec3(0, -1.5, 0);
+	glm::vec3 playerOffset = glm::vec3(0, -1.5, 0);  // start value, where camera wolrdUp = (0,1,0) --> playerOffset = -(worldUp * 1.5)
 	const glm::vec3 playerScale = glm::vec3(0.2f);
-	float playerRotAngle = 0.0f;
+	float playerCamRot = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
 	unsigned int snowBallAmmo = 0;
 	unsigned int cubeSide = CUBE_TOP;
@@ -144,11 +144,16 @@ private:
 			cubeSide = CUBE_TOP;
 		}
 		// check if on BOTTOM
-		else if (currPos.y < 22) {
+		else if (currPos.y < 20) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 			cubeSide = CUBE_BOTTOM;
 		}
+	}
+
+
+	void updatePlayerOffset() {
+		this->playerOffset = -(this->camera->worldUp * 1.5f);
 	}
 
 
@@ -231,6 +236,8 @@ public:
 
 		updateCameraPos();
 
+		updatePlayerOffset();
+
 		updateGravity();
 
 		updateCameraViewPoint(); 
@@ -241,19 +248,55 @@ public:
 
 	void drawPlayer(Shader* shader)
 	{
-		playerRotAngle = -(this->camera->yaw);  // rotate  player with the camera
-
-		glm::mat4 projection = glm::perspective(glm::radians(this->camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		shader->setMat4("projection", projection);
-
-		glm::mat4 view = this->camera->GetViewMatrix();
-		shader->setMat4("view", view);
-
+		shader->setMat4("projection", glm::perspective(glm::radians(this->camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+		shader->setMat4("view", this->camera->GetViewMatrix());
+		
 		shader->use();
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, getPos() + playerOffset);
-		model = glm::rotate(model, glm::radians(playerRotAngle + 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+		float playerCubeSideRot;
+		glm::vec3 playerCubeSideRotAxes;
+	
+		// rotate the player such that the model face up and front given the current cube side --> then rotate with camera yaw
+		playerCamRot = -(this->camera->yaw);  // rotate  player with the camera left and right
+		switch (cubeSide) {
+		case CUBE_LEFT:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_RIGHT:
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_FRONT:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_BACK:
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_TOP:
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));			 
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_BOTTOM:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		}
+
+
+		
+
+		//model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, playerScale);
 		shader->setMat4("model", model);
 
