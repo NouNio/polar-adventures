@@ -91,7 +91,7 @@ private:
 	void updateCameraPos()
 	{	
 		btVector3 newPos = this->ghostObject->getWorldTransform().getOrigin();
-		cameraOffset = 5.0f * this->camera->front + glm::vec3(0, -1, 0);
+		cameraOffset = 5.0f * this->camera->front + (-this->camera->worldUp); //glm::vec3(0, -1, 0);
 		this->camera->setPosition(this->pHandler->BulletVec3ToGlmVec3(newPos) - cameraOffset);
 	}
 
@@ -132,7 +132,7 @@ private:
 		// check if on BACK
 		else if (currPos.x > -54 && currPos.x < -24
 			&& currPos.y < 56 && currPos.y > 26
-			&& currPos.z < 2) {
+			&& currPos.z < 1) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 			cubeSide = CUBE_BACK;
