@@ -37,6 +37,8 @@
 /* ------------------------------------------------------------------------------------ */
 void readINI();
 GLFWwindow* initGLFWandGLEW();
+bool hasWon();
+bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
@@ -48,6 +50,9 @@ void activateShader(Shader* shader);
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
+// gameplay
+double maxGameTime = 300.0;  // time in seconds until player looses
+
 // camera & physics
 Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
@@ -136,8 +141,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main & render loop
     /* ------------------------------------------------------------------------------------ */
-    while (!glfwWindowShouldClose(window))
-    {
+    do {
         // per-frame time logic
         computeTimeLogic();
 
@@ -212,7 +216,7 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
-    }
+    } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
@@ -229,13 +233,18 @@ void readINI()
 {
 
     INIReader iniReader(fm->getIniPath());
+    // window
     SCR_WIDTH = iniReader.GetInteger("window", "width", 800);
     SCR_HEIGHT = iniReader.GetInteger("window", "height", 600);
     fullscreen = iniReader.GetBoolean("window", "fullscreen", false);
     refreshRate = iniReader.GetInteger("window", "refresh_rate", 60);
     brightness = float(iniReader.GetReal("window", "brightness", 1.0f));
 
+    // physics
     debug = iniReader.GetBoolean("physics", "debug", false);
+
+    // gameplay
+    maxGameTime = iniReader.GetReal("gameplay", "maxGameTime", 300.0);
 }
 
 
@@ -280,6 +289,22 @@ GLFWwindow* initGLFWandGLEW()
     }
 
     return window;
+}
+
+
+bool hasWon() {
+    if (snowballs.size() == 0 && collectedSnowballs.size() == 0)
+        return true;
+    
+    return false;
+}
+
+
+bool hasLost() {
+    if (glfwGetTime() > maxGameTime)
+        return true;
+ 
+    return false;
 }
 
 

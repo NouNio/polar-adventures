@@ -18,6 +18,7 @@ float brightness = 1.0f;
 // WIN / LOOSE
 double score = 0.0;
 
+
 // TIMING
 // timing
 float deltaTime = 0.0f;
