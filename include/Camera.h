@@ -11,7 +11,6 @@
 #include <Frustum.h>
 #include <Constants.h>
 
-
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
 // other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
 
@@ -50,9 +49,12 @@ public:
     float moveSpeed, mouseSensitivity, zoom;
     std::unique_ptr<Frustum> frustum;
 
+    bool VFCEnabled;
+
     Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(fov, aspect, near, far))
 
     {
+
         this->pos = pos;
         this->worldUp = up;
         this->yaw = yaw;
@@ -92,6 +94,9 @@ public:
 
     void setWorldUp(glm::vec3 newWorldUp) {
         this->worldUp = newWorldUp;
+    }
+    void setVFC(bool value) {
+        this->VFCEnabled = value;
     }
 
 
@@ -157,12 +162,10 @@ public:
     }
 
 
-    /*bool isInFrustum(Mesh h) {
-        frustum.get()->isInside(h.bound.getPoints());
-        return false;
 
-    }*/
-
+    bool getVFCEnabled() {
+        return VFCEnabled;
+    }
 private:
     unsigned int cubeSide = CUBE_TOP;
 

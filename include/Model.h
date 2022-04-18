@@ -39,6 +39,10 @@ class Model
 public:
     vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     Camera* camera;
+    bool isInFrustum(Mesh h) {
+        camera->frustum.get()->isInside(h.bound.getPoints());
+        return false;
+    }
 
     Model(string const& path, Camera* camera, bool withTextures = false, const char* texFileType = "")
     {
@@ -69,7 +73,12 @@ public:
 
     void draw(Shader& shader)
     {
+        bool viewFrustumCulling = camera->getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++)
+            if (viewFrustumCulling) {
+                if (isInFrustum(meshes[i]))meshes[i].draw(shader);
+            }
+            else
             meshes[i].draw(shader);
     }
 

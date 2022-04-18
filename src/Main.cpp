@@ -352,6 +352,9 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
     }    
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+        camera.setVFC(!camera.getVFCEnabled());
+    }
 }
 
 
@@ -442,3 +445,5 @@ void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm:
     shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.027f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0028f);
 }
+
+
