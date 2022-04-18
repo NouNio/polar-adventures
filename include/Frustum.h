@@ -8,6 +8,7 @@ private:
 	glm::vec3 originPoint;
 	glm::vec3 farPoint;
 	glm::vec3 nearPoint;
+	int renderedObjects = 0;
 	float pitch, yaw, fov, hfov, near, far;
 	//length 6 = top, bottom, right, left, front, back
 	std::vector<glm::vec3> normals;
@@ -27,6 +28,7 @@ private:
 			if (!facesPlane(originPoint, normals[3], points[i]))continue;
 			if (!facesPlane(nearPoint, normals[4], points[i]))continue;
 			if (!facesPlane(farPoint, normals[5], points[i]))continue;
+			renderedObjects++;
 			return false;
 		}
 		return true;
@@ -99,6 +101,7 @@ public:
 	
 	
 	void reset(float pitch, float yaw, glm::vec3 position, glm::vec3 up, glm::vec3 viewDir) {
+		resetRenderedObjects;
 		this->yaw = yaw;
 		this->pitch = pitch;
 		this->viewDir = glm::normalize(viewDir);
@@ -115,4 +118,10 @@ public:
 		normals[5]=(-viewDir);
 
 	};
+	int getRenderedObjects() {
+		return renderedObjects;
+	}
+	void resetRenderedObjects() {
+		renderedObjects = 0;
+	}
 };

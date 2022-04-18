@@ -213,14 +213,15 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
+        camera.frustum->resetRenderedObjects();
     } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
     /* ------------------------------------------------------------------------------------ */
-    glfwTerminate();
-    playerController->~KinematicPlayer();
     pHandler->deleteAll();
+    playerController->~KinematicPlayer();
+    glfwTerminate();
     return 0;
 }
 
@@ -345,16 +346,14 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetTime() - lastVFCPress) >= BUTTON_PAUSE) {
-        // add code for toggling vfc
+        camera.setVFC(!camera.getVFCEnabled());
+        lastVFCPress = glfwGetTime();
     }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
     }    
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-        camera.setVFC(!camera.getVFCEnabled());
-    }
 }
 
 
