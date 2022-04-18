@@ -289,7 +289,7 @@ public:
 		case CUBE_BOTTOM:
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
-			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			model = glm::rotate(model, glm::radians(playerCamRot), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
 			break;
 		}
 
