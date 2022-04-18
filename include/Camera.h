@@ -206,7 +206,7 @@ private:
             case CUBE_BOTTOM:
                 this->front = glm::normalize(glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
                                              -sin(glm::radians(this->pitch)),
-                                             sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+                                             -sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
                 break;  
         }
     }
