@@ -15,7 +15,6 @@ uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
 
 
-
 uniform vec3 originpoint;
  void main(){
  pos=vec4(vec4(position, 1.0)*viewProjMatrix).rgb;
