@@ -152,8 +152,83 @@ private:
 	}
 
 
+	void updateMovement(Movement direction, float deltaTime) {
+		if (direction == pUP)
+			if (controller->canJump())
+				controller->jump(jumpDir);
+
+
+		float velocity = this->moveSpeed * deltaTime;
+		glm::vec3 walkDir(0, 0, 0);
+		switch (direction)
+		{
+		case pFORWARD:
+			walkDir += this->camera->front * velocity;
+			break;
+		case pBACKWARD:
+			walkDir -= this->camera->front * velocity;
+			break;
+		case pLEFT:
+			walkDir -= this->camera->right * velocity;
+			break;
+		case pRIGHT:
+			walkDir += this->camera->right * velocity;
+			break;
+		case pNONE:
+			break;
+		}
+
+		if (walkDir != glm::vec3(0, 0, 0)) {
+			if (controller->onGround())
+				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 5);
+			else
+				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 10);
+		}
+		else
+			controller->setWalkDirection(btVector3(0, 0, 0));
+	}
+
+
 	void updatePlayerOffset() {
 		this->playerOffset = -(this->camera->worldUp * 1.5f);
+	}
+
+
+	glm::mat4 updatePlayerRotation(glm::mat4 model) {
+		// rotate the player such that the model face up and front given the current cube side --> then rotate with camera yaw
+		playerCamRot = -(this->camera->yaw);  // rotate  player with the camera left and right
+		switch (cubeSide) {
+		case CUBE_LEFT:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_RIGHT:
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_FRONT:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_BACK:
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_TOP:
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		case CUBE_BOTTOM:
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(playerCamRot), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
+			break;
+		}
+
+		return model;
 	}
 
 
@@ -200,39 +275,7 @@ public:
 
 		glm::vec3 dir(0, 0, 0);
 
-		if (direction == pUP)
-			if (controller->canJump())
-				controller->jump(jumpDir);
-
-	
-		float velocity = this->moveSpeed * deltaTime;
-		glm::vec3 walkDir(0,0,0);
-		switch(direction)
-		{
-			case pFORWARD:
-				walkDir += this->camera->front * velocity;
-				break;
-			case pBACKWARD:
-				walkDir -= this->camera->front * velocity;
-				break;
-			case pLEFT:
-				walkDir -= this->camera->right * velocity;
-				break;
-			case pRIGHT:
-				walkDir += this->camera->right * velocity;
-				break;
-			case pNONE:
-				break;
-		}
-
-		if (walkDir != glm::vec3(0, 0, 0)) {
-			if(controller->onGround())
-				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 5);
-			else
-				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 10);
-		}
-		else
-			controller->setWalkDirection(btVector3(0, 0, 0));
+		updateMovement(direction, deltaTime);
 
 		updateCameraPos();
 
@@ -259,44 +302,9 @@ public:
 
 		float playerCubeSideRot;
 		glm::vec3 playerCubeSideRotAxes;
-	
-		// rotate the player such that the model face up and front given the current cube side --> then rotate with camera yaw
-		playerCamRot = -(this->camera->yaw);  // rotate  player with the camera left and right
-		switch (cubeSide) {
-		case CUBE_LEFT:
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		case CUBE_RIGHT:
-			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 0, 1));
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		case CUBE_FRONT:
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));
-			model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		case CUBE_BACK:
-			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		case CUBE_TOP:
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));			 
-			model = glm::rotate(model, glm::radians(playerCamRot - 90.0f), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		case CUBE_BOTTOM:
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 0, 1));
-			model = glm::rotate(model, glm::radians(playerCamRot), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
-			break;
-		}
-
-
 		
+		model = updatePlayerRotation(model);
 
-		//model = glm::rotate(model, glm::radians(playerCamRot + 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, playerScale);
 		shader->setMat4("model", model);
 
