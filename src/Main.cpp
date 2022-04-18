@@ -75,8 +75,6 @@ float HUDstart;
 // file manager
 FileManager* fm;
 
-glm::vec3 worldMiddle = glm::vec3(-30, 15, 25);  //test world model  middle coordinate: (-30, 15, 25)
-string worldPath = "C:\\Users\\dittm\\Documents\\Computergraphik-UE\\maya-new-objects\\world.fbx";
 
 int main(void)
 {
@@ -100,7 +98,7 @@ int main(void)
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
     // world
-    Model world(worldPath, &camera);                                                                    // load world model
+    Model world(fm->getObjPath("test-world"), &camera);                                                 // load world model
     btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);                     // create a physics obj
     btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));      // add to world

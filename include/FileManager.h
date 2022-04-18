@@ -58,7 +58,8 @@ private:
 	const char* fontPath;
 	map<string, string> pathToObject = map_list_of("player", "kenny-block-characters\\player.fbx")
 												  ("snowball", "snowball\\snowball.fbx")
-		                                          ("obelisk", "kenny-nature-kit\\statue_obelisk.fbx");
+		                                          ("obelisk", "kenny-nature-kit\\statue_obelisk.fbx")
+												  ("test-world", "world\\test-world.fbx");
 	map<string, string> pathToShader = map_list_of	("modelVert", "model.vert") ("modelFrag", "model.frag")
 													("playerVert", "player.vert") ("playerFrag", "player.frag")
 													("directLightVert", "directLight.vert") ("directLightFrag", "directLight.frag")
