@@ -18,6 +18,11 @@ float brightness = 1.0f;
 // WIN / LOOSE
 double score = 0.0;
 
+// SOUND
+#define WALK_SOUND_A 0
+#define WALK_SOUND_B 1
+bool walkSound = 0;
+
 
 // TIMING
 // timing
@@ -26,6 +31,8 @@ float lastFrame = 0.0f;
 double FPS = 0.0;
 double msPerFrame = 0.0;
 const double BUTTON_PAUSE = 0.2;
+const double WALK_SOUND_PAUSE = 0.25;
+bool playedAlarm = false;
 
 // HUD
 bool showHUD = false;

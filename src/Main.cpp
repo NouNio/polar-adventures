@@ -8,13 +8,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//assimp included manually ...
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <INIReader.h>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <BulletViewer.h>
+#include <irrklang/irrKlang.h>
+using namespace irrklang;
 
 // std libs
 #include <iostream>
@@ -46,12 +46,17 @@ void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
 void activateShader(Shader* shader);
+void playWalkSound();
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
-// gameplay
+// gameplay 
 double maxGameTime = 300.0;  // time in seconds until player looses
+
+// sound
+ISoundEngine* soundEngine = createIrrKlangDevice();
+
 
 // camera & physics
 Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(-30.0f, 58.0f, 30.0f));
@@ -66,7 +71,7 @@ glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-double lastHUDPress, lastShotPress, lastVFCPress = glfwGetTime();
+double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound = glfwGetTime();
 
 //HUD
 float HUDstart;
@@ -137,11 +142,21 @@ int main(void)
 
 
     /* ------------------------------------------------------------------------------------ */
+    // sound
+    /* ------------------------------------------------------------------------------------ */
+    soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
+
+
+    /* ------------------------------------------------------------------------------------ */
     // main & render loop
     /* ------------------------------------------------------------------------------------ */
     do {
         // per-frame time logic
         computeTimeLogic();
+        if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm) {
+            soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
+            playedAlarm = true;
+        }
 
         // input & player
         processInput(window);
@@ -200,7 +215,7 @@ int main(void)
         activateShader(&playerShader);
         playerController->drawPlayer(&playerShader);
 
-        
+        currRenderedObjects = camera.frustum->getRenderedObjects();
         /* ------------------------------------------------------------------------------------ */      
         // HUD
         /* ------------------------------------------------------------------------------------ */
@@ -210,17 +225,19 @@ int main(void)
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
 
-        currRenderedObjects = camera.frustum->getRenderedObjects();
+        
         camera.frustum->resetRenderedObjects();
 
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
+        
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
     /* ------------------------------------------------------------------------------------ */
+    soundEngine->drop();
     pHandler->deleteAll();
     playerController->~KinematicPlayer();
     glfwTerminate();
@@ -293,16 +310,18 @@ GLFWwindow* initGLFWandGLEW()
 
 
 bool hasWon() {
-    if (snowballs.size() == 0 && collectedSnowballs.size() == 0)
+    if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
         return true;
+    }
     
     return false;
 }
 
 
 bool hasLost() {
-    if (glfwGetTime() > maxGameTime)
+    if (glfwGetTime() > maxGameTime) {
         return true;
+    }
  
     return false;
 }
@@ -345,6 +364,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         camera.processKeyboard(BACKWARD, deltaTime);
         playerController->update(pBACKWARD, deltaTime);
+        playWalkSound();
     }
 
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetTime() - lastVFCPress) >= BUTTON_PAUSE) {
@@ -355,6 +375,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
+        playWalkSound();
     }    
 }
 
@@ -406,6 +427,23 @@ void computeTimeLogic()
     lastFrame = currentFrame;
     msPerFrame = deltaTime * 1000;  // deltaTime is the time in s from frame to frame, i.e. taking to compute 1 frame; 1s = 1000ms
     FPS = 1.0 / deltaTime;
+}
+
+
+// plays a sound for walking with some interval between the sounds and only if player on ground
+void playWalkSound() {
+    if (glfwGetTime() - lastWalkSound >= WALK_SOUND_PAUSE && playerController->onGround()) {
+        switch (walkSound) {
+            case WALK_SOUND_A:
+                soundEngine->play2D(fm->getAudioPath("walk1").c_str(), false);
+                break;
+            case WALK_SOUND_B:
+                soundEngine->play2D(fm->getAudioPath("walk2").c_str(), false);
+                break;
+        }
+        walkSound = !walkSound;
+        lastWalkSound = glfwGetTime();
+    }
 }
 
 

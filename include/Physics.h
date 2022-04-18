@@ -8,7 +8,9 @@
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <glm/glm.hpp>
+#include <irrklang/irrKlang.h>
 #include <BulletViewer.h>
+#include <FileManager.h>
 #include <Constants.h>
 
 class Snowball;
@@ -16,6 +18,8 @@ class Snowball;
 extern map<unsigned int, Snowball*> snowballs;
 extern vector<Snowball*> collectedSnowballs;
 extern vector<Snowball*> savedSnowballs;
+extern ISoundEngine* soundEngine;
+extern FileManager* fm;
 
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj1, int id1, int idx1, const btCollisionObjectWrapper* obj2, int id2, int idx2);
 
@@ -251,6 +255,7 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         collectedSnowballs.push_back(p_snowball);
+        soundEngine->play2D(fm->getAudioPath("pickUp").c_str(), false);
     }
     // and somehow the shot snowball is also always obj2, when colliding with the collection point
     else if (obj1->getCollisionObject()->getUserPointer() == &cpPtr && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
@@ -260,6 +265,7 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         savedSnowballs.push_back(p_snowball);
+        soundEngine->play2D(fm->getAudioPath("deliver").c_str(), false);
     }
 
     return false;

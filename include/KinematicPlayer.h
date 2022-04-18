@@ -6,10 +6,12 @@
 #include <Physics.h>
 #include <Snowball.h>
 #include <Constants.h>
+#include <FileManager.h>
 
 #include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <bullet/BulletDynamics/Character/btKinematicCharacterController.h>
 #include <glm/gtx/norm.hpp>
+#include <irrklang/irrKlang.h>
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -22,6 +24,8 @@
 
 extern map<unsigned int, Snowball*> snowballs;
 extern vector<Snowball*> collectedSnowballs;
+extern ISoundEngine* soundEngine;
+extern FileManager* fm;
 
 
 enum Movement {
@@ -154,8 +158,10 @@ private:
 
 	void updateMovement(Movement direction, float deltaTime) {
 		if (direction == pUP)
-			if (controller->canJump())
+			if (controller->canJump()) {
+				soundEngine->play2D(fm->getAudioPath("jump").c_str(), false);
 				controller->jump(jumpDir);
+			}
 
 
 		float velocity = this->moveSpeed * deltaTime;
@@ -179,8 +185,9 @@ private:
 		}
 
 		if (walkDir != glm::vec3(0, 0, 0)) {
-			if (controller->onGround())
+			if (controller->onGround()) {
 				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 5);
+			}
 			else
 				controller->setWalkDirection(pHandler->GlmVec3ToBulletVec3(walkDir).normalized() / 10);
 		}
@@ -261,6 +268,10 @@ public:
 		delete this->controller;
 	}
 
+
+	bool onGround() {
+		return this->controller->onGround();
+	}
 
 	void update(Movement direction, float deltaTime) 
 	{
