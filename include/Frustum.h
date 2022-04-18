@@ -101,7 +101,7 @@ public:
 	
 	
 	void reset(float pitch, float yaw, glm::vec3 position, glm::vec3 up, glm::vec3 viewDir) {
-		resetRenderedObjects;
+		resetRenderedObjects();
 		this->yaw = yaw;
 		this->pitch = pitch;
 		this->viewDir = glm::normalize(viewDir);
