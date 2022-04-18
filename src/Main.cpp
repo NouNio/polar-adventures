@@ -213,14 +213,15 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
+        camera.frustum->resetRenderedObjects();
     } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
     /* ------------------------------------------------------------------------------------ */
-    glfwTerminate();
-    playerController->~KinematicPlayer();
     pHandler->deleteAll();
+    playerController->~KinematicPlayer();
+    glfwTerminate();
     return 0;
 }
 
