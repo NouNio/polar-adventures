@@ -46,7 +46,10 @@ void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
 void activateShader(Shader* shader);
+void delay(double seconds);
 void playWalkSound();
+void playEndOfGameSound();
+void transitionToEndOfGameScreen(GLFWwindow* window);
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
@@ -71,7 +74,7 @@ glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound = glfwGetTime();
+double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress = glfwGetTime();
 
 //HUD
 float HUDstart;
@@ -148,7 +151,7 @@ int main(void)
 
 
     /* ------------------------------------------------------------------------------------ */
-    // main & render loop
+    // main render loop
     /* ------------------------------------------------------------------------------------ */
     do {
         // per-frame time logic
@@ -231,13 +234,31 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
-    } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
+    } while (!firstWindowClose && !hasWon() && !hasLost());
+
+    transitionToEndOfGameScreen(window);
+
+    /* ------------------------------------------------------------------------------------ */
+    // end of game render loop
+    /* ------------------------------------------------------------------------------------ */
+    do {
+        computeTimeLogic();
+        processInput(window);
+
+        // render
+        glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        hud.renderEndOfGame(HUDShader, SCR_WIDTH/2.0f-100.0f, SCR_HEIGHT/2.0f);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    } while (!glfwWindowShouldClose(window));
         
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
     /* ------------------------------------------------------------------------------------ */
-    soundEngine->drop();
     pHandler->deleteAll();
     playerController->~KinematicPlayer();
     glfwTerminate();
@@ -332,8 +353,15 @@ void processInput(GLFWwindow* window)
 {   
     
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && (glfwGetTime() - lastESCPress) >= BUTTON_PAUSE) {
+        if (!firstWindowClose)
+            firstWindowClose = !firstWindowClose;
+        else
+            glfwSetWindowShouldClose(window, true);
+        
+        lastESCPress = glfwGetTime();
+    }
+        
     
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
         camera.processKeyboard(UP, deltaTime);
@@ -359,6 +387,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE){
         playerController->shootSnowball();
         lastShotPress = glfwGetTime();
+        soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
@@ -444,6 +473,33 @@ void playWalkSound() {
         walkSound = !walkSound;
         lastWalkSound = glfwGetTime();
     }
+}
+
+
+void playEndOfGameSound() {
+    if (hasWon())
+        soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
+    else
+        soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
+}
+
+
+void transitionToEndOfGameScreen(GLFWwindow* window) {
+    glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glfwSwapBuffers(window);
+    delay(1);
+    playEndOfGameSound();
+    delay(2.1);
+    soundEngine->drop();
+}
+
+
+void delay(double seconds) {
+    double delayStartTime = glfwGetTime();
+    do {
+        // nothing
+    } while (glfwGetTime() - seconds <= delayStartTime);
 }
 
 

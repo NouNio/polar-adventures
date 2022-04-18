@@ -106,6 +106,12 @@ public:
 	}
 
 
+	void renderEndOfGame(Shader& shader, float x, float y) {
+		renderLine(shader, "YOUR SCORE: " + to_string(lround(score)), x, y - 0 * newLineOffset);
+		renderLine(shader, "HIGH SCORE: 100000", x, y - 1 * newLineOffset);
+	}
+
+
 	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler, KinematicPlayer* controller)
 	{
 		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmo());

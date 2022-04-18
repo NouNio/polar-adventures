@@ -14,6 +14,7 @@ unsigned int SCR_HEIGHT = 600;
 bool fullscreen = false;
 unsigned int refreshRate = 60;
 float brightness = 1.0f;
+bool firstWindowClose = false;
 
 // WIN / LOOSE
 double score = 0.0;
