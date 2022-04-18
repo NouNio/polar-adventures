@@ -66,8 +66,14 @@ public:
         modelMatrix = glm::scale(modelMatrix, scale);
         shader.setMat4("model", modelMatrix);
 
-        for (unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].draw(shader);
+        bool viewFrustumCulling = camera->getVFCEnabled();
+        for (unsigned int i = 0; i < meshes.size(); i++){
+            if (viewFrustumCulling) {
+                if (isInFrustum(meshes[i]))meshes[i].draw(shader);
+            }
+            else
+                meshes[i].draw(shader);
+    }
     }
 
 

@@ -15,7 +15,7 @@ private:
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec3 point) {
 		//FacesFromPlanes as in is inside frustum
-		return (glm::dot(point, normal) - glm::distance(planeOrigin, glm::vec3(0.0f)))>0.0f;
+		return (glm::dot(point, normal) - glm::distance(planeOrigin, glm::vec3(0.0f)))<=0.0f;
 	};
 
 	

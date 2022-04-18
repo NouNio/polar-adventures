@@ -175,6 +175,7 @@ private:
         updateFrontVector();
         updateRightVector();
         updateUpVector();
+        frustum->reset(pitch, yaw, pos, up, front);
     }
 
 
