@@ -39,10 +39,6 @@ class Model
 public:
     vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     Camera* camera;
-    bool isInFrustum(Mesh h) {
-        camera->frustum.get()->isInside(h.bound.getPoints());
-        return false;
-    }
 
     Model(string const& path, Camera* camera, bool withTextures = false, const char* texFileType = "")
     {
@@ -55,10 +51,8 @@ public:
 
     void draw(Shader& shader, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale)
     {   
-        glm::mat4 projection = glm::perspective(glm::radians(camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera->GetViewMatrix();
-        shader.setMat4("projection", projection);
-        shader.setMat4("view", view);
+        shader.setMat4("projection", glm::perspective(glm::radians(camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+        shader.setMat4("view", camera->GetViewMatrix());
 
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         modelMatrix = glm::translate(modelMatrix, translation);
@@ -66,20 +60,29 @@ public:
         modelMatrix = glm::scale(modelMatrix, scale);
         shader.setMat4("model", modelMatrix);
 
-        for (unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].draw(shader);
+        bool viewFrustumCulling = camera->getVFCEnabled();
+        for (unsigned int i = 0; i < meshes.size(); i++) {
+            if (viewFrustumCulling) {
+                if (isInFrustum(meshes[i]))
+                    meshes[i].draw(shader);
+            }
+            else
+                meshes[i].draw(shader);
+        }
     }
 
 
     void draw(Shader& shader)
     {
         bool viewFrustumCulling = camera->getVFCEnabled();
-        for (unsigned int i = 0; i < meshes.size(); i++)
+        for (unsigned int i = 0; i < meshes.size(); i++) {
             if (viewFrustumCulling) {
-                if (isInFrustum(meshes[i]))meshes[i].draw(shader);
+                if (isInFrustum(meshes[i]))
+                    meshes[i].draw(shader);
             }
             else
-            meshes[i].draw(shader);
+                meshes[i].draw(shader);
+        }
     }
 
 
@@ -89,10 +92,16 @@ public:
     }
 
 
+    bool isInFrustum(Mesh m) {
+        return camera->frustum->isInside(m.bound.getPoints());
+    }
+
+
     size_t getNumMeshes()
     {
         return this->meshes.size();
     }
+
 
 private:
     string directory;

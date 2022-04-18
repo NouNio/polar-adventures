@@ -28,6 +28,7 @@
 
 extern vector<Snowball*> collectedSnowballs;
 extern double score;
+extern int currRenderedObjects;
 
 struct Glyph {
 	unsigned int TextureID;  // ID handle of the glyph texture
@@ -115,7 +116,8 @@ public:
 		this->messages[6] = "Player.pos Z: " + to_string(lround(controller->getPos().z));
 		this->messages[7] = "FPS : " + to_string(lround(FPS));
 		this->messages[8] = "ms / frame: " + to_string(llround(msPerFrame));
-		this->messages[9] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
+		this->messages[9] = "Number rendered objects: " + to_string(currRenderedObjects);
+		this->messages[10] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
 	}
 
 
@@ -135,7 +137,9 @@ private:
 									 "Snowballs in  world: ",
 									 "Points: ",
 		                             "Player.pos X: ", "Player.pos Y: ", "Player.pos Z: ",
-	                                 "FPS: ", "ms / frame: ", "Num RigidBodies: "};
+	                                 "FPS: ", "ms / frame: ", 
+									 "Number rendered objects: ",
+								     "Num RigidBodies: "};
 
 
 	void initFreetype()
@@ -147,8 +151,7 @@ private:
 	}
 
 
-	void loadFont()
-	{
+	void loadFont(){
 		if (FT_New_Face(ft, fontPath, 0, &face))
 		{
 			std::cout << "There was an error loading the font: " << fontPath << std::endl;
@@ -156,8 +159,7 @@ private:
 	}
 
 
-	void fillAlphabet()
-	{
+	void fillAlphabet(){
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // disable byte-alignment restriction, cause we represent each chars color in one byte and usually ogl expects multiples of 4 bytes
 
 		for (unsigned char c = 0; c < 128; c++)
@@ -242,4 +244,4 @@ private:
 	}
 };
 
-#endif
+#endif 

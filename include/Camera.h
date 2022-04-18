@@ -48,8 +48,8 @@ public:
     // camera options
     float moveSpeed, mouseSensitivity, zoom;
     std::unique_ptr<Frustum> frustum;
-
     bool VFCEnabled;
+
 
     Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(fov, aspect, near, far))
 
@@ -57,16 +57,6 @@ public:
 
         this->pos = pos;
         this->worldUp = up;
-        this->yaw = yaw;
-        this->pitch = pitch;
-        updateCameraVectors();
-    }
-
-
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) :front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM)
-    {
-        this->pos = glm::vec3(posX, posY, posZ);
-        this->worldUp = glm::vec3(upX, upY, upZ);
         this->yaw = yaw;
         this->pitch = pitch;
         updateCameraVectors();
@@ -97,7 +87,12 @@ public:
     }
 
 
-    void setVFC(bool value) {
+    bool getVFCEnabled() {
+        return VFCEnabled;
+    }
+
+
+    void setVFCEnabled(bool value) {
         this->VFCEnabled = value;
     }
 
@@ -161,11 +156,6 @@ public:
             this->zoom = MIN_ZOOM;
         if (this->zoom > MAX_ZOOM)
             this->zoom = MAX_ZOOM;
-    }
-
-
-    bool getVFCEnabled() {
-        return VFCEnabled;
     }
 
 

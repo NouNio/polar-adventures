@@ -70,6 +70,7 @@ double lastHUDPress, lastShotPress, lastVFCPress = glfwGetTime();
 
 //HUD
 float HUDstart;
+int currRenderedObjects = 0;
 
 // file manager
 FileManager* fm;
@@ -209,11 +210,12 @@ int main(void)
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
 
+        currRenderedObjects = camera.frustum->getRenderedObjects();
+        camera.frustum->resetRenderedObjects();
 
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
-        camera.frustum->resetRenderedObjects();
     } while (!glfwWindowShouldClose(window) && !hasWon() && !hasLost());
 
     /* ------------------------------------------------------------------------------------ */
@@ -346,7 +348,7 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetTime() - lastVFCPress) >= BUTTON_PAUSE) {
-        camera.setVFC(!camera.getVFCEnabled());
+        camera.setVFCEnabled(!camera.getVFCEnabled());
         lastVFCPress = glfwGetTime();
     }
 

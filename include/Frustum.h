@@ -10,8 +10,9 @@ private:
 	glm::vec3 nearPoint;
 	int renderedObjects = 0;
 	float pitch, yaw, fov, hfov, near, far;
-	//length 6 = top, bottom, right, left, front, back
-	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> normals;  //length 6 = top, bottom, right, left, front, back
+
+
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec3 point) {
 		//FacesFromPlanes as in is inside frustum
@@ -84,16 +85,17 @@ public:
 	
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{
-		for (size_t i = 0; i < normals.size(); i++)
-		{
+		for (size_t i = 0; i < normals.size(); i++){
 			normals[i] = glm::rotate(normals[i], dpitch, up);
 		}
+
 		right = glm::rotate(right, dpitch, up);
 		viewDir = glm::rotate(viewDir, dpitch, up);
-		for (size_t i = 0; i < normals.size(); i++)
-		{
+		
+		for (size_t i = 0; i < normals.size(); i++){
 			normals[i] = glm::rotate(normals[i], dyaw, right);
 		}
+		
 		up = glm::rotate(right, dpitch, right);
 		yaw += yaw;
 		pitch += pitch;
@@ -118,9 +120,13 @@ public:
 		normals[5]=(-viewDir);
 
 	};
+
+
 	int getRenderedObjects() {
 		return renderedObjects;
 	}
+
+
 	void resetRenderedObjects() {
 		renderedObjects = 0;
 	}
