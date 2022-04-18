@@ -95,6 +95,8 @@ public:
     void setWorldUp(glm::vec3 newWorldUp) {
         this->worldUp = newWorldUp;
     }
+
+
     void setVFC(bool value) {
         this->VFCEnabled = value;
     }
@@ -162,10 +164,11 @@ public:
     }
 
 
-
     bool getVFCEnabled() {
         return VFCEnabled;
     }
+
+
 private:
     unsigned int cubeSide = CUBE_TOP;
 

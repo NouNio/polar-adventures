@@ -345,16 +345,14 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetTime() - lastVFCPress) >= BUTTON_PAUSE) {
-        // add code for toggling vfc
+        camera.setVFC(!camera.getVFCEnabled());
+        lastVFCPress = glfwGetTime();
     }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
     }    
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-        camera.setVFC(!camera.getVFCEnabled());
-    }
 }
 
 
