@@ -25,6 +25,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 double FPS = 0.0;
 double msPerFrame = 0.0;
+const double BUTTON_PAUSE = 0.2;
 
 // HUD
 bool showHUD = false;

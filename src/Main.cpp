@@ -66,8 +66,7 @@ glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-double lastHUDPress = glfwGetTime();
-double lastShotPress = glfwGetTime();
+double lastHUDPress, lastShotPress, lastVFCPress = glfwGetTime();
 
 //HUD
 float HUDstart;
@@ -313,50 +312,46 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
-    {
-        camera.processKeyboard(FORWARD, deltaTime);
-        playerController->update(pFORWARD, deltaTime);
-    }
     
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
-    {
-        camera.processKeyboard(BACKWARD, deltaTime);
-        playerController->update(pBACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+        camera.processKeyboard(UP, deltaTime);
+        playerController->update(pUP, deltaTime);
     }
         
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
         camera.processKeyboard(LEFT, deltaTime);
         playerController->update(pLEFT, deltaTime);
     }
 
 
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
         camera.processKeyboard(RIGHT, deltaTime);
         playerController->update(pRIGHT, deltaTime);
     }
-    
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        camera.processKeyboard(UP, deltaTime);
-        playerController->update(pUP, deltaTime);
-    }
 
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= 0.2)
-    {
-        playerController->shootSnowball();
-        lastShotPress = glfwGetTime();
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= 0.2)
-    {
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= BUTTON_PAUSE){
         showHUD = !showHUD;
         lastHUDPress = glfwGetTime();
     }
-        
+
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE){
+        playerController->shootSnowball();
+        lastShotPress = glfwGetTime();
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera.processKeyboard(BACKWARD, deltaTime);
+        playerController->update(pBACKWARD, deltaTime);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && (glfwGetTime() - lastVFCPress) >= BUTTON_PAUSE) {
+        // add code for toggling vfc
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+        camera.processKeyboard(FORWARD, deltaTime);
+        playerController->update(pFORWARD, deltaTime);
+    }    
 }
 
 
