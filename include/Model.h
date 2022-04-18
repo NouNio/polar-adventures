@@ -61,14 +61,13 @@ public:
         shader.setMat4("model", modelMatrix);
 
         bool viewFrustumCulling = camera->getVFCEnabled();
-        for (unsigned int i = 0; i < meshes.size(); i++) {
+        for (unsigned int i = 0; i < meshes.size(); i++){
             if (viewFrustumCulling) {
-                if (isInFrustum(meshes[i]))
-                    meshes[i].draw(shader);
+                if (isInFrustum(meshes[i]))meshes[i].draw(shader);
             }
             else
                 meshes[i].draw(shader);
-        }
+    }
     }
 
 
