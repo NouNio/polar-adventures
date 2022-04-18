@@ -130,4 +130,7 @@ public:
 	void resetRenderedObjects() {
 		renderedObjects = 0;
 	}
+	void increaseRenderedObjects() {
+		renderedObjects++;
+	}
 };

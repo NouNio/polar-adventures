@@ -65,8 +65,10 @@ public:
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))meshes[i].draw(shader);
             }
-            else
+            else {
                 meshes[i].draw(shader);
+                camera->frustum->increaseRenderedObjects();
+            }
     }
     }
 
@@ -79,8 +81,10 @@ public:
                 if (isInFrustum(meshes[i]))
                     meshes[i].draw(shader);
             }
-            else
+            else {
                 meshes[i].draw(shader);
+                camera->frustum->increaseRenderedObjects();
+            }
         }
     }
 
