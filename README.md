@@ -50,11 +50,14 @@ Also there is an [issue with bullet and vcpkg](https://github.com/microsoft/vcpk
 To resolve this, one needs to add `your-path-to-vcpkg\vcpkg\installed\x64-windows\include\bullet` to the _additional include directories_ in the VS project.
 
 ### References and Resources
-[1] [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
-[2] [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney) <br>
-[3] [Open fonts](https://www.fontspace.com/category/pixel), specifically this [pixel font](https://www.fontspace.com/datcub-font-f69195) <br>
-[4] Nischwitz, Alfred, et al. Computergrafik: Band I des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2019. <br>
-[5] Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020. <br>
-[6] Koster, Raph. Theory of fun for game design. O'Reilly, 2013. <br>
-[7] Kosarevsky, Sergey, et al. 3D Graphics Rendering Cookbook. Packt, 2021. <br>
-[8] a general [character controller guide](https://digitalrune.github.io/DigitalRune-Documentation/html/7cc27ced-9a65-4ddd-8b8e-fa817b7fe6b7.htm) by digital rune
+[1]  [Learn OpenGL](https://learnopengl.com/About) by [Joey de Vries](https://github.com/JoeyDeVries) <br>
+[2]  [Open game assets](https://opengameart.org/) by [Kenny](https://opengameart.org/users/kenney) <br>
+[3]  [Open fonts](https://www.fontspace.com/category/pixel), specifically this [pixel font](https://www.fontspace.com/datcub-font-f69195) <br>
+[4]  Nischwitz, Alfred, et al. Computergrafik: Band I des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2019. <br>
+[5]  Nischwitz, Alfred, et al. Bildverarbeitung: Band II des Standardwerks Computergrafik und Bildverarbeitung. Springer-Verlag, 2020. <br>
+[6]  Koster, Raph. Theory of fun for game design. O'Reilly, 2013. <br>
+[7]  Kosarevsky, Sergey, et al. 3D Graphics Rendering Cookbook. Packt, 2021. <br>
+[8]  a general [character controller guide](https://digitalrune.github.io/DigitalRune-Documentation/html/7cc27ced-9a65-4ddd-8b8e-fa817b7fe6b7.htm) by digital rune <br>
+[9]  [opengl-tutorial](http://www.opengl-tutorial.org/) <br>
+[10] a [web-video-series for bullet physics ](https://www.youtube.com/watch?v=wbu5MdsFYko) by thecplusplusguy
+[11] [bullet physics docs](https://pybullet.org/Bullet/BulletFull/index.html)
