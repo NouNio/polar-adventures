@@ -11,27 +11,28 @@ private:
 	float pitch, yaw, fov, hfov, near, far;
 	//length 6 = top, bottom, right, left, front, back
 	std::vector<glm::vec3> normals;
-	
+	//TODO: Fix this mess
+	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec3 point) {
+		//FacesFromPlanes as in is inside frustum
+		return (glm::dot(point, normal) - glm::distance(planeOrigin, glm::vec3(0.0f)))>0.0f;
+	};
+
 	
 	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
 		for (size_t i = 0; i < points.size(); i++)
 		{
-			if (!facesPlane(originPoint, normals[0]))continue;
-			if (!facesPlane(originPoint, normals[1]))continue;
-			if (!facesPlane(originPoint, normals[2]))continue;
-			if (!facesPlane(originPoint, normals[3]))continue;
-			if (!facesPlane(nearPoint, normals[4]))continue;
-			if (!facesPlane(farPoint, normals[5]))continue;
+			if (!facesPlane(originPoint, normals[0],points[i]))continue;
+			if (!facesPlane(originPoint, normals[1], points[i]))continue;
+			if (!facesPlane(originPoint, normals[2], points[i]))continue;
+			if (!facesPlane(originPoint, normals[3], points[i]))continue;
+			if (!facesPlane(nearPoint, normals[4], points[i]))continue;
+			if (!facesPlane(farPoint, normals[5], points[i]))continue;
 			return false;
 		}
 		return true;
 	}
 
 
-	//TODO: Fix this mess
-	bool facesPlane(glm::vec3 point, glm::vec3 normal) {
-		return false;
-	};
 
 
 public:
