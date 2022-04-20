@@ -96,6 +96,14 @@ public:
     {
         return this->vertices.size();
     }
+    void transformBound(glm::mat4 transformation)
+    {
+        bound.transform(transformation);
+    }
+    void resetBound()
+    {
+        bound.reset();
+    }
 
 
 private: 
@@ -143,7 +151,6 @@ private:
 
         glBindVertexArray(0);  // unbind
     }
-
 
     void genArraysAndBuffers() 
     {

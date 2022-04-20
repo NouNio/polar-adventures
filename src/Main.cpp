@@ -76,6 +76,7 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress = glfwGetTime();
 Skybox* skybox;
+float fov, near, far;
 
 
 //HUD
@@ -95,6 +96,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     fm = new FileManager();
     readINI();
+    camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
     pHandler = new Physics(debug);
@@ -299,7 +301,10 @@ void readINI()
     fullscreen = iniReader.GetBoolean("window", "fullscreen", false);
     refreshRate = iniReader.GetInteger("window", "refresh_rate", 60);
     brightness = float(iniReader.GetReal("window", "brightness", 1.0f));
-
+    //camera
+    fov = float(iniReader.GetReal("camera", "fov", 30.0f));
+    near = float(iniReader.GetReal("camera", "near", 0.1f));
+    far = float(iniReader.GetReal("camera", "far", 100.0f));
     // physics
     debug = iniReader.GetBoolean("physics", "debug", false);
 

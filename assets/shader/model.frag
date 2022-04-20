@@ -77,12 +77,10 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     vec3 ambient  = light.ambient * material.ambient;  // ambient shading
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
+    diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
-    float value= max(diffuse.r, diffuse.g);
-	value=max(value, diffuse.b);
-	value=discretize(value);
-	diffuse=diffuse*value;
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
+
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
     
