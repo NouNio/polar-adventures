@@ -1,4 +1,6 @@
 #include <glm/gtx/rotate_vector.hpp>
+
+
 class Frustum {
 private:
 	glm::vec3 viewDir;

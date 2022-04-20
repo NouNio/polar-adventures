@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 #include <Boundary.h>
-using namespace std;
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
 // other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
@@ -41,27 +40,27 @@ struct Material {
 
 struct Texture {
     unsigned int ID;
-    string type;
+    std::string type;
 };
 
 class Mesh {
 public:
     // mesh Data
-    vector<Vertex> vertices;        // all the vertices that form the mesh
-    vector<unsigned int> indices;   // indices for the mesh data
+    std::vector<Vertex> vertices;        // all the vertices that form the mesh
+    std::vector<unsigned int> indices;   // indices for the mesh data
     Material material;              // material data for the mesh
     Texture texture;   
     Boundary bound;
     // texture data, for now we only have the snow bal with one texture
     bool withTexture;                   // each mesh belongs to some Model obj
 
-    const string MAT_DIFF = "material.diffuse";
-    const string MAT_SPEC = "material.specular";
-    const string MAT_AMBI = "material.ambient";
-    const string MAT_SHIN = "material.shininess";
+    const std::string MAT_DIFF = "material.diffuse";
+    const std::string MAT_SPEC = "material.specular";
+    const std::string MAT_AMBI = "material.ambient";
+    const std::string MAT_SHIN = "material.shininess";
 
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false )
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false )
         :bound(xBound, yBound, zBound) {
         this->vertices = vertices;
         this->indices = indices;
@@ -71,7 +70,7 @@ public:
     }
 
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, Material material, Texture texture, std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture, std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
     :bound(xBound,yBound,zBound) {
         this->vertices = vertices;
         this->indices = indices;

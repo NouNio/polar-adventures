@@ -8,7 +8,6 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-using namespace std;
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
 // other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
@@ -21,22 +20,22 @@ using namespace std;
 
 // constants
 #define INFO_LOG_SIZE 1024
-const string VERTEX = "VERTEX";
-const string FRAGMENT = "FRAGMENT";
-const string PROGRAM = "PROGRAM";
-const string SEPARATOR = "\n -- --------------------------------------------------- -- ";
+const std::string VERTEX = "VERTEX";
+const std::string FRAGMENT = "FRAGMENT";
+const std::string PROGRAM = "PROGRAM";
+const std::string SEPARATOR = "\n -- --------------------------------------------------- -- ";
 
 class Shader
 {
 public:
     unsigned int ID;
-    string path;
+    std::string path;
 
-    Shader(string vertexShaderPath, string fragmentShaderPath)
+    Shader(std::string vertexShaderPath, std::string fragmentShaderPath)
     {
         // 1. first we need to read the source code in the shader files, basically char by char
-        string vertexShaderCode = readShaderFile(vertexShaderPath);
-        string fragmentShaderCode = readShaderFile(fragmentShaderPath);
+        std::string vertexShaderCode = readShaderFile(vertexShaderPath);
+        std::string fragmentShaderCode = readShaderFile(fragmentShaderPath);
         this->path = vertexShaderPath;
         
         // 2. compile the shaders and 3. link the program (+ 4. delete the shaders)
@@ -51,85 +50,85 @@ public:
 
 
     // the following functions are for setting respective uniforms in the shader, by specifing the name and value of the uniform to take
-    void setBool(const string& name, bool val) const
+    void setBool(const std::string& name, bool val) const
     {
         glUniform1i(glGetUniformLocation(this->ID, name.c_str()), (int)val); // transform val to 0 or 1
     }
 
 
-    void setInt(const string& name, int val) const
+    void setInt(const std::string& name, int val) const
     {
         glUniform1i(glGetUniformLocation(this->ID, name.c_str()), val);
     }
 
 
-    void setFloat(const string& name, float val) const
+    void setFloat(const std::string& name, float val) const
     {
         glUniform1f(glGetUniformLocation(this->ID, name.c_str()), val);
     }
 
 
-    void setVec2(const string& name, const glm::vec2& val) const
+    void setVec2(const std::string& name, const glm::vec2& val) const
     {
         glUniform2fv(glGetUniformLocation(this->ID, name.c_str()), 1, &val[0]);
     }
 
 
-    void setVec2(const string& name, float x, float y) const
+    void setVec2(const std::string& name, float x, float y) const
     {
         glUniform2f(glGetUniformLocation(this->ID, name.c_str()), x, y);
     }
 
 
-    void setVec3(const string& name, const glm::vec3& val) const
+    void setVec3(const std::string& name, const glm::vec3& val) const
     {
         glUniform3fv(glGetUniformLocation(this->ID, name.c_str()), 1, &val[0]);
     }
 
 
-    void setVec3(const string& name, float x, float y, float z) const
+    void setVec3(const std::string& name, float x, float y, float z) const
     {
         glUniform3f(glGetUniformLocation(this->ID, name.c_str()), x, y, z);
     }
 
 
-    void setVec4(const string& name, const glm::vec4& val) const
+    void setVec4(const std::string& name, const glm::vec4& val) const
     {
         glUniform4fv(glGetUniformLocation(this->ID, name.c_str()), 1, &val[0]);
     }
 
 
-    void setVec4(const string& name, float x, float y, float z, float w) const
+    void setVec4(const std::string& name, float x, float y, float z, float w) const
     {
         glUniform4f(glGetUniformLocation(this->ID, name.c_str()), x, y, z, w);
     }
 
 
-    void setMat2(const string& name, const glm::mat2& mat) const
+    void setMat2(const std::string& name, const glm::mat2& mat) const
     {
         glUniformMatrix2fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
 
-    void setMat3(const string& name, const glm::mat3& mat) const
+    void setMat3(const std::string& name, const glm::mat3& mat) const
     {
         glUniformMatrix3fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
 
-    void setMat4(const string& name, const glm::mat4& mat) const
+    void setMat4(const std::string& name, const glm::mat4& mat) const
     {
         glUniformMatrix4fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
 private:
     // read the shader file and return the contained source code
-    string readShaderFile(string shaderPath)
+    std::string readShaderFile(std::string shaderPath)
     {
-        string shaderCode;
-        ifstream shaderFile;
-        stringstream shaderStream;
-        shaderFile.exceptions(ifstream::failbit | ifstream::badbit);  // make ifstream object throw the respective exceptions
+        std::string shaderCode;
+        std::ifstream shaderFile;
+        std::stringstream shaderStream;
+        shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);  // make ifstream object throw the respective exceptions
 
         try  // try to open the specified file
         {
@@ -137,9 +136,9 @@ private:
             shaderStream << shaderFile.rdbuf();  // transfer the file buffers into the stream objects
             shaderFile.close();
         }
-        catch (ifstream::failure& e)
+        catch (std::ifstream::failure& e)
         {
-            cout << "There was a problem reading this file: " << e.what() << endl;
+            std::cout << "There was a problem reading this file: " << e.what() << std::endl;
         }
         return shaderStream.str();  // now we can transform the stream object into string objects
     }
@@ -175,7 +174,7 @@ private:
 
 
     // check and print comile errors based on the given thrown error
-    void checkPrintCompileErrors(GLuint shader, string type)
+    void checkPrintCompileErrors(GLuint shader, std::string type)
     {
         GLint success;
         GLchar infoLog[INFO_LOG_SIZE];
@@ -185,7 +184,7 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, INFO_LOG_SIZE, NULL, infoLog);
-                cout << "There was an error compiling this shader: " << type << "  path: " << this->path << "\n" << infoLog << SEPARATOR << endl;
+                std::cout << "There was an error compiling this shader: " << type << "  path: " << this->path << "\n" << infoLog << SEPARATOR << std::endl;
             }
         }
         else
@@ -194,7 +193,7 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, INFO_LOG_SIZE, NULL, infoLog);
-                cout << "There was an error linking the program: " << type << "\n" << infoLog << SEPARATOR << endl;
+                std::cout << "There was an error linking the program: " << type << "\n" << infoLog << SEPARATOR << std::endl;
             }
         }
     }

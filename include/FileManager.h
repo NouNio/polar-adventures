@@ -5,53 +5,51 @@
 #include <map>
 #include <boost/assign.hpp>
 #include <filesystem>
-using namespace std;
-namespace fs = std::filesystem;
-using namespace boost::assign;
+
 
 class FileManager {
 public:
 	FileManager()
 	{
-		pathToProject = fs::current_path().string();
+		pathToProject = std::filesystem::current_path().string();
 	}
 
 
-	string getAudioPath(string audioKey) {
+	std::string getAudioPath(std::string audioKey) {
 		return this->pathToProject + ASSETS + AUDIO + this->pathToAudio[audioKey];
 	}
 
 
-	string getFontPath(string fontKey)
+	std::string getFontPath(std::string fontKey)
 	{
 		return this->pathToProject + ASSETS + FONTS + this->pathToFont[fontKey];
 	}
 
 
-	string getIniPath()
+	std::string getIniPath()
 	{
 		return this->pathToProject + ASSETS + INI;
 	}
 
 
-	string getObjPath(string objKey)
+	std::string getObjPath(std::string objKey)
 	{
 		return this->pathToProject + ASSETS + OBJECTS + this->pathToObject[objKey];
 	}
 
 
-	string getShaderPath(string shaderKey)
+	std::string getShaderPath(std::string shaderKey)
 	{	
 		return this->pathToProject + ASSETS + SHADER + pathToShader[shaderKey];
 	}
 
 
-	string getSkyBoxPath(string skyboxKey) {
+	std::string getSkyBoxPath(std::string skyboxKey) {
 		return this->pathToProject + ASSETS + SKYBOX + pathToSkybox[skyboxKey];
 	}
 
 
-	string getProjectPath()
+	std::string getProjectPath()
 	{
 		return pathToProject;
 	}
@@ -59,27 +57,27 @@ public:
 
 private:
 	std::string pathToProject;
-	const string INI = "settings.ini";
-	const string ASSETS = "\\assets\\";
-	const string AUDIO = "audio\\";
-	const string FONTS = "fonts\\";
-	const string OBJECTS = "objects\\";
-	const string SHADER = "shader\\";
-	const string SKYBOX = "skybox\\";
+	const std::string INI = "settings.ini";
+	const std::string ASSETS = "\\assets\\";
+	const std::string AUDIO = "audio\\";
+	const std::string FONTS = "fonts\\";
+	const std::string OBJECTS = "objects\\";
+	const std::string SHADER = "shader\\";
+	const std::string SKYBOX = "skybox\\";
 	
 	const char* fontPath;
-	map<string, string> pathToObject = map_list_of("player", "kenny-block-characters\\player.fbx")
+	std::map<std::string, std::string> pathToObject = boost::assign::map_list_of("player", "kenny-block-characters\\player.fbx")
 												  ("snowball", "snowball\\snowball.fbx")
 		                                          ("obelisk", "kenny-nature-kit\\statue_obelisk.fbx")
 												  ("test-world", "world\\test-world.fbx");
-	map<string, string> pathToShader = map_list_of	("modelVert", "model.vert") ("modelFrag", "model.frag")
+	std::map<std::string, std::string> pathToShader = boost::assign::map_list_of	("modelVert", "model.vert") ("modelFrag", "model.frag")
 													("playerVert", "player.vert") ("playerFrag", "player.frag")
 													("directLightVert", "directLight.vert") ("directLightFrag", "directLight.frag")
 													("HUDvert", "HUD.vert") ("HUDfrag", "HUD.frag")
 													("skyboxVert", "skybox.vert") ("skyboxFrag", "skybox.frag");
-	map<string, string> pathToFont = map_list_of	("datcub", "datcub\\datcub.ttf")
+	std::map<std::string, std::string> pathToFont = boost::assign::map_list_of	("datcub", "datcub\\datcub.ttf")
 													("arial", "arial\\arial.ttf");
-	map<string, string> pathToAudio = map_list_of("background1", "8-Bit-Ninja.mp3")
+	std::map<std::string, std::string> pathToAudio = boost::assign::map_list_of("background1", "8-Bit-Ninja.mp3")
 												 ("background2", "summer-adventure-dj-soul.mp3")
 												 ("walk1", "sfx_movement_footsteps1a.wav")
 												 ("walk2", "sfx_movement_footsteps1b.wav")
@@ -90,7 +88,7 @@ private:
 												 ("alarm", "sfx_alarm_loop1.wav")
 												 ("win", "Jingle_Win_00.mp3")
 												 ("lose", "Jingle_Lose_00.mp3");
-	map<string, string> pathToSkybox = map_list_of("daylight", "daylight\\")
+	std::map<std::string, std::string> pathToSkybox = boost::assign::map_list_of("daylight", "daylight\\")
 												  ("galaxy", "galaxy\\")
 											      ("orange", "orange\\");
 	//map<string, string[6]> pathToSkybox = map_list_of("daylight", ["DaylighboxLeft", "DaylightBoxRight", "DaylightBoxFront", "DaylightBoxBack", "DaylightBoxTop", "DaylightBoxBottom"]);
