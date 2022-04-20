@@ -4,7 +4,7 @@ private:
 	glm::vec3 viewDir;
 	glm::vec3 up;
 	glm::vec3 right;
-
+	float hsize, vsize;
 	glm::vec3 originPoint;
 	glm::vec3 farPoint;
 	glm::vec3 nearPoint;
@@ -16,18 +16,18 @@ private:
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec3 point) {
 		//FacesFromPlanes as in is inside frustum
-		return (glm::dot(point, normal) - glm::distance(planeOrigin, glm::vec3(0.0f)))<=0.0f;
+		return glm::dot(normal, ((point - originPoint)))>=0.0f;
 	};
 
 	
 	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
 		for (size_t i = 0; i < points.size(); i++)
 		{
-			if (!facesPlane(originPoint, normals[0],points[i]))continue;
-			if (!facesPlane(originPoint, normals[1], points[i]))continue;
-			if (!facesPlane(originPoint, normals[2], points[i]))continue;
-			if (!facesPlane(originPoint, normals[3], points[i]))continue;
-			if (!facesPlane(nearPoint, normals[4], points[i]))continue;
+			//if (!facesPlane(originPoint, normals[0],points[i]))continue;
+			//if (!facesPlane(originPoint, normals[1], points[i]))continue;
+			//if (!facesPlane(originPoint, normals[2], points[i]))continue;
+			//if (!facesPlane(originPoint, normals[3], points[i]))continue;
+			//if (!facesPlane(nearPoint, normals[4], points[i]))continue;
 			if (!facesPlane(farPoint, normals[5], points[i]))continue;
 			renderedObjects++;
 			return false;
@@ -35,7 +35,16 @@ private:
 		return true;
 	}
 
+	void setPlanes() {
+		//top, bottom, right, left, front, back
+		normals.push_back(glm::cross(right, (farPoint - originPoint) - up * (vsize * 0.5f)));
+		normals.push_back(glm::cross((farPoint - originPoint) + up * (vsize * 0.5f),right));
+		normals.push_back(glm::cross(up, (farPoint-originPoint)+right*(hsize*0.5f)));
+		normals.push_back(glm::cross((farPoint - originPoint) - right * (hsize * 0.5f),up));
+		normals.push_back(glm::normalize(viewDir));
+		normals.push_back(glm::normalize( - viewDir));
 
+	}
 
 
 public:
@@ -53,16 +62,13 @@ public:
 		viewDir = glm::normalize(viewDir);
 		up = glm::normalize(up);
 		right = glm::normalize(glm::cross(viewDir, up));
-		 hfov = fov / aspect;
+		hsize = 2 * far * tanf(fov * 0.5f);
+		vsize = hsize * aspect;
 		originPoint = position;
 		nearPoint = originPoint + near * viewDir;
 		farPoint = originPoint + far * viewDir;
-		normals.push_back(glm::rotate(-up, -hfov / 2, right));
-		normals.push_back(glm::rotate(up, hfov / 2, right));
-		normals.push_back(glm::rotate(-right, -fov / 2, up));
-		normals.push_back(glm::rotate(right, fov / 2, up));
-		normals.push_back(viewDir);
-		normals.push_back(-viewDir);
+
+		setPlanes();
 		this->fov = fov;
 		this->pitch = pitch;
 		this->yaw = yaw;
@@ -112,12 +118,8 @@ public:
 		originPoint = position;
 		nearPoint = originPoint + near * viewDir;
 		farPoint = originPoint + far * viewDir;
-		normals[0]=(glm::rotate(-up, -hfov / 2, right));
-		normals[1]=(glm::rotate(up, hfov / 2, right));
-		normals[2]=(glm::rotate(-right, -fov / 2, up));
-		normals[3]=(glm::rotate(right, fov / 2, up));
-		normals[4]=(viewDir);
-		normals[5]=(-viewDir);
+		normals.clear();
+		setPlanes();
 
 	};
 

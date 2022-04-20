@@ -58,10 +58,12 @@ public:
         modelMatrix = glm::translate(modelMatrix, translation);
         modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), rotationAxes);
         modelMatrix = glm::scale(modelMatrix, scale);
+
         shader.setMat4("model", modelMatrix);
 
         bool viewFrustumCulling = camera->getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++){
+            meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))
                     meshes[i].draw(shader);
@@ -70,6 +72,8 @@ public:
                 meshes[i].draw(shader);
                 camera->frustum->increaseRenderedObjects();
             }
+            meshes[i].resetBound();
+           
     }
     }
 
