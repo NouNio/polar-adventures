@@ -16,6 +16,7 @@
 
 #include <Mesh.h>
 #include <Shader.h>
+#include <Camera.h>
 #include <Constants.h>
 
 #include <string>

@@ -28,6 +28,7 @@ using namespace irrklang;
 #include <Physics.h>
 #include <KinematicPlayer.h>
 #include <Snowball.h>
+#include <Skybox.h>
 #include <FileManager.h>
 #include <Constants.h>
 
@@ -69,12 +70,14 @@ map<unsigned int, Snowball*> snowballs;
 vector<Snowball*> collectedSnowballs;
 vector<Snowball*> savedSnowballs;
 
-// lighting
+// lighting & background
 glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress = glfwGetTime();
+Skybox* skybox;
+
 
 //HUD
 float HUDstart;
@@ -82,6 +85,8 @@ int currRenderedObjects = 0;
 
 // file manager
 FileManager* fm;
+
+
 
 
 int main(void)
@@ -101,6 +106,8 @@ int main(void)
     Shader modelShader(fm->getShaderPath("modelVert"), fm->getShaderPath("modelFrag"));
     Shader directLightShader(fm->getShaderPath("directLightVert"), fm->getShaderPath("directLightFrag"));
     Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
+    Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
+    Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
@@ -137,17 +144,26 @@ int main(void)
     // load HUD
     /* ------------------------------------------------------------------------------------ */
     HUD hud(fm->getFontPath("arial"));
-    Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
     hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
+
+    
+    /* ------------------------------------------------------------------------------------ */
+    // skybox
+    /* ------------------------------------------------------------------------------------ */
+    skybox = new Skybox("galaxy", TGA);
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
+
 
 
     /* ------------------------------------------------------------------------------------ */
     // sound
     /* ------------------------------------------------------------------------------------ */
     soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
+
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -217,6 +233,13 @@ int main(void)
         playerController->update(pNONE, deltaTime);
         activateShader(&playerShader);
         playerController->drawPlayer(&playerShader);
+
+
+        /* ------------------------------------------------------------------------------------ */
+        // SKYBOX
+        /* ------------------------------------------------------------------------------------ */
+        skybox->draw(&skyboxShader);
+
 
         currRenderedObjects = camera.frustum->getRenderedObjects();
         /* ------------------------------------------------------------------------------------ */      

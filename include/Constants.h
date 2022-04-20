@@ -76,6 +76,8 @@ glm::vec3 pointLightPositions[] = {
 const char* PNG = ".png";
 const char* JPG = ".jpg";
 const char* GIF = ".gif";
+const string BMP = ".bmp";
+const string TGA = ".tga";
 
 #endif // !CONSTANTS_H
 
