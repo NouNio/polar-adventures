@@ -46,6 +46,11 @@ public:
 	}
 
 
+	string getSkyBoxPath(string skyboxKey) {
+		return this->pathToProject + ASSETS + SKYBOX + pathToSkybox[skyboxKey];
+	}
+
+
 	string getProjectPath()
 	{
 		return pathToProject;
@@ -60,6 +65,7 @@ private:
 	const string FONTS = "fonts\\";
 	const string OBJECTS = "objects\\";
 	const string SHADER = "shader\\";
+	const string SKYBOX = "skybox\\";
 	
 	const char* fontPath;
 	map<string, string> pathToObject = map_list_of("player", "kenny-block-characters\\player.fbx")
@@ -69,7 +75,8 @@ private:
 	map<string, string> pathToShader = map_list_of	("modelVert", "model.vert") ("modelFrag", "model.frag")
 													("playerVert", "player.vert") ("playerFrag", "player.frag")
 													("directLightVert", "directLight.vert") ("directLightFrag", "directLight.frag")
-													("HUDvert", "HUD.vert") ("HUDfrag", "HUD.frag");
+													("HUDvert", "HUD.vert") ("HUDfrag", "HUD.frag")
+													("skyboxVert", "skybox.vert") ("skyboxFrag", "skybox.frag");
 	map<string, string> pathToFont = map_list_of	("datcub", "datcub\\datcub.ttf")
 													("arial", "arial\\arial.ttf");
 	map<string, string> pathToAudio = map_list_of("background1", "8-Bit-Ninja.mp3")
@@ -83,6 +90,10 @@ private:
 												 ("alarm", "sfx_alarm_loop1.wav")
 												 ("win", "Jingle_Win_00.mp3")
 												 ("lose", "Jingle_Lose_00.mp3");
+	map<string, string> pathToSkybox = map_list_of("daylight", "daylight\\")
+												  ("galaxy", "galaxy\\")
+											      ("orange", "orange\\");
+	//map<string, string[6]> pathToSkybox = map_list_of("daylight", ["DaylighboxLeft", "DaylightBoxRight", "DaylightBoxFront", "DaylightBoxBack", "DaylightBoxTop", "DaylightBoxBottom"]);
 };  
 
 #endif // !FILEMANAGER_H
