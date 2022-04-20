@@ -121,7 +121,7 @@ int main(void)
     pHandler->getWorld()->removeRigidBody(worldBody);                                                   // removw the inital physcics obj
 
     // player
-    Model player(fm->getObjPath("player"), &camera, true, PNG);
+    Model player(fm->getObjPath("player"), true, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs

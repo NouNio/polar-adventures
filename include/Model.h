@@ -34,25 +34,25 @@
 
 // here as well as in the Mesh class, we use Kenney Artwork so far, e.g. we do not have textures (yet)
 
+extern Camera camera;
+
 class Model
 {
 public:
     std::vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
-    Camera* camera;
 
-    Model(std::string const& path, Camera* camera, bool withTextures = false, const char* texFileType = "")
+    Model(std::string const& path, bool withTextures = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
         this->texFileType = texFileType;
-        this->camera = camera;
         loadModel(path);
     }
 
 
     void draw(Shader& shader, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale)
     {   
-        shader.setMat4("projection", glm::perspective(glm::radians(camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
-        shader.setMat4("view", camera->GetViewMatrix());
+        shader.setMat4("projection", glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+        shader.setMat4("view", camera.GetViewMatrix());
 
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         modelMatrix = glm::translate(modelMatrix, translation);
@@ -61,7 +61,7 @@ public:
 
         shader.setMat4("model", modelMatrix);
 
-        bool viewFrustumCulling = camera->getVFCEnabled();
+        bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++){
             meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
@@ -70,7 +70,7 @@ public:
             }
             else {
                 meshes[i].draw(shader);
-                camera->frustum->increaseRenderedObjects();
+                camera.frustum->increaseRenderedObjects();
             }
             meshes[i].resetBound();
            
@@ -80,7 +80,7 @@ public:
 
     void draw(Shader& shader)
     {
-        bool viewFrustumCulling = camera->getVFCEnabled();
+        bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++) {
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))
@@ -88,7 +88,7 @@ public:
             }
             else {
                 meshes[i].draw(shader);
-                camera->frustum->increaseRenderedObjects();
+                camera.frustum->increaseRenderedObjects();
             }
         }
     }
@@ -101,7 +101,7 @@ public:
 
 
     bool isInFrustum(Mesh m) {
-        return camera->frustum->isInside(m.bound.getPoints());
+        return camera.frustum->isInside(m.bound.getPoints());
     }
 
 
