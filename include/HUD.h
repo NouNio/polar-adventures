@@ -26,7 +26,7 @@
 // as also mentioned in Tips & Tricks
 /* ------------------------------------------------------------------------------------ */
 
-extern vector<Snowball*> collectedSnowballs;
+extern std::vector<Snowball*> collectedSnowballs;
 extern double score;
 extern int currRenderedObjects;
 
@@ -40,7 +40,7 @@ struct Glyph {
 class HUD
 {
 public:
-	HUD(string path)
+	HUD(std::string path)
 	{
 		this->fontPath = path.c_str();
 		initFreetype();
@@ -107,23 +107,23 @@ public:
 
 
 	void renderEndOfGame(Shader& shader, float x, float y) {
-		renderLine(shader, "YOUR SCORE: " + to_string(lround(score)), x, y - 0 * newLineOffset);
+		renderLine(shader, "YOUR SCORE: " +  std::to_string(lround(score)), x, y - 0 * newLineOffset);
 		renderLine(shader, "HIGH SCORE: 100000", x, y - 1 * newLineOffset);
 	}
 
 
 	void update(Camera* camera, double FPS, double msPerFrame, Physics* pHandler, KinematicPlayer* controller)
 	{
-		this->messages[1] = "Snowballs in pocket: " + to_string(controller->getSnowBallAmmo());
-		this->messages[2] = "Snowballs in  world: " + to_string(snowballs.size());
-		this->messages[3] = "Points: " + to_string(lround(score));
-		this->messages[4] = "Player.pos X: " + to_string(lround(controller->getPos().x));
-		this->messages[5] = "Player.pos Y: " + to_string(lround(controller->getPos().y));
-		this->messages[6] = "Player.pos Z: " + to_string(lround(controller->getPos().z));
-		this->messages[7] = "FPS : " + to_string(lround(FPS));
-		this->messages[8] = "ms / frame: " + to_string(llround(msPerFrame));
-		this->messages[9] = "Number rendered objects: " + to_string(currRenderedObjects);
-		this->messages[10] = "Number RigidBodies: " + to_string(pHandler->getNumBodies());
+		this->messages[1] = "Snowballs in pocket: " + std::to_string(controller->getSnowBallAmmo());
+		this->messages[2] = "Snowballs in  world: " +  std::to_string(snowballs.size());
+		this->messages[3] = "Points: " +  std::to_string(lround(score));
+		this->messages[4] = "Player.pos X: " +  std::to_string(lround(controller->getPos().x));
+		this->messages[5] = "Player.pos Y: " +  std::to_string(lround(controller->getPos().y));
+		this->messages[6] = "Player.pos Z: " +  std::to_string(lround(controller->getPos().z));
+		this->messages[7] = "FPS : " +  std::to_string(lround(FPS));
+		this->messages[8] = "ms / frame: " +  std::to_string(llround(msPerFrame));
+		this->messages[9] = "Number rendered objects: " +  std::to_string(currRenderedObjects);
+		this->messages[10] = "Number RigidBodies: " +  std::to_string(pHandler->getNumBodies());
 	}
 
 
@@ -138,7 +138,7 @@ private:
 	FT_Face face;
 	std::map<char, Glyph> Alphabet;
 	unsigned int VAO, VBO;
-	std::vector<string> messages = { "----- Data -----", 
+	std::vector<std::string> messages = { "----- Data -----", 
 									 "Snowballs in pocket: ",
 									 "Snowballs in  world: ",
 									 "Points: ",

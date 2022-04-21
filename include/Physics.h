@@ -15,10 +15,10 @@
 
 class Snowball;
 
-extern map<unsigned int, Snowball*> snowballs;
-extern vector<Snowball*> collectedSnowballs;
-extern vector<Snowball*> savedSnowballs;
-extern ISoundEngine* soundEngine;
+extern std::map<unsigned int, Snowball*> snowballs;
+extern std::vector<Snowball*> collectedSnowballs;
+extern std::vector<Snowball*> savedSnowballs;
+extern irrklang::ISoundEngine* soundEngine;
 extern FileManager* fm;
 
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj1, int id1, int idx1, const btCollisionObjectWrapper* obj2, int id2, int idx2);
@@ -251,7 +251,6 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
     // somehow the snowball is always obj2, when colliding with the player
     if (obj1->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
         unsigned int* p_snowballID = (unsigned int*)obj2->getCollisionObject()->getUserPointer();
-        std::cout << "Id of the currently touched snowball: " << *p_snowballID << "\n " << std::endl;
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         collectedSnowballs.push_back(p_snowball);
@@ -259,9 +258,7 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
     }
     // and somehow the shot snowball is also always obj2, when colliding with the collection point
     else if (obj1->getCollisionObject()->getUserPointer() == &cpPtr && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
-        cout << "snowball 2 hit collection point 1";
         unsigned int* p_snowballID = (unsigned int*)obj2->getCollisionObject()->getUserPointer();
-        std::cout << "Id of the currently saved snowball: " << *p_snowballID << "\n " << std::endl;
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         savedSnowballs.push_back(p_snowball);

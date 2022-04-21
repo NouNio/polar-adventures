@@ -66,7 +66,7 @@ private:
 public:
 
 	Physics* s_pHandler;
-	Snowball(const unsigned int s_id, string const& path, glm::vec3 pos, float mass, float radius, glm::vec3 g, Physics* s_pHandler, Camera* s_camera) {
+	Snowball(const unsigned int s_id, std::string const& path, glm::vec3 pos, float mass, float radius, glm::vec3 g, Physics* s_pHandler, Camera* s_camera) {
 		this->s_id = s_id;
 		this->s_model = new Model(path, s_camera);
 		this->s_pHandler = s_pHandler;

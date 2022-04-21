@@ -14,7 +14,6 @@
 #include <bullet/btBulletDynamicsCommon.h>
 #include <BulletViewer.h>
 #include <irrklang/irrKlang.h>
-using namespace irrklang;
 
 // std libs
 #include <iostream>
@@ -44,7 +43,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion);
+void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
 void activateShader(Shader* shader);
 void delay(double seconds);
@@ -59,16 +58,16 @@ void transitionToEndOfGameScreen(GLFWwindow* window);
 double maxGameTime = 300.0;  // time in seconds until player looses
 
 // sound
-ISoundEngine* soundEngine = createIrrKlangDevice();
+irrklang::ISoundEngine* soundEngine = irrklang::createIrrKlangDevice();
 
 
 // camera & physics
 Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(-30.0f, 58.0f, 30.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
-map<unsigned int, Snowball*> snowballs;
-vector<Snowball*> collectedSnowballs;
-vector<Snowball*> savedSnowballs;
+std::map<unsigned int, Snowball*> snowballs;
+std::vector<Snowball*> collectedSnowballs;
+std::vector<Snowball*> savedSnowballs;
 
 // lighting & background
 glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
@@ -122,7 +121,7 @@ int main(void)
     pHandler->getWorld()->removeRigidBody(worldBody);                                                   // removw the inital physcics obj
 
     // player
-    Model player(fm->getObjPath("player"), &camera, true, PNG);
+    Model player(fm->getObjPath("player"), true, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs
@@ -552,13 +551,13 @@ void activateShader(Shader *shader)
 
     for (unsigned int i = 0; i < nPointLights; i++)
     {
-        setPointLightShaderParameters(*shader, to_string(i), pointLightPositions[i]);
+        setPointLightShaderParameters(*shader, std::to_string(i), pointLightPositions[i]);
     }
 }
 
 
 // set the pointlights[] uniform values in the specified shader
-void setPointLightShaderParameters(Shader& shader, string pointLightNumber, glm::vec3 postion)
+void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion)
 {
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
     shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.05f, 0.05f, 0.05f);

@@ -22,9 +22,9 @@
 // 4 it also uses ideas from here https://github.com/222464/EvolvedVirtualCreaturesRepo/blob/master/VirtualCreatures/Volumetric_SDL/Source/SceneObjects/Physics/DynamicCharacterController.h
 /* ------------------------------------------------------------------------------------ */
 
-extern map<unsigned int, Snowball*> snowballs;
-extern vector<Snowball*> collectedSnowballs;
-extern ISoundEngine* soundEngine;
+extern std::map<unsigned int, Snowball*> snowballs;
+extern std::vector<Snowball*> collectedSnowballs;
+extern irrklang::ISoundEngine* soundEngine;
 extern FileManager* fm;
 
 
@@ -329,7 +329,7 @@ public:
 	}
 
 
-	unsigned int getSnowBallAmmo() {
+	unsigned int getSnowBallAmmo() const {
 		return this->snowBallAmmo;
 	}
 

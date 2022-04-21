@@ -25,7 +25,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-using namespace std;
 
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
@@ -35,25 +34,25 @@ using namespace std;
 
 // here as well as in the Mesh class, we use Kenney Artwork so far, e.g. we do not have textures (yet)
 
+extern Camera camera;
+
 class Model
 {
 public:
-    vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
-    Camera* camera;
+    std::vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
 
-    Model(string const& path, Camera* camera, bool withTextures = false, const char* texFileType = "")
+    Model(std::string const& path, bool withTextures = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
         this->texFileType = texFileType;
-        this->camera = camera;
         loadModel(path);
     }
 
 
     void draw(Shader& shader, glm::vec3 translation, float angle, glm::vec3 rotationAxes, glm::vec3 scale)
     {   
-        shader.setMat4("projection", glm::perspective(glm::radians(camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
-        shader.setMat4("view", camera->GetViewMatrix());
+        shader.setMat4("projection", glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+        shader.setMat4("view", camera.GetViewMatrix());
 
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         modelMatrix = glm::translate(modelMatrix, translation);
@@ -62,7 +61,7 @@ public:
 
         shader.setMat4("model", modelMatrix);
 
-        bool viewFrustumCulling = camera->getVFCEnabled();
+        bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++){
             meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
@@ -71,7 +70,7 @@ public:
             }
             else {
                 meshes[i].draw(shader);
-                camera->frustum->increaseRenderedObjects();
+                camera.frustum->increaseRenderedObjects();
             }
             meshes[i].resetBound();
            
@@ -81,7 +80,7 @@ public:
 
     void draw(Shader& shader)
     {
-        bool viewFrustumCulling = camera->getVFCEnabled();
+        bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++) {
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))
@@ -89,7 +88,7 @@ public:
             }
             else {
                 meshes[i].draw(shader);
-                camera->frustum->increaseRenderedObjects();
+                camera.frustum->increaseRenderedObjects();
             }
         }
     }
@@ -102,7 +101,7 @@ public:
 
 
     bool isInFrustum(Mesh m) {
-        return camera->frustum->isInside(m.bound.getPoints());
+        return camera.frustum->isInside(m.bound.getPoints());
     }
 
 
@@ -113,12 +112,12 @@ public:
 
 
 private:
-    string directory;
+    std::string directory;
     Assimp::Importer importer;
     const aiScene* scene;
     bool withTextures;
     const char* texFileType;
-    const string TEX_DIFF = "texture_diffuse";
+    const std::string TEX_DIFF = "texture_diffuse";
     //boundaries initalized with max / min values to make sure max/min-search runs properly
     std::vector<float>xBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
     std::vector<float>yBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
@@ -128,7 +127,7 @@ private:
 
 
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-    void loadModel(string const& path)
+    void loadModel(std::string const& path)
     {
         scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -145,7 +144,7 @@ private:
     {
         if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)  // check if scene or rooNode is null or if the data is incomplete
         {
-            cout << "There was an error loading the model: " << importer.GetErrorString() << endl;
+            std::cout << "There was an error loading the model: " << importer.GetErrorString() << std::endl;
             return;
         }
     }
@@ -170,8 +169,8 @@ private:
     Mesh parseMesh(aiMesh* mesh)
     {
         // create the data to call the Mesh constructor
-        vector<Vertex> vertices;
-        vector<unsigned int> indices;
+        std::vector<Vertex> vertices;
+        std::vector<unsigned int> indices;
         Material material{};
         Texture texture;
 
@@ -190,7 +189,7 @@ private:
     }
 
 
-    void parseVertices(vector<Vertex>* vertices, aiMesh* mesh)
+    void parseVertices(std::vector<Vertex>* vertices, aiMesh* mesh)
     {
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
@@ -230,7 +229,7 @@ private:
     }
 
 
-    void parseIndices(vector<unsigned int>* indices, aiMesh* mesh)
+    void parseIndices(std::vector<unsigned int>* indices, aiMesh* mesh)
     {
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)       // each mesh consist of NumFaces faces
         {
@@ -270,7 +269,7 @@ private:
 
     unsigned int textureFromFile()
     {
-        string filename = directory + '\\' + TEX_DIFF + texFileType;
+        std::string filename = directory + '\\' + TEX_DIFF + texFileType;
 
         unsigned int textureID;
         glGenTextures(1, &textureID);

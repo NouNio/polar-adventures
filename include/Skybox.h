@@ -7,7 +7,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-using namespace std;
 
 #include <Shader.h>
 #include <FileManager.h>
@@ -74,7 +73,7 @@ float skyboxVertices[] = {
 
 class Skybox {  // another name for a skybox --> cube map texture
 public:
-	Skybox(string name, string filetype) {
+	Skybox(std::string name, std::string filetype) {
         this->name = name;
         this->filetype = filetype;
         glVAOandVBOSettings();
@@ -103,10 +102,10 @@ public:
 private:
     unsigned int VAO, VBO;
     unsigned int skyboxTex;
-    string name;
-    string filetype;
-	vector<string> fileNames = { "left", "right", "front", "back", "top", "bottom" };
-    vector<GLenum>skyboxTypes = { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    std::string name;
+    std::string filetype;
+	std::vector<std::string> fileNames = { "left", "right", "front", "back", "top", "bottom" };
+    std::vector<GLenum>skyboxTypes = { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
                                   GL_TEXTURE_CUBE_MAP_POSITIVE_Z,GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
                                   GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y };
 
@@ -117,7 +116,7 @@ private:
 
         int width, height, nComponents;
         for (unsigned int i = 0; i < fileNames.size(); i++) {
-            string filename = fm->getSkyBoxPath(name) + fileNames[i] + filetype;
+            std::string filename = fm->getSkyBoxPath(name) + fileNames[i] + filetype;
             
             std::cout << "trying to load file: " << filename << std::endl;
             

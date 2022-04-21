@@ -57,7 +57,7 @@ unsigned int PLATFORM = 2;
 unsigned int LEVER = 3;
 
 // COLLECTION POINT
-string cpPtr = "collectionPoint";
+std::string cpPtr = "collectionPoint";
 
 // PHYSICS
 bool debug = false;
@@ -76,8 +76,8 @@ glm::vec3 pointLightPositions[] = {
 const char* PNG = ".png";
 const char* JPG = ".jpg";
 const char* GIF = ".gif";
-const string BMP = ".bmp";
-const string TGA = ".tga";
+const std::string BMP = ".bmp";
+const std::string TGA = ".tga";
 
 #endif // !CONSTANTS_H
 
