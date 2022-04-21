@@ -19,16 +19,16 @@ private:
 		return glm::dot(normal, ((point - originPoint)))>=0.0f;
 	};
 
-	
+	//´TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
 	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
 		for (size_t i = 0; i < points.size(); i++)
 		{
-			//if (!facesPlane(originPoint, normals[0],points[i]))continue;
-			//if (!facesPlane(originPoint, normals[1], points[i]))continue;
-			//if (!facesPlane(originPoint, normals[2], points[i]))continue;
-			//if (!facesPlane(originPoint, normals[3], points[i]))continue;
-			//if (!facesPlane(nearPoint, normals[4], points[i]))continue;
-			if (!facesPlane(farPoint, normals[5], points[i]))continue;
+			if (!facesPlane(originPoint, -normals[0],points[i]))continue;
+			if (!facesPlane(originPoint, -normals[1], points[i]))continue;
+			if (!facesPlane(originPoint, -normals[2], points[i]))continue;
+			if (!facesPlane(originPoint,-normals[3], points[i]))continue;
+			if (!facesPlane(nearPoint, normals[4], points[i]))continue;
+			if (facesPlane(farPoint, normals[5], points[i]))continue;
 			renderedObjects++;
 			return false;
 		}
