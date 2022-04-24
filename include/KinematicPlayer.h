@@ -329,7 +329,7 @@ public:
 	}
 
 
-	unsigned int getSnowBallAmmo() const {
+	unsigned int getSnowBallAmmo()  {
 		return this->snowBallAmmo;
 	}
 

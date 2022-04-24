@@ -67,30 +67,31 @@ private:
 	
 	const char* fontPath;
 	std::map<std::string, std::string> pathToObject = boost::assign::map_list_of("player", "kenny-block-characters\\player.fbx")
-												  ("snowball", "snowball\\snowball.fbx")
-		                                          ("obelisk", "kenny-nature-kit\\statue_obelisk.fbx")
-												  ("test-world", "world\\test-world.fbx");
-	std::map<std::string, std::string> pathToShader = boost::assign::map_list_of	("modelVert", "model.vert") ("modelFrag", "model.frag")
-													("playerVert", "player.vert") ("playerFrag", "player.frag")
-													("directLightVert", "directLight.vert") ("directLightFrag", "directLight.frag")
-													("HUDvert", "HUD.vert") ("HUDfrag", "HUD.frag")
-													("skyboxVert", "skybox.vert") ("skyboxFrag", "skybox.frag");
-	std::map<std::string, std::string> pathToFont = boost::assign::map_list_of	("datcub", "datcub\\datcub.ttf")
-													("arial", "arial\\arial.ttf");
+																				("snowball", "snowball\\snowball.fbx")
+																				("obelisk", "kenny-nature-kit\\statue_obelisk.fbx")
+																				("test-world", "world\\test-world.fbx");
+	std::map<std::string, std::string> pathToShader = boost::assign::map_list_of("modelVert", "model.vert") ("modelFrag", "model.frag")
+																				("playerVert", "player.vert") ("playerFrag", "player.frag")
+																				("directLightVert", "directLight.vert") ("directLightFrag", "directLight.frag")
+																				("HUDvert", "HUD.vert") ("HUDfrag", "HUD.frag")
+																				("skyboxVert", "skybox.vert") ("skyboxFrag", "skybox.frag");
+	std::map<std::string, std::string> pathToFont = boost::assign::map_list_of("datcub", "datcub\\datcub.ttf")
+																			  ("arial", "arial\\arial.ttf");
 	std::map<std::string, std::string> pathToAudio = boost::assign::map_list_of("background1", "8-Bit-Ninja.mp3")
-												 ("background2", "summer-adventure-dj-soul.mp3")
-												 ("walk1", "sfx_movement_footsteps1a.wav")
-												 ("walk2", "sfx_movement_footsteps1b.wav")
-												 ("throw", "sfx_weapon_singleshot1.wav")
-												 ("jump", "sfx_movement_jump1.wav")
-												 ("pickUp", "sfx_sounds_fanfare3.wav")
-												 ("deliver", "sfx_sounds_powerup16.wav")
-												 ("alarm", "sfx_alarm_loop1.wav")
-												 ("win", "Jingle_Win_00.mp3")
-												 ("lose", "Jingle_Lose_00.mp3");
+																			   ("background2", "summer-adventure-dj-soul.mp3")
+																			   ("walk1", "sfx_movement_footsteps1a.wav")
+																			   ("walk2", "sfx_movement_footsteps1b.wav")
+																			   ("throw", "sfx_weapon_singleshot1.wav")
+																			   ("noAmmo", "sfx_wpn_noammo3.wav")
+																			   ("jump", "sfx_movement_jump1.wav")
+																			   ("pickUp", "sfx_sounds_fanfare3.wav")
+																			   ("deliver", "sfx_sounds_powerup16.wav")
+																			   ("alarm", "sfx_alarm_loop1.wav")
+																			   ("win", "Jingle_Win_00.mp3")
+																			   ("lose", "Jingle_Lose_00.mp3");
 	std::map<std::string, std::string> pathToSkybox = boost::assign::map_list_of("daylight", "daylight\\")
-												  ("galaxy", "galaxy\\")
-											      ("orange", "orange\\");
+																				("galaxy", "galaxy\\")
+																				("orange", "orange\\");
 	//map<string, string[6]> pathToSkybox = map_list_of("daylight", ["DaylighboxLeft", "DaylightBoxRight", "DaylightBoxFront", "DaylightBoxBack", "DaylightBoxTop", "DaylightBoxBottom"]);
 };  
 

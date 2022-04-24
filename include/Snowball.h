@@ -68,7 +68,7 @@ public:
 	Physics* s_pHandler;
 	Snowball(const unsigned int s_id, std::string const& path, glm::vec3 pos, float mass, float radius, glm::vec3 g, Physics* s_pHandler, Camera* s_camera) {
 		this->s_id = s_id;
-		this->s_model = new Model(path, s_camera);
+		this->s_model = new Model(path);
 		this->s_pHandler = s_pHandler;
 		this->s_body = s_pHandler->addSphere(pos, mass, radius);
 		this->s_body->setGravity(s_pHandler->GlmVec3ToBulletVec3(g));

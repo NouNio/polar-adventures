@@ -74,7 +74,7 @@ glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress = glfwGetTime();
+double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress, lastCPress = glfwGetTime();
 Skybox* skybox;
 float fov, near, far;
 
@@ -86,11 +86,9 @@ int currRenderedObjects = 0;
 // file manager
 FileManager* fm;
 
-
-
-
 int main(void)
 {
+    stbi_set_flip_vertically_on_load(false);
     /* ------------------------------------------------------------------------------------ */
     // load setting.ini and inititalize openGL & bullet as well as physics handler and file manager
     /* ------------------------------------------------------------------------------------ */
@@ -109,19 +107,20 @@ int main(void)
     Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
+    
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
     // world
-    Model world(fm->getObjPath("test-world"), &camera);                                                 // load world model
+    Model world(fm->getObjPath("test-world"));                                                 // load world model
     btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);                     // create a physics obj
     btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));      // add to world
     pHandler->getWorld()->removeRigidBody(worldBody);                                                   // removw the inital physcics obj
 
     // player
-    Model player(fm->getObjPath("player"), true, PNG);
+    Model player(fm->getObjPath("player"), true, false, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs
@@ -135,14 +134,19 @@ int main(void)
     snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
 
     // collection point place holder
-    Model collectionPoint(fm->getObjPath("obelisk"), &camera);
+    Model collectionPoint(fm->getObjPath("obelisk"));
     btRigidBody* colPntBody = pHandler->addCylinder(glm::vec3(-37.5f, 53.5f, 20.0f), 0, glm::vec3(0.5, 2, 0.5));
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
 
 
     /* ------------------------------------------------------------------------------------ */
-    // load HUD
+    // ANIMATED PLAYER MODEL - still in testing phase
+    /* ------------------------------------------------------------------------------------ */
+
+
+    /* ------------------------------------------------------------------------------------ */
+    // HUD
     /* ------------------------------------------------------------------------------------ */
     HUD hud(fm->getFontPath("arial"));
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
@@ -159,26 +163,28 @@ int main(void)
     skyboxShader.setInt("skybox", 0);
 
 
-
     /* ------------------------------------------------------------------------------------ */
     // sound
     /* ------------------------------------------------------------------------------------ */
     soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
 
 
-
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
     do {
-        // per-frame time logic
+        /* ------------------------------------------------------------------------------------ */
+        // TIME LOGIC
+        /* ------------------------------------------------------------------------------------ */
         computeTimeLogic();
         if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm) {
             soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
             playedAlarm = true;
         }
 
-        // input & player
+        /* ------------------------------------------------------------------------------------ */
+        // INPUT 
+        /* ------------------------------------------------------------------------------------ */
         processInput(window);
 
         // render
@@ -186,7 +192,6 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         activateShader(&modelShader);
-        
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -205,7 +210,12 @@ int main(void)
             item.second->shrink(deltaTime);
             item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         }
-        
+
+
+        /* ------------------------------------------------------------------------------------ */
+        // ANIMATED MODEL
+        /* ------------------------------------------------------------------------------------ */
+
 
         /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
@@ -378,8 +388,6 @@ bool hasLost() {
 // process all input that is triggered by the keyboard
 void processInput(GLFWwindow* window)
 {   
-    
-
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && (glfwGetTime() - lastESCPress) >= BUTTON_PAUSE) {
         if (!firstWindowClose)
             firstWindowClose = !firstWindowClose;
@@ -412,9 +420,12 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE){
+        if(playerController->getSnowBallAmmo() > 0)
+            soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
+        else
+            soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
         playerController->shootSnowball();
         lastShotPress = glfwGetTime();
-        soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
