@@ -17,7 +17,7 @@
 /* ------------------------------------------------------------------------------------ */
 // the player controller part of this file is inspired and following 4 different srcs
 // 1 the official bullet character demo: https://github.com/kripken/bullet/blob/master/Demos/CharacterDemo/CharacterDemo.cpp
-// 2 an well written character controller: https://github.com/lokesh-sharma/GameEngine/blob/master/src/Player.cpp
+// 2 a well written character controller: https://github.com/lokesh-sharma/GameEngine/blob/master/src/Player.cpp
 // 3 a general structure was inspired by [8]
 // 4 it also uses ideas from here https://github.com/222464/EvolvedVirtualCreaturesRepo/blob/master/VirtualCreatures/Volumetric_SDL/Source/SceneObjects/Physics/DynamicCharacterController.h
 /* ------------------------------------------------------------------------------------ */

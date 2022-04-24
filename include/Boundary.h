@@ -15,6 +15,7 @@ private:
 				}
 			}
 		}
+		points.push_back(glm::vec3((xBounds[0]+xBounds[1])/2.0f, (yBounds[0] + yBounds[1]) / 2.0f, (zBounds[0] + zBounds[1]) / 2.0f));
 	}
 
 
