@@ -18,33 +18,40 @@
 #include <Shader.h>
 #include <Camera.h>
 #include <Constants.h>
+#include <Utils.h>
 
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
 #include <map>
+#include <set>
 #include <vector>
+#include <unordered_map>
 
 
 // this code is inspired by learnopengl.com as this is my main resource for opengl information
 // other resources my have been influential as well, this file howver should describes my way of implementing the theoretical concepts
 
-// NOTE: changed all appearances of '/' to '\\' as this is the only way that seems to work on my machine
-
 // here as well as in the Mesh class, we use Kenney Artwork so far, e.g. we do not have textures (yet)
 
 extern Camera camera;
+
+
+#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs)
+
 
 class Model
 {
 public:
     std::vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
 
-    Model(std::string const& path, bool withTextures = false, const char* texFileType = "")
+
+    Model(std::string const& path, bool withTextures = false, bool animated = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
         this->texFileType = texFileType;
+        this->animated = animated;
         loadModel(path);
     }
 
@@ -74,7 +81,7 @@ public:
             }
             meshes[i].resetBound();
            
-    }
+        }
     }
 
 
@@ -94,30 +101,50 @@ public:
     }
 
 
-    bool hasTextures()
-    {
+    void drawUnculled(Shader& shader) {
+        for (unsigned int i = 0; i < meshes.size(); i++) {
+            meshes[i].draw(shader);
+            
+        }
+    }
+
+
+    bool hasTextures() const{
         return this->withTextures;
     }
 
 
-    bool isInFrustum(Mesh m) {
+    bool isInFrustum (Mesh m) const {
         return camera.frustum->isInside(m.bound.getPoints());
     }
 
 
-    size_t getNumMeshes()
+    size_t getNumMeshes() const
     {
         return this->meshes.size();
     }
 
 
-private:
-    std::string directory;
+    int getNumVertices() const {
+        int nVertices = 0;
+        for (Mesh mesh : meshes) {
+            nVertices += mesh.getNumVertices();
+        }
+        return nVertices;
+    }
+
+
+protected:
     Assimp::Importer importer;
     const aiScene* scene;
-    bool withTextures;
+
+
+private:
+    std::string directory, fileName;
+    bool withTextures, animated; 
     const char* texFileType;
     const std::string TEX_DIFF = "texture_diffuse";
+
     //boundaries initalized with max / min values to make sure max/min-search runs properly
     std::vector<float>xBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
     std::vector<float>yBound = { std::numeric_limits<float>::max(),std::numeric_limits<float>::min() };
@@ -125,63 +152,54 @@ private:
 
     // add datastructure like map/hash to not load the same texture multiple times for each model, when all/some of the meshes use this texture
 
-
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-    void loadModel(std::string const& path)
-    {
-        scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    void loadModel(std::string const& path){
+        scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
+
+        directory = path.substr(0, path.find_last_of('\\'));
+        fileName = path.substr(path.find_last_of('\\') + 1);
 
         checkLoadErros();
 
-        directory = path.substr(0, path.find_last_of('\\'));
-
-        parseNode(scene->mRootNode);
-
+        printf("**************************************************\n");
+        parseMeshes();
+        printf("**************************************************\n\n\n");
     }
 
 
-    void checkLoadErros()
-    {
+    void checkLoadErros(){
         if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)  // check if scene or rooNode is null or if the data is incomplete
         {
-            std::cout << "There was an error loading the model: " << importer.GetErrorString() << std::endl;
+            printf("There was an error loading the model '%s': '%s' \n", fileName.c_str(), importer.GetErrorString());
             return;
         }
     }
 
 
-    // recursively go through all the nodes and parse the meshes they contain
-    void parseNode(aiNode* node)
-    {
-        for (unsigned int i = 0; i < node->mNumMeshes; i++)  // go through all the meshes of a single node
-        {
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];  // obtain the node related mesh; node->mMeshes contains idx that point to actual respective mesh in the mesh array scene->mMeshes
-            meshes.push_back(parseMesh(mesh));                // transform the assimp mesh into our won mesh class  
-        }
+    void parseMeshes() {
+        printf("Parsing %d meshes for '%s'\n\n", scene->mNumMeshes, fileName.c_str());
 
-        for (unsigned int i = 0; i < node->mNumChildren; i++)  // parse all of the nodes childres, which will then parse the childrens childrens etc... STOPs if a node has no children
-        {
-            parseNode(node->mChildren[i]);
+        for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+            meshes.push_back(parseMesh(i, scene->mMeshes[i]));
+            
         }
     }
 
 
-    Mesh parseMesh(aiMesh* mesh)
-    {
-        // create the data to call the Mesh constructor
+    Mesh parseMesh(unsigned int meshIdx, aiMesh* mesh) {// create the data to call the Mesh constructor
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
         Material material{};
         Texture texture;
 
         // fill it with the data from the assimp meshes
-        parseVertices(&vertices, mesh);   // 1. retrieve the vertice data from the assimp mesh
-        parseIndices(&indices, mesh);     // 2. retrieve the indice data from the assimp mesh
-        parseMaterials(&material, mesh);  // 3. retrieve material data
+        parseVertices(&vertices, mesh);             // 1. retrieve the vertice data from the assimp mesh
 
-        if (this->hasTextures())
-        {
-            parseTextures(&texture);   // 4. retireve the (correctly named) textures
+        parseIndices(&indices, mesh);               // 2. retrieve the indice data from the assimp mesh
+        parseMaterials(&material, mesh);            // 3. retrieve material data
+
+        if (this->hasTextures()){
+            parseTextures(&texture);                // 4. retrieve the (correctly named) textures
             return Mesh(vertices, indices, material, texture, xBound, yBound, zBound, this->hasTextures());
         }
         else
@@ -197,6 +215,7 @@ private:
             
             vertex.pos = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
             vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+            
             if (vertex.pos.x > xBound[1]) {
                 xBound[1] = vertex.pos.x;
             }
@@ -215,14 +234,12 @@ private:
             if (vertex.pos.z < zBound[0]) {
                 zBound[0] = vertex.pos.z;
             }
-            //TODO: if considering textures, would need TexCoords parsing here
             
             if (this->hasTextures() && mesh->mTextureCoords[0]) {
                 vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
             }
             else
-                vertex.texCoords = glm::vec2(0.0f, 0.0f); 
-
+                vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
             vertices->push_back(vertex);
         }
@@ -273,7 +290,7 @@ private:
 
         unsigned int textureID;
         glGenTextures(1, &textureID);
-        std::cout << "trying to load file: " << filename << std::endl;
+        //std::cout << "trying to load file: " << filename << std::endl;
         
         int width, height, nComponents;
         unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nComponents, 0);

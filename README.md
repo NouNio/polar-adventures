@@ -23,6 +23,7 @@ The documentation is written in Latex and can be found on Overleaf [here](https:
 - bullet3
 - boost
 - irrKlang
+- cgltf
 - ...
 
 It is recommended to resolve all dependencies using [vcpkg](https://vcpkg.io/en/index.html).

@@ -46,13 +46,12 @@ struct Texture {
 class Mesh {
 public:
     // mesh Data
-    std::vector<Vertex> vertices;        // all the vertices that form the mesh
-    std::vector<unsigned int> indices;   // indices for the mesh data
-    Material material;              // material data for the mesh
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    Material material;              
     Texture texture;   
     Boundary bound;
-    // texture data, for now we only have the snow bal with one texture
-    bool withTexture;                   // each mesh belongs to some Model obj
+    bool withTexture;
 
     const std::string MAT_DIFF = "material.diffuse";
     const std::string MAT_SPEC = "material.specular";
@@ -60,7 +59,8 @@ public:
     const std::string MAT_SHIN = "material.shininess";
 
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false )
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, 
+         std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false)
         :bound(xBound, yBound, zBound) {
         this->vertices = vertices;
         this->indices = indices;
@@ -70,7 +70,8 @@ public:
     }
 
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture, std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture,
+         std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
     :bound(xBound,yBound,zBound) {
         this->vertices = vertices;
         this->indices = indices;
@@ -92,21 +93,22 @@ public:
     }
 
 
-    size_t getNumVertices()
-    {
-        return this->vertices.size();
-    }
+    size_t getNumVertices() const { return this->vertices.size(); }
+    
+    
     void transformBound(glm::mat4 transformation)
     {
         bound.transform(transformation);
     }
+    
+    
     void resetBound()
     {
         bound.reset();
     }
 
 
-private: 
+private:
     unsigned int VAO, VBO, EBO;  // vertex array / buffer object | element buffer object
 
     void drawMesh() 
@@ -130,8 +132,7 @@ private:
     }
 
 
-    void setTextureValues(Shader& shader)
-    {   
+    void setTextureValues(Shader& shader) {   
        // if we were to process multiple textures, we would need to loop through the textures vector and set the appropriate values in the shader
        glActiveTexture(GL_TEXTURE0);
 
@@ -151,6 +152,7 @@ private:
 
         glBindVertexArray(0);  // unbind
     }
+
 
     void genArraysAndBuffers() 
     {
@@ -172,10 +174,10 @@ private:
     }
 
 
-    void enableAndSetPtr() 
-    {
+    void enableAndSetPtr() {
         // vertex positions
         glEnableVertexAttribArray(0);
+                             //(location in shader, size of vertex attrib, data type, normalize flag, space between consecutive vertices, offset in buffer)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         
         // vertex normals
@@ -183,11 +185,12 @@ private:
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 
         // vertex texture coordinates
-        if (this->withTexture)
-        {
+        if (this->withTexture){
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
         }
+
+        //glBindVertexArray(0);
     }
 };
 #endif

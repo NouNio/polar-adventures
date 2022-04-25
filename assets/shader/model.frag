@@ -2,6 +2,7 @@
 // NOTE: frag shader with multiple lights: 1 dir light and n point lights (spotlight to come)
 layout(location=0) out vec4 FragColor;
 layout(location=1) out vec4 normal;
+
 struct Material {   
     vec3 ambient;
     vec3 diffuse;

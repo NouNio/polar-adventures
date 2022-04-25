@@ -1,6 +1,11 @@
 #version 330 core
 // NOTE: frag shader with multiple lights: 1 dir light and n point lights (spotlight to come)
+in vec3 Normal;   // perpendicular to the vertex
+in vec3 FragPos;  // vertex position in world view
+in vec2 TexCoords;
+
 out vec4 FragColor;
+
 
 struct Material {   
     vec3 ambient;
@@ -26,11 +31,6 @@ struct PointLight {
 
 #define N_PT_LIGHTS 5
 
-in vec3 Normal;   // perpendicular to the vertex
-in vec3 FragPos;  // vertex position in world view
-in vec2 TexCoords;
-  
- 
 uniform vec3 viewPos; 
 uniform Material material;                        // material vals of the vertex
 uniform sampler2D texture_diffuse;
@@ -57,8 +57,7 @@ void main()
 }
 
 
-vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material)
-{
+vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material) {
     vec3 lightDir = normalize(-light.direction);
     
     vec3 ambient  = light.ambient * material.ambient;  // ambient shading

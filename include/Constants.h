@@ -75,9 +75,13 @@ glm::vec3 pointLightPositions[] = {
 // FILE TYPES
 const char* PNG = ".png";
 const char* JPG = ".jpg";
+const char* JPEG = ".jpeg";
 const char* GIF = ".gif";
 const std::string BMP = ".bmp";
 const std::string TGA = ".tga";
+
+// UTIL
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))  // this is taken from ogldev
 
 #endif // !CONSTANTS_H
 
