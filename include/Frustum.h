@@ -16,25 +16,22 @@ private:
 
 
 	//TODO: Fix this mess
-	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec3 point) {
+	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, std::vector<glm::vec3> points) {
 		//FacesFromPlanes as in is inside frustum
-		return glm::dot(normal, ((point - originPoint)))>=0.0f;
+		return (glm::dot(normal, ((points[0] - originPoint))) >= -glm::distance(points[0], points[1]));
 	};
 
 	//´TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
 	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			if (!facesPlane(originPoint, -normals[0],points[i]))continue;
-			if (!facesPlane(originPoint, -normals[1], points[i]))continue;
-			if (!facesPlane(originPoint, -normals[2], points[i]))continue;
-			if (!facesPlane(originPoint,-normals[3], points[i]))continue;
-			if (!facesPlane(nearPoint, normals[4], points[i]))continue;
-			if (facesPlane(farPoint, normals[5], points[i]))continue;
-			renderedObjects++;
-			return false;
-		}
-		return true;
+		return (
+			facesPlane(originPoint, normals[0], points)&&
+			facesPlane(originPoint, normals[1], points)&&
+			facesPlane(originPoint, normals[2], points)&&
+			facesPlane(originPoint, normals[3], points)&&
+			facesPlane(nearPoint, normals[4], points)&&
+			facesPlane(farPoint, normals[5], points)
+			);
+
 	}
 
 	void setPlanes() {
@@ -87,6 +84,7 @@ public:
 	
 	
 	bool isInside(std::vector<glm::vec3> points) {
+		if (!FacesFromAllPlanes(points)) { increaseRenderedObjects(); }
 		return !FacesFromAllPlanes(points);
 	};
 	

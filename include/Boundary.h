@@ -5,17 +5,26 @@ private:
 	
 	void resetPoints(){
 		points.clear();
+		std::vector<glm::vec3>  temp;
+		glm::vec3 maxdist;
+		float dist = 0.0f;
+		points.push_back(glm::vec3((xBounds[0] + xBounds[1]) / 2.0f, (yBounds[0] + yBounds[1]) / 2.0f, (zBounds[0] + zBounds[1]) / 2.0f));
 		for (size_t i = 0; i < xBounds.size(); i++)
 		{
 			for (size_t j = 0; j < yBounds.size(); j++)
 			{
 				for (size_t k = 0; k < zBounds.size(); k++)
 				{
-					points.push_back(glm::vec3(xBounds[i], yBounds[j], zBounds[k]));
+					glm::vec3 comparison(glm::vec3(xBounds[i], yBounds[j], zBounds[k]));
+					if (glm::distance(points[0], comparison) > dist) {
+						dist = glm::distance(points[0], comparison);
+						maxdist = comparison;
+					}
 				}
 			}
 		}
-		points.push_back(glm::vec3((xBounds[0]+xBounds[1])/2.0f, (yBounds[0] + yBounds[1]) / 2.0f, (zBounds[0] + zBounds[1]) / 2.0f));
+		points.push_back(maxdist);
+
 	}
 
 

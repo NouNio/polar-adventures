@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 class Framebuffer {
 public:
-	Framebuffer(int window_width, int window_height, unsigned int edge[], unsigned int colorBuffers[], unsigned int attachments)
+	Framebuffer(int window_width, int window_height, unsigned int edge[], unsigned int colorBuffers[], unsigned int attachments[])
 	{
 		glGenFramebuffers(1, &_handle);
 	};
@@ -11,7 +11,7 @@ public:
 
 
 
-	//*
+	/*
 	int initializeFBOs(int window_width, int window_height, unsigned int fbo, unsigned int blur[], unsigned int colorBuffers[], unsigned int attachments[], unsigned int rbo, unsigned int blurText) {
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -108,8 +108,8 @@ public:
 	void bindBuffer() {
 		glBindFramebuffer(GL_FRAMEBUFFER, _handle);
 	}
-	unsigned int getHandle() {
-
+	static void unbind() {
+		glBindFramebuffer(Framebuffer, 0)
 	}
 private:
 	unsigned int _handle;
