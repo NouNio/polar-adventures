@@ -51,7 +51,7 @@ public:
     bool VFCEnabled;
 
 
-    Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(glm::radians(zoom), aspect, near, far))
+    Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(glm::radians(zoom), near, far, aspect))), projection(glm::perspective(glm::radians(zoom), aspect, near, far))
 
     {
         this->aspect = aspect;
