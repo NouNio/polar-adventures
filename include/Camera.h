@@ -46,19 +46,22 @@ public:
     // euler Angles
     float yaw, pitch;
     // camera options
-    float moveSpeed, mouseSensitivity, zoom;
+    float moveSpeed, mouseSensitivity, zoom, near, far, aspect;
     std::unique_ptr<Frustum> frustum;
     bool VFCEnabled;
 
 
-    Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(fov, aspect, near, far))
+    Camera(float fov, float aspect, float near, float far,glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : front(glm::vec3(0.0f, 0.0f, -1.0f)), moveSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM), frustum(std::make_unique<Frustum>(Frustum(fov, near, far, aspect))),projection(glm::perspective(glm::radians(zoom), aspect, near, far))
 
     {
-
+        this->aspect = aspect;
+        this->near = near;
+        this->far = far;
         this->pos = pos;
         this->worldUp = up;
         this->yaw = yaw;
         this->pitch = pitch;
+        projection = glm::perspective(glm::radians(zoom), aspect, near, far);
         updateCameraVectors();
     }
 
@@ -69,7 +72,9 @@ public:
                            this->pos + this->front,     // target position, where should the camera look to, i.e. a vector pointing from pos to targetPos
                            this->up);                   //
     }
-
+    glm::mat4 GetProjection() {
+        return projection;
+    }
 
     void setCubeSide(unsigned int newCubeSide){
         this->cubeSide = newCubeSide;
@@ -156,6 +161,9 @@ public:
             this->zoom = MIN_ZOOM;
         if (this->zoom > MAX_ZOOM)
             this->zoom = MAX_ZOOM;
+
+        projection = (glm::perspective(glm::radians(zoom), aspect, near, far));
+        frustum->changeFOV(glm::radians(zoom));
     }
 
 

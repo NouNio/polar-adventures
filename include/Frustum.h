@@ -1,6 +1,6 @@
 #include <glm/gtx/rotate_vector.hpp>
 
-
+//adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
 class Frustum {
 private:
 	glm::vec3 viewDir;
@@ -11,7 +11,7 @@ private:
 	glm::vec3 farPoint;
 	glm::vec3 nearPoint;
 	int renderedObjects = 0;
-	float pitch, yaw, fov, hfov, near, far;
+	float pitch, yaw, fov, hfov, near, far, aspect;
 	std::vector<glm::vec3> normals;  //length 6 = top, bottom, right, left, front, back
 
 
@@ -53,6 +53,7 @@ public:
 		far(far),
 		pitch(pitch),
 		yaw(yaw),
+		aspect(aspect),
 		right(glm::normalize(glm::cross(up, viewDir))),
 		up(glm::normalize(up)),
 		viewDir(glm::normalize(viewDir))
@@ -88,7 +89,12 @@ public:
 		return !FacesFromAllPlanes(points);
 	};
 	
-	
+	void changeFOV(float fov) {
+		this->fov = fov;
+		hsize = 2 * far * tanf(fov * 0.5f);
+		vsize = hsize * aspect;
+		setPlanes();
+	}
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{
 		for (size_t i = 0; i < normals.size(); i++){

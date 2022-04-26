@@ -172,6 +172,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
+   
     do {
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
@@ -194,9 +195,9 @@ int main(void)
         activateShader(&modelShader);
 
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
+        projection = camera.GetProjection();
         modelShader.setMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
         modelShader.setMat4("view", view);
 
 
