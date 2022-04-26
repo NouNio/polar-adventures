@@ -5,7 +5,7 @@ private:
 	std::vector <  float> xBounds, yBounds, zBounds;
 	
 	void resetPoints(){
-		points.clear()
+		points.clear();
 		glm::vec3 maxdist;
 		float dist = 0.0f;
 		points.push_back(glm::vec3((xBounds[0] + xBounds[1]) / 2.0f, (yBounds[0] + yBounds[1]) / 2.0f, (zBounds[0] + zBounds[1]) / 2.0f));

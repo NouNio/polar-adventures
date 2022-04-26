@@ -78,14 +78,19 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     vec3 ambient  = light.ambient * material.ambient;  // ambient shading
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-    diff=discretize(diff);
+    //diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
+
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
-    
-    return (ambient + diffuse + specular);
+    vec3 saved= (diffuse+ambient);
+    float maximum=max(saved.x,saved.y);
+    maximum=max(maximum, saved.z);
+    maximum=discretize(maximum);
+    saved=saved*maximum;
+    return (saved + specular);
 }
 
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
@@ -97,6 +102,7 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
 
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
+        diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;
     
     // specular shading
@@ -114,6 +120,10 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
 	value=discretize(value);
 	diffuse=diffuse*value;
     specular *= attenuation;
-    
-    return (ambient + diffuse + specular);  // combine results
+        vec3 saved= (diffuse+ambient);
+    float maximum=max(saved.x,saved.y);
+    maximum=max(maximum, saved.z);
+    maximum=discretize(maximum);
+    saved=saved*maximum;
+    return (saved + specular);  // combine results
 }
