@@ -85,7 +85,7 @@ public:
 	
 	
 	bool isInside(std::vector<glm::vec3> points) {
-		if (!FacesFromAllPlanes(points)) { increaseRenderedObjects(); }
+		if (FacesFromAllPlanes(points)) { increaseRenderedObjects(); }
 		return FacesFromAllPlanes(points);
 	};
 	
