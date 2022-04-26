@@ -9,8 +9,10 @@ public:
 		glGenTextures(1, &normal);
 		glGenTextures(1, &depth);
 		glGenFramebuffers(1, &_handle);
-		bindBuffer();
+		glGenFramebuffers(1, &_post_processor);
+		glGenRenderbuffers(1, &rbo);
 
+		bindBuffer();
 		glBindTexture(GL_TEXTURE_2D, color);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -18,7 +20,7 @@ public:
 		// attach texture to framebuffer
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
 
-		glBindTexture(GL_TEXTURE_2D, normals);
+		glBindTexture(GL_TEXTURE_2D, normal);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -35,6 +37,21 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window_width, window_height);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			//EXIT_WITH_ERROR("failed to create framebuffer");
+		}
+		glClearColor(0, 0, 0, 0);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		//glDrawBuffers(2, attachments);
 
 	};
 
@@ -117,8 +134,11 @@ public:
 	}
 private:
 	unsigned int _handle;
+	unsigned int rbo;
 	unsigned int color;
 	unsigned int normal;
 	unsigned int depth;
+	unsigned int _post_processor;
+	unsigned int edge;
 
 };

@@ -18,7 +18,7 @@ private:
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, std::vector<glm::vec3> points) {
 		//FacesFromPlanes as in is inside frustum
-		return (glm::dot(normal, ((points[0] - originPoint))) >= -glm::distance(points[0], points[1]));
+		return (glm::dot(glm::normalize(normal-planeOrigin), (points[0] - planeOrigin)) >= -glm::distance(points[0], points[1]));
 	};
 
 	//´TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
@@ -86,7 +86,7 @@ public:
 	
 	bool isInside(std::vector<glm::vec3> points) {
 		if (!FacesFromAllPlanes(points)) { increaseRenderedObjects(); }
-		return !FacesFromAllPlanes(points);
+		return FacesFromAllPlanes(points);
 	};
 	
 	void changeFOV(float fov) {
