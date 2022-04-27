@@ -70,17 +70,15 @@ private:
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
 														{"test-world", "world\\test-world.fbx"} };
 	
-	std::map<std::string, std::string> pathToShader = { {"modelVert", "model.vert"}, {"modelFrag", "model.frag"},
-														{"playerVert", "player.vert"}, {"playerFrag", "player.frag"},
-														{"directLightVert", "directLight.vert"}, {"directLightFrag", "directLight.frag"},
+	std::map<std::string, std::string> pathToShader = { {"directLightVert", "directLight.vert"}, {"directLightFrag", "directLight.frag"},
 														{"HUDvert", "HUD.vert"}, {"HUDfrag", "HUD.frag"},
+														{"modelVert", "model.vert"}, {"modelFrag", "model.frag"},
+														{"playerVert", "player.vert"}, {"playerFrag", "player.frag"},
 														{"skyboxVert", "skybox.vert"}, {"skyboxFrag", "skybox.frag" }};
 	
-	std::map<std::string, std::string> pathToFont = { {"datcub", "datcub\\datcub.ttf"},
-													  {"arial", "arial\\arial.ttf"} };
+	std::map<std::string, std::string> pathToFont = { {"arial", "arial\\arial.ttf"} };
 	
 	std::map<std::string, std::string> pathToAudio = { {"background1", "8-Bit-Ninja.mp3"},
-													   {"background2", "summer-adventure-dj-soul.mp3"},
 													   {"walk1", "sfx_movement_footsteps1a.wav"},
 													   {"walk2", "sfx_movement_footsteps1b.wav"},
 													   {"throw", "sfx_weapon_singleshot1.wav"},
@@ -92,9 +90,7 @@ private:
 													   {"win", "Jingle_Win_00.mp3"},
 													   {"lose", "Jingle_Lose_00.mp3"} };
 	
-	std::map<std::string, std::string> pathToSkybox = {{"daylight", "daylight\\"},
-													   {"galaxy", "galaxy\\"},
-													   {"orange", "orange\\"},};
+	std::map<std::string, std::string> pathToSkybox = {{"daylight", "daylight\\"}, {"galaxy", "galaxy\\"}, {"orange", "orange\\"},};
 };  
 
 #endif // !FILEMANAGER_H
