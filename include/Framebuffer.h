@@ -116,7 +116,7 @@ public:
 		return edge;
 	}
 	static void unbind() {
-		glBindFramebuffer(Framebuffer, 0)
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	~Framebuffer() {
 		glDeleteTextures(1, &color);
@@ -131,15 +131,6 @@ public:
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 		Material material;
-		/*
-		struct Material {
-	glm::vec3 diffuseCol;
-	glm::vec3 specularCol;
-	glm::vec3 ambientCol;
-	float shininess;
-};
-		*/
-		//no
 		std::vector<float> bound = { 0,0 };
 		return Mesh(vertices, indices, material, bound, bound, bound);
 		//	std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound,
