@@ -3,6 +3,13 @@
 #include <GLFW/glfw3.h>
 #include <Mesh.h>
 class Framebuffer {
+private:
+	unsigned int _handle;
+	unsigned int color;
+	unsigned int normal;
+	unsigned int depth;
+	unsigned int _post_processor;
+	unsigned int edge;
 public:
 	Framebuffer(int window_width, int window_height, bool isPostProcessing = false)
 	{
@@ -62,7 +69,9 @@ public:
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
 			glBindTexture(GL_TEXTURE_2D, 0);
-			glDrawBuffers(3, { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_DEPTH_ATTACHMENT });
+			GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_DEPTH_ATTACHMENT};
+		
+			glDrawBuffers(3, attachments);
 
 		}
 
@@ -79,7 +88,8 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			// attach texture to framebuffer
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, edge, 0);
-			glDrawBuffers(1, GL_COLOR_ATTACHMENT0);
+			GLenum attachments[] = { GL_COLOR_ATTACHMENT0};
+			glDrawBuffers(1,  attachments );
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 			}
 
@@ -135,14 +145,6 @@ public:
 		return Mesh(vertices, indices, material, bound, bound, bound);
 		//	std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound,
 	}
-	//static Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material,
-	//	std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture = false)
-private:
-	unsigned int _handle;
-	unsigned int color;
-	unsigned int normal;
-	unsigned int depth;
-	unsigned int _post_processor;
-	unsigned int edge;
+
 
 };
