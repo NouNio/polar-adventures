@@ -127,6 +127,7 @@ public:
         {
             this->pos += this->up * velocity;
         }
+        frustum->reset(pitch, yaw, pos, up, front);
     }
 
 

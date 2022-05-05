@@ -30,6 +30,7 @@
 #include <Skybox.h>
 #include <FileManager.h>
 #include <Constants.h>
+#include <Framebuffer.h>
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -97,6 +98,7 @@ int main(void)
     camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
+    Framebuffer framebuffer(SCR_WIDTH, SCR_HEIGHT);
     pHandler = new Physics(debug);
   
     /* ------------------------------------------------------------------------------------ */

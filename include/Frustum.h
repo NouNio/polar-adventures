@@ -1,5 +1,5 @@
 #include <glm/gtx/rotate_vector.hpp>
-
+#include <vector>
 //adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
 class Frustum {
 private:
@@ -36,13 +36,24 @@ private:
 
 	void setPlanes() {
 		//top, bottom, right, left, front, back
-		normals.push_back(glm::cross(right, (farPoint - originPoint) - up * (vsize * 0.5f)));
-		normals.push_back(glm::cross((farPoint - originPoint) + up * (vsize * 0.5f),right));
-		normals.push_back(glm::cross(up, (farPoint-originPoint)+right*(hsize*0.5f)));
-		normals.push_back(glm::cross((farPoint - originPoint) - right * (hsize * 0.5f),up));
+		normals.push_back(glm::cross(glm::rotate(viewDir,hfov*0.5f,right),right));
+		normals.push_back(-glm::cross(glm::rotate(viewDir, -hfov*0.5f, right), right));
+		normals.push_back(glm::cross(glm::rotate(viewDir, fov*0.5f, up), up));
+		normals.push_back(-glm::cross(glm::rotate(viewDir, -fov*0.5f, up), up));
 		normals.push_back(glm::normalize(viewDir));
 		normals.push_back(glm::normalize( - viewDir));
+		std::ostringstream vts;
+		if (!normals.empty())
+		{
+			// Convert all but the last element to avoid a trailing ","
+			for (size_t i = 0; i < normals.size(); i++)
+			{
+				vts << normals[i].x << ' ' << normals[i].y << ' ' << normals[i].z << std::endl;
+			}
+	
+		}
 
+		std::cout << vts.str() << std::endl;
 	}
 
 
@@ -58,6 +69,7 @@ public:
 		up(glm::normalize(up)),
 		viewDir(glm::normalize(viewDir))
 	{
+		hfov = 2 * atan(tan(fov / 2) * aspect);
 		//ensure everything is 
 		viewDir = glm::normalize(viewDir);
 		up = glm::normalize(up);

@@ -97,7 +97,9 @@ public:
                 meshes[i].draw(shader);
                 camera.frustum->increaseRenderedObjects();
             }
+            meshes[i].resetBound();
         }
+        
     }
 
 

@@ -3,24 +3,36 @@
 #include <GLFW/glfw3.h>
 #include <Mesh.h>
 class Framebuffer {
-private:
-	unsigned int _handle;
+//private:
+	
+public:
+	unsigned int handle;
 	unsigned int color;
 	unsigned int normal;
 	unsigned int depth;
-	unsigned int _post_processor;
+	unsigned int postprocessor;
 	unsigned int edge;
-public:
-	Framebuffer(int window_width, int window_height, bool isPostProcessing = false)
+	Framebuffer(int window_width, int window_height)
 	{
+		/*
+	_handle=0;
+	color=0;
+	normal=0;
+	depth=0;
+	_post_processor=0;
+	edge=0;
+
+
+	*/
 		//generate textures and framebuffers
-		{
+		
 			glGenTextures(1, &color);
 			glGenTextures(1, &normal);
 			glGenTextures(1, &depth);
 			glGenTextures(1, &edge);
-			glGenFramebuffers(1, &_handle);
-			glGenFramebuffers(1, &_post_processor); }
+			glGenFramebuffers(1, &handle);
+			glGenFramebuffers(1, &postprocessor);
+			 
 
 		bindBuffer();
 		//setup color texture
@@ -77,7 +89,7 @@ public:
 
 
 
-		glBindFramebuffer(GL_FRAMEBUFFER, _post_processor);
+		glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
 
 		//init edge texture
 		{
@@ -89,7 +101,7 @@ public:
 			// attach texture to framebuffer
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, edge, 0);
 			GLenum attachments[] = { GL_COLOR_ATTACHMENT0};
-			glDrawBuffers(1,  attachments );
+			glDrawBuffers(1,  attachments);
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 			}
 
@@ -108,21 +120,21 @@ public:
 	}
 	//*/
 	void bindBuffer() {
-		glBindFramebuffer(GL_FRAMEBUFFER, _handle);
+		glBindFramebuffer(GL_FRAMEBUFFER, handle);
 	}
 	void bindPostProcessor() {
-		glBindFramebuffer(GL_FRAMEBUFFER, _post_processor);
+		glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
 	}
-	unsigned int depth() {
+	unsigned int getDepth() {
 		return depth;
 	}
-	unsigned int normal() {
+	unsigned int getNormal() {
 		return normal;
 	}
-	unsigned int color() {
+	unsigned int getColor() {
 		return color;
 	}
-	unsigned edge() {
+	unsigned getEdge() {
 		return edge;
 	}
 	static void unbind() {
@@ -133,17 +145,18 @@ public:
 		glDeleteTextures(1, &normal);
 		glDeleteTextures(1, &depth);
 		glDeleteTextures(1, &edge);
-		glDeleteFramebuffers(1, &_handle);
-		glDeleteFramebuffers(1, &_post_processor);
+		glDeleteFramebuffers(1, &handle);
+		glDeleteFramebuffers(1, &postprocessor);
 
 	}
 	static Mesh renderMesh() {
 		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
+		std::vector<unsigned int> indices = { 0,1,2,0,2,3 };
 		Material material;
 		std::vector<float> bound = { 0,0 };
 		return Mesh(vertices, indices, material, bound, bound, bound);
-		//	std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound,
+		//	    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture,
+		//std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
 	}
 
 

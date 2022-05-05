@@ -48,7 +48,7 @@ public:
 		for (size_t i = 0; i < points.size(); i++)
 		{
 			glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
-			temp = transformation * temp;
+			temp = transformation*temp ;
 			points[i] = glm::vec3(temp.x, temp.y, temp.z);
 		}
 	};
