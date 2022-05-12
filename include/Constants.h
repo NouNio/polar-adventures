@@ -50,6 +50,14 @@ const float HUDyOffset = 50.0;
 #define CUBE_BOTTOM 5
 
 
+// WORLD SCALE and POS
+const glm::vec3 WORLD_SCALE(2.0f);
+const glm::vec3 WORLD_POS(-30.0f, 10.0f, 30.0f);
+const float WORLD_ROT_ANGLE = 0.0f;
+const glm::vec3 WORLD_ROT_AXES(1.0f, 0.0f, 0.0f);
+const float WORLD_MASS = 0.0f;
+
+
 // SNOWBALL KEYS
 unsigned int PALM_TREE = 0;
 unsigned int LABYRINTH = 1;

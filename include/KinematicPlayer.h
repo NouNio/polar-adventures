@@ -47,6 +47,18 @@ enum worldSide {
 	cBOTTOM,
 };
 
+const struct CubeBounds {
+	const float x_max = -6.0f;   // right boundary
+	const float x_min = -50.0f;  // left boundary
+	const float y_max = 40.0f;    // up boundary
+	const float y_min = -4.0f;    // down boundary
+	const float z_max = 57.0f;   // front boundary
+	const float z_min = 13.0f;   // back boundary
+};
+
+
+CubeBounds cubeBounds;
+
 
 class KinematicPlayer
 {
@@ -109,46 +121,51 @@ private:
 	void updateGravity() {
 		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
 		glm::vec3 currPos = this->getPos();
-		// check if on LEFT
-		if (currPos.y < 56 && currPos.y > 26
-			&& currPos.z < 38 && currPos.z > 8
-			&& currPos.x < -54) {
+		
+		// LEFT
+		if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
+			&& currPos.x < cubeBounds.x_min) {
+			
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
 			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
 			cubeSide = CUBE_LEFT;
 		}
-		// check if on RIGHT
-		else if (currPos.y < 56 && currPos.y > 26
-			&& currPos.z < 38 && currPos.z > 8
-			&& currPos.x > -22.9) {
+		// RIGHT
+		else if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
+			&& currPos.x > cubeBounds.x_max) {
+			
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
 			cubeSide = CUBE_RIGHT;;
 		}
-		// check if on FRONT
-		else if (currPos.x > -54 && currPos.x < -24
-			&& currPos.y < 56 && currPos.y > 26
-			&& currPos.z > 33) {
+		// FRONT
+		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
+			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z > cubeBounds.z_max) {
+			
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
 			cubeSide = CUBE_FRONT;
 		}
-		// check if on BACK
-		else if (currPos.x > -54 && currPos.x < -24
-			&& currPos.y < 56 && currPos.y > 26
-			&& currPos.z < 1) {
+		// BACK
+		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
+			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_min) {
+			
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 			cubeSide = CUBE_BACK;
 		}
-		// check if on TOP
-		else if (currPos.y > 52) {
+		// TOP
+		else if (currPos.y > cubeBounds.y_max) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 			cubeSide = CUBE_TOP;
 		}
-		// check if on BOTTOM
-		else if (currPos.y < 20) {
+		// BOTTOM
+		else if (currPos.y < cubeBounds.y_min) {
 			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 			cubeSide = CUBE_BOTTOM;

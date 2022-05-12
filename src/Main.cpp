@@ -116,11 +116,12 @@ int main(void)
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
     // world
-    Model world(fm->getObjPath("test-world"));                                                 // load world model
-    btRigidBody* worldBody = pHandler->addMeshShape(&world, glm::vec3(0, 0, 0), 0);                     // create a physics obj
-    btBvhTriangleMeshShape* worldShape = ((btBvhTriangleMeshShape*)(worldBody->getCollisionShape()));   // now create an easily scalable version of that body
-    pHandler->addScaledMeshShape(worldShape, glm::vec3(-30.0f, 10.0f, 30.0f), 0, glm::vec3(3.0f));      // add to world
-    pHandler->getWorld()->removeRigidBody(worldBody);                                                   // removw the inital physcics obj
+    Model newWorld(fm->getWorldPath("game-world"));
+    btRigidBody* newWorldBody = pHandler->addMeshShape(&newWorld, glm::vec3(0), 0);                     // create a physics obj
+    btBvhTriangleMeshShape* newWorldShape = ((btBvhTriangleMeshShape*)(newWorldBody->getCollisionShape()));   // now create an easily scalable version of that body
+    pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
+    pHandler->getWorld()->removeRigidBody(newWorldBody);
+
 
     // player
     Model player(fm->getObjPath("player"), true, false, PNG);
@@ -208,7 +209,8 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
-        world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
+        //world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
+        newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
         collectionPoint.draw(modelShader, glm::vec3(-37.5f, 51.5f, 20.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f));
         
         for (const auto& item : snowballs) {  // item.second == Snowball*
