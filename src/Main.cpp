@@ -89,6 +89,7 @@ FileManager* fm;
 
 int main(void)
 {
+    
     stbi_set_flip_vertically_on_load(false);
     /* ------------------------------------------------------------------------------------ */
     // load setting.ini and inititalize openGL & bullet as well as physics handler and file manager
@@ -98,7 +99,7 @@ int main(void)
     camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
-    Framebuffer framebuffer(SCR_WIDTH, SCR_HEIGHT);
+
     pHandler = new Physics(debug);
   
     /* ------------------------------------------------------------------------------------ */
@@ -109,7 +110,7 @@ int main(void)
     Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
-    
+    Framebuffer framebuffer(*fm, SCR_WIDTH, SCR_HEIGHT);
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
@@ -176,6 +177,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
    
     do {
+        //framebuffer.bindBuffer();
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
         /* ------------------------------------------------------------------------------------ */
@@ -253,7 +255,7 @@ int main(void)
         // SKYBOX
         /* ------------------------------------------------------------------------------------ */
         skybox->draw(&skyboxShader);
-
+        //framebuffer.doImageProcessing();
 
         currRenderedObjects = camera.frustum->getRenderedObjects();
         /* ------------------------------------------------------------------------------------ */      

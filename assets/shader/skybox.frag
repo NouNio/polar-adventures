@@ -2,8 +2,9 @@
 
 in vec3 TexCoords;
 
-out vec4 FragColor;
-
+layout(location=0) out vec4 FragColor;
+layout(location=1) out vec4 normal;
+layout(location=2) out float depth;
 uniform samplerCube skybox;
 
 void main() {

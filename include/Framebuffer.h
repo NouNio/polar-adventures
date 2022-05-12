@@ -2,36 +2,35 @@
 #include <gl/GLU.h>
 #include <GLFW/glfw3.h>
 #include <Mesh.h>
+#include <FileManager.h>
 class Framebuffer {
 //private:
 	
 public:
 	unsigned int handle;
+
 	unsigned int color;
 	unsigned int normal;
 	unsigned int depth;
 	unsigned int postprocessor;
 	unsigned int edge;
-	Framebuffer(int window_width, int window_height)
-	{
-		/*
-	_handle=0;
-	color=0;
-	normal=0;
-	depth=0;
-	_post_processor=0;
-	edge=0;
-
-
-	*/
-		//generate textures and framebuffers
-		
+	unsigned int rbo;
+	Mesh renderMesh;
+	Shader processor;
+	Shader combination;
+	FileManager fm  =  FileManager();
+	Framebuffer(FileManager &fm, int window_width, int window_height) ://fm(&fm),
+		renderMesh({ Vertex(glm::vec3(-1,-1,0), glm::vec2(0,0)),Vertex(glm::vec3(1,-1,0),glm::vec2(1,0)),Vertex(glm::vec3(1,1,0),glm::vec2(1,1)),Vertex(glm::vec3(-1,1,0),glm::vec2(0,1)) }, { 0,1,2,0,2,3 }, Material(), { 0.0f,0.0f }, { 0.0f,0.0f }, { 0.0f,0.0f }), //processor(this->fm->getShaderPath("pass_on"), this->fm->getShaderPath("sobel")),
+		combination(fm.getShaderPath("pass_on.vert", true), fm.getShaderPath("sobel.frag",true)),
+		processor(fm.getShaderPath("pass_on.vert", true), fm.getShaderPath("screen.frag",true)) {
+		//this->fm = &fm;
 			glGenTextures(1, &color);
 			glGenTextures(1, &normal);
 			glGenTextures(1, &depth);
 			glGenTextures(1, &edge);
 			glGenFramebuffers(1, &handle);
 			glGenFramebuffers(1, &postprocessor);
+			glGenRenderbuffers(1, &rbo);
 			 
 
 		bindBuffer();
@@ -58,7 +57,7 @@ public:
 		//setup depth texture
 		{
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, window_width, window_height, 0, GL_DEPTH_COMPONENT32, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R, window_width, window_height, 0, GL_R, GL_UNSIGNED_BYTE, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
@@ -67,21 +66,27 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 			glBindTexture(GL_TEXTURE_2D, 0);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, depth, 0);
 
 
 		}
+
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window_width, window_height);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 		//finish fbo initialization
 		{
 
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-				//EXIT_WITH_ERROR("failed to create framebuffer");
+				std::cout<<"fbo init failed for fbo1" << std::endl;
 			}
 			glClearColor(0, 0, 0, 0);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
 			glBindTexture(GL_TEXTURE_2D, 0);
-			GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_DEPTH_ATTACHMENT};
+			GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 		
 			glDrawBuffers(3, attachments);
 
@@ -122,12 +127,42 @@ public:
 	void bindBuffer() {
 		glBindFramebuffer(GL_FRAMEBUFFER, handle);
 	}
+	void doImageProcessing() {
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		//*
+		//bindPostProcessor();
+		processor.use();
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"),0);  // set the appropriate texture sampler variable in the fragment shader
+		glBindTexture(GL_TEXTURE_2D, normal);
+		glActiveTexture(GL_TEXTURE1);
+		glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 0);  // set the appropriate texture sampler variable in the fragment shader
+		glBindTexture(GL_TEXTURE_2D, normal);
+		renderMesh.draw(processor);
+		//*/
+		//*
+		unbind();
+		combination.use();
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);  // set the appropriate texture sampler variable in the fragment shader
+		glBindTexture(GL_TEXTURE_2D, color);
+		glActiveTexture(GL_TEXTURE1);
+		glUniform1i(glGetUniformLocation(processor.ID, "edge"), 0);  // set the appropriate texture sampler variable in the fragment shader
+		glBindTexture(GL_TEXTURE_2D, normal);
+		renderMesh.draw(combination);
+		glUseProgram(0);
+		glEnable(GL_DEPTH_TEST);
+		//*/
+
+	}
 	void bindPostProcessor() {
 		glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
 	}
 	unsigned int getDepth() {
 		return depth;
 	}
+
 	unsigned int getNormal() {
 		return normal;
 	}
@@ -145,18 +180,12 @@ public:
 		glDeleteTextures(1, &normal);
 		glDeleteTextures(1, &depth);
 		glDeleteTextures(1, &edge);
+		glDeleteProgram(processor.ID);
+		glDeleteProgram(combination.ID);
 		glDeleteFramebuffers(1, &handle);
 		glDeleteFramebuffers(1, &postprocessor);
+		glDeleteRenderbuffers(1, &rbo);
 
-	}
-	static Mesh renderMesh() {
-		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices = { 0,1,2,0,2,3 };
-		Material material;
-		std::vector<float> bound = { 0,0 };
-		return Mesh(vertices, indices, material, bound, bound, bound);
-		//	    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture,
-		//std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
 	}
 
 

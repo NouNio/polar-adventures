@@ -17,6 +17,7 @@ uniform vec3 materialSpecular;
 uniform float specularAlpha;
 
 uniform sampler2D diffuseTexture;
+uniform sampler2D depthText;
 
 void main() {	
 color=vec4(vec3(0),1);

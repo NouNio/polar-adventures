@@ -37,8 +37,10 @@ public:
 	}
 
 
-	std::string getShaderPath(std::string shaderKey)
+	std::string getShaderPath(std::string shaderKey, bool isKnownPath=false)
 	{	
+		if (isKnownPath) return  this->pathToProject + ASSETS + SHADER + shaderKey;
+	else
 		return this->pathToProject + ASSETS + SHADER + pathToShader[shaderKey];
 	}
 
@@ -70,11 +72,24 @@ private:
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
 														{"test-world", "world\\test-world.fbx"} };
 	
-	std::map<std::string, std::string> pathToShader = { {"directLightVert", "directLight.vert"}, {"directLightFrag", "directLight.frag"},
-														{"HUDvert", "HUD.vert"}, {"HUDfrag", "HUD.frag"},
-														{"modelVert", "model.vert"}, {"modelFrag", "model.frag"},
-														{"playerVert", "player.vert"}, {"playerFrag", "player.frag"},
-														{"skyboxVert", "skybox.vert"}, {"skyboxFrag", "skybox.frag" }};
+	std::map<std::string, std::string> pathToShader = { 
+		
+		{"directLightVert", "directLight.vert"},
+		{"directLightFrag", "directLight.frag"},
+		{"HUDvert", "HUD.vert"},
+		{"HUDfrag", "HUD.frag"},
+		{"modelVert", "model.vert"},
+		{"modelFrag", "model.frag"},
+		{"pass_on", "pass_on.vert" },
+	    {"playerVert", "player.vert"},
+		{"playerFrag", "player.frag"},
+		{"sobel", "sobel.frag"},
+	    {"screen","screen.frag"},
+		{"skyboxVert", "skybox.vert"}, 
+		{"skyboxFrag", "skybox.frag" }
+		
+													
+	};
 	
 	std::map<std::string, std::string> pathToFont = { {"arial", "arial\\arial.ttf"} };
 	

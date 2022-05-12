@@ -31,10 +31,11 @@ void main() {
 
 	vec3 texColor = texture(diffuseTexture, vert.uv).rgb;
 	 // ambient
-	texColor=texColor * texture(edge, vert.uv).rgb;
+	//texColor=texColor * texture(edge, vert.uv).rgb;
 	// ambient
 	texColor*=brightness;
 	           color=vec4(texColor,1);
+			   color=vec4(1);
 
 	}
 

@@ -4,7 +4,9 @@ in vec3 Normal;   // perpendicular to the vertex
 in vec3 FragPos;  // vertex position in world view
 in vec2 TexCoords;
 
-out vec4 FragColor;
+layout(location=0) out vec4 FragColor;
+layout(location=1) out vec4 normal;
+layout(location=2) out float depth;
 
 
 struct Material {   

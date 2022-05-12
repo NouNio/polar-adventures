@@ -16,10 +16,7 @@ out VertexData {
 	vec2 uv;
 } vert;
 
-out gl_PerVertex
-{
-    vec4 gl_Position;
-};
+out vec4 FragPos;  // the postion of the vertex in world coordinates
 
 uniform vec3 camera_world;
 
@@ -32,5 +29,5 @@ void main() {
 	 vert.position_world=position;
 	 vert.normal_world=normal;
 	 vert.uv=uv;
-	gl_Position = vec4(vert.position_world,1);
+	 FragPos = vec4(vert.position_world,1);
 }
