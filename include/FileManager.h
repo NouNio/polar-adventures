@@ -54,6 +54,11 @@ public:
 	}
 
 
+	std::string getWorldPath(std::string worldKey) {
+		return  this->pathToProject + ASSETS + WORLD + pathToObject[worldKey];
+	}
+
+
 private:
 	std::string pathToProject;
 	const std::string INI = "settings.ini";
@@ -63,12 +68,14 @@ private:
 	const std::string OBJECTS = "objects\\";
 	const std::string SHADER = "shader\\";
 	const std::string SKYBOX = "skybox\\";
+	const std::string WORLD = "world\\";
 	
 	const char* fontPath;
 	std::map<std::string, std::string> pathToObject = { {"player", "kenny-block-characters\\player.fbx"},
 														{"snowball", "snowball\\snowball.fbx"},
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
-														{"test-world", "world\\test-world.fbx"} };
+														{"test-world", "world\\test-world.fbx"},
+														{"game-world", "game-world.fbx"} };
 	
 	std::map<std::string, std::string> pathToShader = { {"directLightVert", "directLight.vert"}, {"directLightFrag", "directLight.frag"},
 														{"HUDvert", "HUD.vert"}, {"HUDfrag", "HUD.frag"},
