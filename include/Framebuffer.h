@@ -21,8 +21,8 @@ public:
 	FileManager fm  =  FileManager();
 	Framebuffer(FileManager &fm, int window_width, int window_height) ://fm(&fm),
 		renderMesh({ Vertex(glm::vec3(-1,-1,0), glm::vec2(0,0)),Vertex(glm::vec3(1,-1,0),glm::vec2(1,0)),Vertex(glm::vec3(1,1,0),glm::vec2(1,1)),Vertex(glm::vec3(-1,1,0),glm::vec2(0,1)) }, { 0,1,2,0,2,3 }, Material(), { 0.0f,0.0f }, { 0.0f,0.0f }, { 0.0f,0.0f }), //processor(this->fm->getShaderPath("pass_on"), this->fm->getShaderPath("sobel")),
-		combination(fm.getShaderPath("pass_on.vert", true), fm.getShaderPath("sobel.frag",true)),
-		processor(fm.getShaderPath("pass_on.vert", true), fm.getShaderPath("screen.frag",true)) {
+		combination(fm.getShaderPath("passOn.vert", true), fm.getShaderPath("sobel.frag",true)),
+		processor(fm.getShaderPath("passOn.vert", true), fm.getShaderPath("screen.frag",true)) {
 		//this->fm = &fm;
 			glGenTextures(1, &color);
 			glGenTextures(1, &normal);
