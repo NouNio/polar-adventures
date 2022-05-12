@@ -35,7 +35,7 @@ void main() {
 	// ambient
 	texColor*=brightness;
 	           color=vec4(texColor,1);
-			   color=vec4(1);
+			   //color=vec4(1.);
 
 	}
 

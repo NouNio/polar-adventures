@@ -55,21 +55,24 @@ public:
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal, 0);
 		}
 		//setup depth texture
+		//*
 		{
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R, window_width, window_height, 0, GL_R, GL_UNSIGNED_BYTE, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+				window_width, window_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			//*
 			glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);//*/
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 			glBindTexture(GL_TEXTURE_2D, 0);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, depth, 0);
 
-
-		}
+		}//*/
 
 		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window_width, window_height);
@@ -80,13 +83,13 @@ public:
 		{
 
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-				std::cout<<"fbo init failed for fbo1" << std::endl;
+				std::cout<<"fbo init failed for fbo1" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
 			}
 			glClearColor(0, 0, 0, 0);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
 			glBindTexture(GL_TEXTURE_2D, 0);
-			GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+			GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_DEPTH_ATTACHMENT};
 		
 			glDrawBuffers(3, attachments);
 
@@ -131,7 +134,9 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		//*
-		//bindPostProcessor();
+		bindPostProcessor();
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
 		processor.use();
 		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"),0);  // set the appropriate texture sampler variable in the fragment shader
@@ -140,10 +145,14 @@ public:
 		glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 0);  // set the appropriate texture sampler variable in the fragment shader
 		glBindTexture(GL_TEXTURE_2D, normal);
 		renderMesh.draw(processor);
+		
 		//*/
 		//*
 		unbind();
+
 		combination.use();
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
 		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);  // set the appropriate texture sampler variable in the fragment shader
 		glBindTexture(GL_TEXTURE_2D, color);
@@ -152,6 +161,12 @@ public:
 		glBindTexture(GL_TEXTURE_2D, normal);
 		renderMesh.draw(combination);
 		glUseProgram(0);
+		bindBuffer();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		bindPostProcessor();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		unbind();
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		//*/
 
