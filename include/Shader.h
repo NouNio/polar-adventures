@@ -138,7 +138,7 @@ private:
         }
         catch (std::ifstream::failure& e)
         {
-            std::cout << "There was a problem reading this file: " << e.what() << std::endl;
+            std::cout << "There was a problem reading this file: "<<shaderPath << e.what() << std::endl;
         }
         return shaderStream.str();  // now we can transform the stream object into string objects
     }

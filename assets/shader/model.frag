@@ -2,6 +2,7 @@
 // NOTE: frag shader with multiple lights: 1 dir light and n point lights (spotlight to come)
 layout(location=0) out vec4 FragColor;
 layout(location=1) out vec4 normal;
+layout(location=2) out float depth;
 
 struct Material {   
     vec3 ambient;
@@ -44,6 +45,7 @@ void main()
 {
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
     normal=vec4(norm,1.0);
+    depth=FragPos.z;
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
     
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
@@ -56,15 +58,23 @@ void main()
 
 //TODO: change this with 1D texture though not necessarily necessary
 float discretize(float f){
-if(f>=0.0&&f<0.2){
+if(f>=0.0&&f<0.1){
+f=0.1;}
+else if(f>=0.1&&f<0.2){
 f=0.2;}
-else if(f>=0.2&&f<0.4){
+else if(f>=0.2&&f<0.3){
+f=0.3;}
+else if(f>=0.3&&f<0.4){
 f=0.4;}
-else if(f>=0.4&&f<0.6){
+if(f>=0.4&&f<0.5){
+f=0.5;}
+else if(f>=0.5&&f<0.6){
 f=0.6;}
-else if(f>=0.6&&f<0.8){
+else if(f>=0.6&&f<0.7){
+f=0.7;}
+else if(f>=0.7&&f<0.8){
 f=0.8;}
-else if(f>=0.8&&f<1.0){
+else if(f>=0.9&&f<1.0){
 f=1.0;}
 
 return f;
@@ -78,7 +88,7 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     vec3 ambient  = light.ambient * material.ambient;  // ambient shading
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-    //diff=discretize(diff);
+    diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
 
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
@@ -87,9 +97,9 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     vec3 specular = light.specular * spec * material.specular;
     vec3 saved= (diffuse+ambient);
     float maximum=max(saved.x,saved.y);
-    maximum=max(maximum, saved.z);
-    maximum=discretize(maximum);
-    saved=saved*maximum;
+    //maximum=max(maximum, saved.z);
+    //maximum=discretize(maximum);
+    //saved=saved*maximum;
     return (saved + specular);
 }
 
