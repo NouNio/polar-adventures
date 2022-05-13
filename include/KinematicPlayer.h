@@ -47,19 +47,6 @@ enum worldSide {
 	cBOTTOM,
 };
 
-const struct CubeBounds {
-	const float x_max = -6.0f;   // right boundary
-	const float x_min = -50.0f;  // left boundary
-	const float y_max = 40.0f;    // up boundary
-	const float y_min = -4.0f;    // down boundary
-	const float z_max = 57.0f;   // front boundary
-	const float z_min = 13.0f;   // back boundary
-};
-
-
-CubeBounds cubeBounds;
-
-
 class KinematicPlayer
 {
 private:

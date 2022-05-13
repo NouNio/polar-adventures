@@ -38,7 +38,7 @@
 /* ------------------------------------------------------------------------------------ */
 void readINI();
 GLFWwindow* initGLFWandGLEW();
-bool hasWon();
+//bool hasWon();
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -128,18 +128,28 @@ int main(void)
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs
-    Snowball snowball2(PALM_TREE, fm->getObjPath("snowball"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(PALM_TREE, &snowball2));
-    Snowball snowball3(LABYRINTH, fm->getObjPath("snowball"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(LABYRINTH, &snowball3));
-    Snowball snowball1(PLATFORM, fm->getObjPath("snowball"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);      // on BACK side (platform)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(PLATFORM, &snowball1));
-    Snowball snowball4(LEVER, fm->getObjPath("snowball"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);      // test
-    snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
+    Snowball snowball_left(SNOWBALL_LEFT_ID, fm->getObjPath("snowball"), SNOWBALL_LEFT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_LEFT, pHandler, &camera);     // on LEFT side (cave)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_LEFT_ID, &snowball_left));
+    
+    Snowball snowball_right(SNOWBALL_RIGHT_ID, fm->getObjPath("snowball"), SNOWBALL_RIGHT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_RIGHT, pHandler, &camera);  // on RIGHT side (labyrinth)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_RIGHT_ID, &snowball_right));
+    
+    Snowball snowball_front(SNOWBALL_FRONT_ID, fm->getObjPath("snowball"), SNOWBALL_FRONT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_FRONT, pHandler, &camera);  // on FRONT side (palm tree)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_FRONT_ID, &snowball_front));
+    
+    Snowball snowball_back(SNOWBALL_BACK_ID, fm->getObjPath("snowball"), SNOWBALL_BACK_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BACK, pHandler, &camera);      // on BACK side (platform)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BACK_ID, &snowball_back));
+    
+    Snowball snowball_top(SNOWBALL_TOP_ID, fm->getObjPath("snowball"), SNOWBALL_TOP_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_TOP, pHandler, &camera);          // on TOP side (crater)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_TOP_ID, &snowball_top));
+    
+    Snowball snowball_bottom(SNOWBALL_BOTTOM_ID, fm->getObjPath("snowball"), SNOWBALL_BOTTOM_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BOTTOM, pHandler, &camera);  // on BOTTOM side (pyramid)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BOTTOM_ID, &snowball_bottom));
+
 
     // collection point place holder
     Model collectionPoint(fm->getObjPath("obelisk"));
-    btRigidBody* colPntBody = pHandler->addCylinder(glm::vec3(-37.5f, 53.5f, 20.0f), 0, glm::vec3(0.5, 2, 0.5));
+    btRigidBody* colPntBody = pHandler->addCylinder(COLLECTION_POINT_POS, COLLECTION_POINT_MASS, COLLECTION_POINT_BODY_SCALE);
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
 
@@ -209,9 +219,8 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
-        //world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
         newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
-        collectionPoint.draw(modelShader, glm::vec3(-37.5f, 51.5f, 20.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f));
+        collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
         
         for (const auto& item : snowballs) {  // item.second == Snowball*
             item.second->shrink(deltaTime);
@@ -241,6 +250,11 @@ int main(void)
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
                 score += snowball->getBodyScale().x() * 100;
+                std::cout << "Score: " << score << std::endl;
+
+                if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
+                    hasWon = true;
+                }
             }
         }
 
@@ -275,7 +289,7 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
-    } while (!firstWindowClose && !hasWon() && !hasLost());
+    } while (!firstWindowClose && !hasWon && !hasLost());
 
     transitionToEndOfGameScreen(window);
 
@@ -371,15 +385,6 @@ GLFWwindow* initGLFWandGLEW()
     }
 
     return window;
-}
-
-
-bool hasWon() {
-    if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
-        return true;
-    }
-    
-    return false;
 }
 
 
@@ -522,7 +527,7 @@ void playWalkSound() {
 
 
 void playEndOfGameSound() {
-    if (hasWon())
+    if (hasWon)
         soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
     else
         soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
