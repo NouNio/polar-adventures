@@ -80,6 +80,7 @@ private:
 		btConvexShape* capsule = new btCapsuleShape(this->radius, this->height);
 		ghostObject->setCollisionShape(capsule);
 		ghostObject->setCollisionFlags(ghostObject->getCollisionFlags() | btCollisionObject::CF_CHARACTER_OBJECT);
+		ghostObject->setUserPointer(&playerPtr);
 
 		controller = new btKinematicCharacterController(ghostObject, capsule, stepHeight);
 		controller->setGravity( pHandler->GlmVec3ToBulletVec3(pHandler->getGravity()) );
@@ -107,53 +108,33 @@ private:
 
 	void updateGravity() {
 		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
-		glm::vec3 currPos = this->getPos();
-		
-		// LEFT
-		if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
-			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
-			&& currPos.x < cubeBounds.x_min) {
-			
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
+		if (current_G == G_LEFT) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_LEFT));
 			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
 			cubeSide = CUBE_LEFT;
 		}
-		// RIGHT
-		else if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
-			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
-			&& currPos.x > cubeBounds.x_max) {
-			
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
+		else if (current_G == G_RIGHT) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_RIGHT));
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
-			cubeSide = CUBE_RIGHT;;
+			cubeSide = CUBE_RIGHT;
 		}
-		// FRONT
-		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
-			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
-			&& currPos.z > cubeBounds.z_max) {
-			
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
+		else if (current_G == G_FRONT) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_FRONT));
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
 			cubeSide = CUBE_FRONT;
 		}
-		// BACK
-		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
-			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
-			&& currPos.z < cubeBounds.z_min) {
-			
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
+		else if (current_G == G_BACK) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BACK));
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
 			cubeSide = CUBE_BACK;
 		}
-		// TOP
-		else if (currPos.y > cubeBounds.y_max) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
+		else if (current_G == G_TOP) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_TOP));
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
 			cubeSide = CUBE_TOP;
 		}
-		// BOTTOM
-		else if (currPos.y < cubeBounds.y_min) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
+		else if (current_G == G_BOTTOM) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BOTTOM));
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
 			cubeSide = CUBE_BOTTOM;
 		}

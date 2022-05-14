@@ -51,6 +51,7 @@ void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
 void transitionToEndOfGameScreen(GLFWwindow* window);
+void addGHandlers();
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
@@ -122,6 +123,9 @@ int main(void)
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
     pHandler->getWorld()->removeRigidBody(newWorldBody);
 
+    // permeable wall
+    Model permWall(fm->getObjPath("perm-wall"));
+
 
     // player
     Model player(fm->getObjPath("player"), true, false, PNG);
@@ -142,7 +146,7 @@ int main(void)
     
     Snowball snowball_top(SNOWBALL_TOP_ID, fm->getObjPath("snowball"), SNOWBALL_TOP_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_TOP, pHandler, &camera);          // on TOP side (crater)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_TOP_ID, &snowball_top));
-    
+
     Snowball snowball_bottom(SNOWBALL_BOTTOM_ID, fm->getObjPath("snowball"), SNOWBALL_BOTTOM_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BOTTOM, pHandler, &camera);  // on BOTTOM side (pyramid)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BOTTOM_ID, &snowball_bottom));
 
@@ -152,6 +156,12 @@ int main(void)
     btRigidBody* colPntBody = pHandler->addCylinder(COLLECTION_POINT_POS, COLLECTION_POINT_MASS, COLLECTION_POINT_BODY_SCALE);
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
+
+    /* ------------------------------------------------------------------------------------ */
+    // GRAVITIY CHANGING COLLIDERS
+    /* ------------------------------------------------------------------------------------ */
+    // top left edge to left cube side 
+    addGHandlers();
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -220,11 +230,21 @@ int main(void)
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
         newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
+        permWall.draw(modelShader, glm::vec3(-49, 18.265, 33.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
         collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
         
+        if (snowballs.size() == 1)
+            bottomSnowballActive = true;
+
         for (const auto& item : snowballs) {  // item.second == Snowball*
-            item.second->shrink(deltaTime);
-            item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
+                item.second->shrink(deltaTime);
+                item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            }
+            else if (item.second->getID() == SNOWBALL_BOTTOM_ID && bottomSnowballActive) {
+                item.second->shrink(deltaTime);
+                item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            }
         }
 
 
@@ -583,12 +603,49 @@ void activateShader(Shader *shader)
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion)
 {
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
-    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.05f, 0.05f, 0.05f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.5f, 0.5f, 0.5f);
     shader.setVec3("pointLights[" + pointLightNumber + "].diffuse", 0.8f, 0.8f, 0.8f);
     shader.setVec3("pointLights[" + pointLightNumber + "].specular", 1.0f, 1.0f, 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
-    shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.027f);
-    shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0028f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.007f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0002f);
 }
 
 
+void addGHandlers() {
+    // LEFT
+    btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, 18.0, 18.0));
+    pHandler->activateColCallBack(leftGHandler);
+    pHandler->makePermeable(leftGHandler);
+    leftGHandler->setUserPointer(&leftGHandlerPtr);
+
+    // RIGHT
+    btRigidBody* rightGHandler = pHandler->addBox(RIGHT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, 18.0, 18.0));
+    pHandler->activateColCallBack(rightGHandler);
+    pHandler->makePermeable(rightGHandler);
+    rightGHandler->setUserPointer(&rightGHandlerPtr);
+
+    // FRONT
+    btRigidBody* frontGHandler = pHandler->addBox(FRONT_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 18.0, 10.0));
+    pHandler->activateColCallBack(frontGHandler);
+    pHandler->makePermeable(frontGHandler);
+    frontGHandler->setUserPointer(&frontGHandlerPtr);
+
+    // BACK
+    btRigidBody* backGHandler = pHandler->addBox(BACK_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 18.0, 10.0));
+    pHandler->activateColCallBack(backGHandler);
+    pHandler->makePermeable(backGHandler);
+    backGHandler->setUserPointer(&backGHandlerPtr);
+
+    // TOP
+    btRigidBody* topGHandler = pHandler->addBox(TOP_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 10.0, 18.0));
+    pHandler->activateColCallBack(topGHandler);
+    pHandler->makePermeable(topGHandler);
+    topGHandler->setUserPointer(&topGHandlerPtr);
+
+    // BOTTOM
+    btRigidBody* bottomGHandler = pHandler->addBox(BOTTOM_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 10.0, 18.0));
+    pHandler->activateColCallBack(bottomGHandler);
+    pHandler->makePermeable(bottomGHandler);
+    bottomGHandler->setUserPointer(&bottomGHandlerPtr);
+}

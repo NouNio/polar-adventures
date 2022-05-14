@@ -76,7 +76,7 @@ private:
 	std::map<std::string, std::string> pathToObject = { {"player", "kenny-block-characters\\player.fbx"},
 														{"snowball", "snowball\\snowball.fbx"},
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
-														{"test-world", "world\\test-world.fbx"},
+														{"perm-wall", "kenny-nature-kit\\cliff_block_stone.fbx"},
 														{"game-world", "game-world.fbx"} };
 	
 	std::map<std::string, std::string> pathToShader = { 

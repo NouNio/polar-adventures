@@ -48,8 +48,7 @@ public:
 
     void deleteAll()
     {
-        for (unsigned int i = 0; i < this->rigidBodies.size(); i++)
-        {
+        for (unsigned int i = 0; i < this->rigidBodies.size(); i++){
             this->world->removeCollisionObject(this->rigidBodies[i]);
             btMotionState* motionState = this->rigidBodies[i]->getMotionState();
             btCollisionShape* shape = this->rigidBodies[i]->getCollisionShape();
@@ -58,6 +57,7 @@ public:
             delete motionState;
             delete shape;
         }
+
         delete this->dispatcher;
         delete this->world;
         delete this->solver;
@@ -99,6 +99,11 @@ public:
     void activateColCallBack(btRigidBody* body)
     {
         body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);  // or-operator on the flags, to keep all flags that are already there and just add the new one
+    }
+
+
+    void makePermeable(btRigidBody* body) {
+        body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
     }
 
 
@@ -250,11 +255,14 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
 {
     // somehow the snowball is always obj2, when colliding with the player
     if (obj1->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
+        // only collect if bot bottom snowball OR bottom and active
         unsigned int* p_snowballID = (unsigned int*)obj2->getCollisionObject()->getUserPointer();
-        Snowball* p_snowball = snowballs[*p_snowballID];
-        snowballs.erase(*p_snowballID);
-        collectedSnowballs.push_back(p_snowball);
-        soundEngine->play2D(fm->getAudioPath("pickUp").c_str(), false);
+        if (*p_snowballID != SNOWBALL_BOTTOM_ID || (*p_snowballID == SNOWBALL_BOTTOM_ID && bottomSnowballActive)) {
+            Snowball* p_snowball = snowballs[*p_snowballID];
+            snowballs.erase(*p_snowballID);
+            collectedSnowballs.push_back(p_snowball);
+            soundEngine->play2D(fm->getAudioPath("pickUp").c_str(), false);
+        }
     }
     // and somehow the shot snowball is also always obj2, when colliding with the collection point
     else if (obj1->getCollisionObject()->getUserPointer() == &cpPtr && obj2->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
@@ -263,6 +271,37 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
         snowballs.erase(*p_snowballID);
         savedSnowballs.push_back(p_snowball);
         soundEngine->play2D(fm->getAudioPath("deliver").c_str(), false);
+    }
+    // check collision with gravitiy handler triggers
+    else if ( (obj1->getCollisionObject()->getUserPointer() == &leftGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+              (obj2->getCollisionObject()->getUserPointer() == &leftGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr) ) {
+        std::cout << "colliding with left g handler" << std::endl;
+        current_G = G_LEFT;
+    }
+    else if ((obj1->getCollisionObject()->getUserPointer() == &rightGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+             (obj2->getCollisionObject()->getUserPointer() == &rightGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
+        std::cout << "colliding with right g handler" << std::endl;
+        current_G = G_RIGHT;
+    }
+    else if ((obj1->getCollisionObject()->getUserPointer() == &frontGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+             (obj2->getCollisionObject()->getUserPointer() == &frontGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
+        std::cout << "colliding with front g handler" << std::endl;
+        current_G = G_FRONT;
+    }
+    else if ((obj1->getCollisionObject()->getUserPointer() == &backGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+             (obj2->getCollisionObject()->getUserPointer() == &backGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
+        std::cout << "colliding with back g handler" << std::endl;
+        current_G = G_BACK;
+    }
+    else if ((obj1->getCollisionObject()->getUserPointer() == &topGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+             (obj2->getCollisionObject()->getUserPointer() == &topGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
+        std::cout << "colliding with top g handler" << std::endl;
+        current_G = G_TOP;
+    }
+    else if ((obj1->getCollisionObject()->getUserPointer() == &bottomGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
+             (obj2->getCollisionObject()->getUserPointer() == &bottomGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
+        std::cout << "colliding with bottom g handler" << std::endl;
+        current_G = G_BOTTOM;
     }
 
     return false;
