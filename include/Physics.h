@@ -275,32 +275,26 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
     // check collision with gravitiy handler triggers
     else if ( (obj1->getCollisionObject()->getUserPointer() == &leftGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
               (obj2->getCollisionObject()->getUserPointer() == &leftGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr) ) {
-        std::cout << "colliding with left g handler" << std::endl;
         current_G = G_LEFT;
     }
     else if ((obj1->getCollisionObject()->getUserPointer() == &rightGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
              (obj2->getCollisionObject()->getUserPointer() == &rightGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
-        std::cout << "colliding with right g handler" << std::endl;
         current_G = G_RIGHT;
     }
     else if ((obj1->getCollisionObject()->getUserPointer() == &frontGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
              (obj2->getCollisionObject()->getUserPointer() == &frontGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
-        std::cout << "colliding with front g handler" << std::endl;
         current_G = G_FRONT;
     }
     else if ((obj1->getCollisionObject()->getUserPointer() == &backGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
              (obj2->getCollisionObject()->getUserPointer() == &backGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
-        std::cout << "colliding with back g handler" << std::endl;
         current_G = G_BACK;
     }
     else if ((obj1->getCollisionObject()->getUserPointer() == &topGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
              (obj2->getCollisionObject()->getUserPointer() == &topGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
-        std::cout << "colliding with top g handler" << std::endl;
         current_G = G_TOP;
     }
     else if ((obj1->getCollisionObject()->getUserPointer() == &bottomGHandlerPtr && obj2->getCollisionObject()->getUserPointer() == &playerPtr) ||
              (obj2->getCollisionObject()->getUserPointer() == &bottomGHandlerPtr && obj1->getCollisionObject()->getUserPointer() == &playerPtr)) {
-        std::cout << "colliding with bottom g handler" << std::endl;
         current_G = G_BOTTOM;
     }
 
