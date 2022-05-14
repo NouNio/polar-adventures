@@ -613,38 +613,40 @@ void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber,
 
 
 void addGHandlers() {
+    float vertAxesScale = 19.5f;
+
     // LEFT
-    btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, 18.0, 18.0));
+    btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
     pHandler->activateColCallBack(leftGHandler);
     pHandler->makePermeable(leftGHandler);
     leftGHandler->setUserPointer(&leftGHandlerPtr);
 
     // RIGHT
-    btRigidBody* rightGHandler = pHandler->addBox(RIGHT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, 18.0, 18.0));
+    btRigidBody* rightGHandler = pHandler->addBox(RIGHT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
     pHandler->activateColCallBack(rightGHandler);
     pHandler->makePermeable(rightGHandler);
     rightGHandler->setUserPointer(&rightGHandlerPtr);
 
     // FRONT
-    btRigidBody* frontGHandler = pHandler->addBox(FRONT_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 18.0, 10.0));
+    btRigidBody* frontGHandler = pHandler->addBox(FRONT_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
     pHandler->activateColCallBack(frontGHandler);
     pHandler->makePermeable(frontGHandler);
     frontGHandler->setUserPointer(&frontGHandlerPtr);
 
     // BACK
-    btRigidBody* backGHandler = pHandler->addBox(BACK_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 18.0, 10.0));
+    btRigidBody* backGHandler = pHandler->addBox(BACK_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
     pHandler->activateColCallBack(backGHandler);
     pHandler->makePermeable(backGHandler);
     backGHandler->setUserPointer(&backGHandlerPtr);
 
     // TOP
-    btRigidBody* topGHandler = pHandler->addBox(TOP_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 10.0, 18.0));
+    btRigidBody* topGHandler = pHandler->addBox(TOP_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
     pHandler->activateColCallBack(topGHandler);
     pHandler->makePermeable(topGHandler);
     topGHandler->setUserPointer(&topGHandlerPtr);
 
     // BOTTOM
-    btRigidBody* bottomGHandler = pHandler->addBox(BOTTOM_CUBE_MIDDLE, 0.0f, glm::vec3(18.0, 10.0, 18.0));
+    btRigidBody* bottomGHandler = pHandler->addBox(BOTTOM_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
     pHandler->activateColCallBack(bottomGHandler);
     pHandler->makePermeable(bottomGHandler);
     bottomGHandler->setUserPointer(&bottomGHandlerPtr);
