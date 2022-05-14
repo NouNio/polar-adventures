@@ -50,12 +50,12 @@ const float HUDyOffset = 50.0;
 #define CUBE_TOP 4
 #define CUBE_BOTTOM 5
 
-const glm::vec3 LEFT_CUBE_MIDDLE(-59.0f, 18.0f, 35.0f);
-const glm::vec3 RIGHT_CUBE_MIDDLE(4.0f, 18.0f, 35.0f);
-const glm::vec3 FRONT_CUBE_MIDDLE(-28.0f, 18.0f, 66.0f);
-const glm::vec3 BACK_CUBE_MIDDLE(-28.0f, 18.0f, 3.0f);
-const glm::vec3 TOP_CUBE_MIDDLE(-28.0f, 49.0f, 35.0f);
-const glm::vec3 BOTTOM_CUBE_MIDDLE(-28.0f, -14.0f, 35.0f);
+const glm::vec3 LEFT_CUBE_MIDDLE(-58.0f, 17.5f, 35.0f);
+const glm::vec3 RIGHT_CUBE_MIDDLE(3.0f, 17.5f, 35.0f);
+const glm::vec3 FRONT_CUBE_MIDDLE(-27.5f, 17.0f, 65.0f);
+const glm::vec3 BACK_CUBE_MIDDLE(-27.75f, 17.0f, 4.0f);
+const glm::vec3 TOP_CUBE_MIDDLE(-27.75f, 48.0f, 34.75f);
+const glm::vec3 BOTTOM_CUBE_MIDDLE(-27.75f, -13.0f, 35.0f);
 
 glm::vec3 current_G(0.0f, -9.81f, 0.0f);
 const glm::vec3 G_LEFT(9.81f, 0.0f, 0.0f);
@@ -71,6 +71,17 @@ std::string frontGHandlerPtr = "2";
 std::string backGHandlerPtr = "3";
 std::string topGHandlerPtr = "4";
 std::string bottomGHandlerPtr = "5";
+
+const struct CubeBounds {
+	const float x_max = -6.0f;   // right boundary
+	const float x_min = -50.0f;  // left boundary
+	const float y_max = 40.0f;    // up boundary
+	const float y_min = -4.0f;    // down boundary
+	const float z_max = 57.0f;   // front boundary
+	const float z_min = 13.0f;   // back boundary
+};
+
+CubeBounds cubeBounds;
 
 
 // WORLD SCALE and POS

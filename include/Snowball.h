@@ -22,28 +22,45 @@ private:
 
 	void updateGravity() {
 		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
-		if (current_G == G_LEFT) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_LEFT));
+		btVector3 currPos = this->s_body->getWorldTransform().getOrigin();
+
+		// LEFT
+		if (currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_max && currPos.z() > cubeBounds.z_min
+			&& currPos.x() < cubeBounds.x_min) {
+
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
 			cubeSide = CUBE_LEFT;
 		}
-		else if (current_G == G_RIGHT) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_RIGHT));;
+		// RIGHT
+		else if (currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_max && currPos.z() > cubeBounds.z_min
+			&& currPos.x() > cubeBounds.x_max) {
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
 			cubeSide = CUBE_RIGHT;
 		}
-		else if (current_G == G_FRONT) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_FRONT));
+		// FRONT
+		else if (currPos.x() > cubeBounds.x_min && currPos.x() < cubeBounds.x_max
+			&& currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() > cubeBounds.z_max) {
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			cubeSide = CUBE_FRONT;
 		}
-		else if (current_G == G_BACK) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_BACK));
+		// BACK
+		else if (currPos.x() > cubeBounds.x_min && currPos.x() < cubeBounds.x_max
+			&& currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_min) {
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			cubeSide = CUBE_BACK;
 		}
-		else if (current_G == G_TOP) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_TOP));
+		// TOP
+		else if (currPos.y() > cubeBounds.y_max) {
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			cubeSide = CUBE_TOP;
 		}
-		else if (current_G == G_BOTTOM) {
-			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(G_BOTTOM));
+		// BOTTOM
+		else if (currPos.y() < cubeBounds.y_min) {
+			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			cubeSide = CUBE_BOTTOM;
 		}
 	}
