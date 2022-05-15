@@ -83,7 +83,8 @@ private:
 														{"snowball", "snowball\\snowball.fbx"},
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
 														{"perm-wall", "kenny-nature-kit\\cliff_block_stone.fbx"},
-														{"game-world", "game-world.fbx"} };
+														{"game-world", "game-world.fbx"},
+														{"michelle", "michelle\\michelle-running.dae"} };
 	
 	std::map<std::string, std::string> pathToShader = { 
 		
@@ -93,6 +94,8 @@ private:
 		{"HUDfrag", "HUD.frag"},
 		{"modelVert", "model.vert"},
 		{"modelFrag", "model.frag"},
+		{"animModelVert", "animModel.vert"},
+		{"animModelFrag", "animModel.frag"},
 		{"pass_on", "pass_on.vert" },
 	    {"playerVert", "player.vert"},
 		{"playerFrag", "player.frag"},
