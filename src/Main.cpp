@@ -128,7 +128,7 @@ int main(void)
 
 
     // player
-    Model player(fm->getObjPath("player"), true, false, PNG);
+    Model player(fm->getPlayerPath("player"), true, false, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs

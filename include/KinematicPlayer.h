@@ -62,7 +62,7 @@ private:
 	const float radius = 0.5f, height = 2.0f, mass = 1.0f;
 	const float stepHeight = 0.35;
 	glm::vec3 playerOffset = glm::vec3(0, -1.5, 0);  // start value, where camera wolrdUp = (0,1,0) --> playerOffset = -(worldUp * 1.5)
-	const glm::vec3 playerScale = glm::vec3(0.2f);
+	const glm::vec3 playerScale = glm::vec3(0.5f);
 	float playerCamRot = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
 	unsigned int snowBallAmmo = 0;
