@@ -4,9 +4,12 @@
 #include <gl/GLU.h>
 #include <GLFW/glfw3.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "glm/ext.hpp"
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -57,6 +60,8 @@ void addGHandlers();
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
 // gameplay 
+double startTimeSec = 0.0;
+float animTimeSec = 0.0;
 double maxGameTime = 300.0;  // time in seconds until player looses
 
 // sound
@@ -81,12 +86,13 @@ Skybox* skybox;
 float fov, near, far;
 
 
-//HUD
 float HUDstart;
 int currRenderedObjects = 0;
 
-// file manager
 FileManager* fm;
+
+float zzz = 6.0f;
+
 
 int main(void)
 {
@@ -107,6 +113,7 @@ int main(void)
     // load shader
     /* ------------------------------------------------------------------------------------ */
     Shader modelShader(fm->getShaderPath("modelVert"), fm->getShaderPath("modelFrag"));
+    Shader animModelShader(fm->getShaderPath("animModelVert"), fm->getShaderPath("animModelFrag"));
     Shader directLightShader(fm->getShaderPath("directLightVert"), fm->getShaderPath("directLightFrag"));
     Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
@@ -160,14 +167,14 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // GRAVITIY CHANGING COLLIDERS
     /* ------------------------------------------------------------------------------------ */
-    // top left edge to left cube side 
     addGHandlers();
 
 
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL - still in testing phase
     /* ------------------------------------------------------------------------------------ */
-
+    Model animModel(fm->getPlayerPath("player"), true, true, PNG);
+    //Model animModel(fm->getObjPath("michelle"), true, true, PNG);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -196,13 +203,16 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
-   
+    startTimeSec = glfwGetTime();
     do {
         //framebuffer.bindBuffer();
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
         /* ------------------------------------------------------------------------------------ */
         computeTimeLogic();
+        ///double currTimeSeconds = glfwGetTime();
+        //float animTimeSec = (float)(currTimeSeconds - startTimeSec);
+        
         if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm) {
             soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
             playedAlarm = true;
@@ -221,9 +231,7 @@ int main(void)
 
         // view/projection transformations
         projection = camera.GetProjection();
-        modelShader.setMat4("projection", projection);
         glm::mat4 view = camera.GetViewMatrix();
-        modelShader.setMat4("view", view);
 
 
         /* ------------------------------------------------------------------------------------ */
@@ -251,7 +259,17 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // ANIMATED MODEL
         /* ------------------------------------------------------------------------------------ */
+        // get anim data
+        animModelShader.use();
+        std::vector<glm::mat4> transforms;
+        animModel.get_bone_transforms(animTimeSec, transforms);
 
+        for (int i = 0; i < transforms.size(); i++) {
+            animModelShader.setMat4("BoneTransforms[" + std::to_string(i) + "]", transforms[i]);
+            //std::cout << glm::to_string(transforms[i]) << std::endl;
+        }
+        animModelShader.use();
+        animModel.draw(animModelShader, glm::vec3(0, 0, 0), 180, glm::vec3(0,0,1), glm::vec3(0.5));
 
         /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
@@ -475,7 +493,15 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
         playWalkSound();
-    }    
+    }
+
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
+        zzz += 0.1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
+        zzz -= 0.1;
+    }
 }
 
 
@@ -522,6 +548,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 void computeTimeLogic()
 {
     float currentFrame = static_cast<float>(glfwGetTime());
+    animTimeSec = (float)(glfwGetTime() - startTimeSec);
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     msPerFrame = deltaTime * 1000;  // deltaTime is the time in s from frame to frame, i.e. taking to compute 1 frame; 1s = 1000ms
