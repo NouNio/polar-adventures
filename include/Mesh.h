@@ -25,10 +25,18 @@
 // these have vertices with positions and normals and 
 // each mesh has one simple material with the respective color values (diff, spec, ambi, shini)
 
+
+#define MAX_BONES_PER_VERTEX 4
+#define BONE_ID_LOCATION 3
+#define BONE_WEIGHT_LOCATION 4
+
+
 struct Vertex {             
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 texCoords;
+    int boneIDs[MAX_BONES_PER_VERTEX];  // idx of the bones that influence this vertex
+    float boneWeights[MAX_BONES_PER_VERTEX]; // weight of these bones
     Vertex() {
     }
     Vertex(glm::vec3 position, glm::vec2 uv) {
@@ -66,24 +74,26 @@ public:
 
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, 
-         std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false)
+         std::vector<float> xBound, std::vector<float> yBound,  std::vector<float> zBound, bool withTexture=false, bool animated = false)
         :bound(xBound, yBound, zBound) {
         this->vertices = vertices;
         this->indices = indices;
         this->material = material;
         this->withTexture = withTexture;
+        this->animated = animated;
         setupMesh();   // use the mesh data to make OpenGL calls, i.e. set the vertex buffers and its attribute pointers
     }
 
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material, Texture texture,
-         std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture)
+         std::vector<float> xBound, std::vector<float> yBound, std::vector<float> zBound, bool withTexture, bool animated)
     :bound(xBound,yBound,zBound) {
         this->vertices = vertices;
         this->indices = indices;
         this->material = material;
         this->texture = texture;
         this->withTexture = withTexture;
+        this->animated = animated;
         setupMesh();   // use the mesh data to make OpenGL calls, i.e. set the vertex buffers and its attribute pointers
     }
 
@@ -116,6 +126,7 @@ public:
 
 private:
     unsigned int VAO, VBO, EBO;  // vertex array / buffer object | element buffer object
+    bool animated;
 
     void drawMesh() 
     {
@@ -194,9 +205,17 @@ private:
         if (this->withTexture){
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-        }
+        
+            if (this->animated) {
+                // bone ids
+                glEnableVertexAttribArray(3);
+                glVertexAttribIPointer(3, MAX_BONES_PER_VERTEX, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIDs));
 
-        //glBindVertexArray(0);
+                // bone weights
+                glEnableVertexAttribArray(4);
+                glVertexAttribPointer(4, MAX_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
+            }
+        }
     }
 };
 #endif

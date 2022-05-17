@@ -4,9 +4,12 @@
 #include <gl/GLU.h>
 #include <GLFW/glfw3.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "glm/ext.hpp"
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -38,7 +41,7 @@
 /* ------------------------------------------------------------------------------------ */
 void readINI();
 GLFWwindow* initGLFWandGLEW();
-bool hasWon();
+//bool hasWon();
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -51,11 +54,14 @@ void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
 void transitionToEndOfGameScreen(GLFWwindow* window);
+void addGHandlers();
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
 // gameplay 
+double startTimeSec = 0.0;
+float animTimeSec = 0.0;
 double maxGameTime = 300.0;  // time in seconds until player looses
 
 // sound
@@ -80,12 +86,13 @@ Skybox* skybox;
 float fov, near, far;
 
 
-//HUD
 float HUDstart;
 int currRenderedObjects = 0;
 
-// file manager
 FileManager* fm;
+
+float zzz = 6.0f;
+
 
 int main(void)
 {
@@ -106,6 +113,7 @@ int main(void)
     // load shader
     /* ------------------------------------------------------------------------------------ */
     Shader modelShader(fm->getShaderPath("modelVert"), fm->getShaderPath("modelFrag"));
+    Shader animModelShader(fm->getShaderPath("animModelVert"), fm->getShaderPath("animModelFrag"));
     Shader directLightShader(fm->getShaderPath("directLightVert"), fm->getShaderPath("directLightFrag"));
     Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
@@ -122,32 +130,51 @@ int main(void)
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
     pHandler->getWorld()->removeRigidBody(newWorldBody);
 
+    // permeable wall
+    Model permWall(fm->getObjPath("perm-wall"));
+
 
     // player
-    Model player(fm->getObjPath("player"), true, false, PNG);
+    Model player(fm->getPlayerPath("player"), true, false, PNG);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
 
     // snowballs
-    Snowball snowball2(PALM_TREE, fm->getObjPath("snowball"), glm::vec3(-25.0f, 50.0f, 80.0f), 0.2, 1.0, glm::vec3(0.0, 0.0, -9.81), pHandler, &camera);  // on FRONT side (palm tree)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(PALM_TREE, &snowball2));
-    Snowball snowball3(LABYRINTH, fm->getObjPath("snowball"), glm::vec3(-22.0f, 30.0f, 25.0f), 0.2, 1.0, glm::vec3(-9.81, 0.0, 0.0), pHandler, &camera);  // on RIGHT side (labyrinth)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(LABYRINTH, &snowball3));
-    Snowball snowball1(PLATFORM, fm->getObjPath("snowball"), glm::vec3(-47.0f, 52.0f, -18.0f), 0.2, 1.0, glm::vec3(0, 0, 9.81f), pHandler, &camera);      // on BACK side (platform)
-    snowballs.insert(std::pair<unsigned int, Snowball*>(PLATFORM, &snowball1));
-    Snowball snowball4(LEVER, fm->getObjPath("snowball"), glm::vec3(-40.0f, 58.0f, 20.0f), 0.2, 1.0, glm::vec3(0.0, -9.81, 0.0), pHandler, &camera);      // test
-    snowballs.insert(std::pair<unsigned int, Snowball*>(LEVER, &snowball4));
+    Snowball snowball_left(SNOWBALL_LEFT_ID, fm->getObjPath("snowball"), SNOWBALL_LEFT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_LEFT, pHandler, &camera);     // on LEFT side (cave)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_LEFT_ID, &snowball_left));
+    
+    Snowball snowball_right(SNOWBALL_RIGHT_ID, fm->getObjPath("snowball"), SNOWBALL_RIGHT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_RIGHT, pHandler, &camera);  // on RIGHT side (labyrinth)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_RIGHT_ID, &snowball_right));
+    
+    Snowball snowball_front(SNOWBALL_FRONT_ID, fm->getObjPath("snowball"), SNOWBALL_FRONT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_FRONT, pHandler, &camera);  // on FRONT side (palm tree)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_FRONT_ID, &snowball_front));
+    
+    Snowball snowball_back(SNOWBALL_BACK_ID, fm->getObjPath("snowball"), SNOWBALL_BACK_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BACK, pHandler, &camera);      // on BACK side (platform)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BACK_ID, &snowball_back));
+    
+    Snowball snowball_top(SNOWBALL_TOP_ID, fm->getObjPath("snowball"), SNOWBALL_TOP_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_TOP, pHandler, &camera);          // on TOP side (crater)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_TOP_ID, &snowball_top));
+
+    Snowball snowball_bottom(SNOWBALL_BOTTOM_ID, fm->getObjPath("snowball"), SNOWBALL_BOTTOM_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BOTTOM, pHandler, &camera);  // on BOTTOM side (pyramid)
+    snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BOTTOM_ID, &snowball_bottom));
+
 
     // collection point place holder
     Model collectionPoint(fm->getObjPath("obelisk"));
-    btRigidBody* colPntBody = pHandler->addCylinder(glm::vec3(-37.5f, 53.5f, 20.0f), 0, glm::vec3(0.5, 2, 0.5));
+    btRigidBody* colPntBody = pHandler->addCylinder(COLLECTION_POINT_POS, COLLECTION_POINT_MASS, COLLECTION_POINT_BODY_SCALE);
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
+
+    /* ------------------------------------------------------------------------------------ */
+    // GRAVITIY CHANGING COLLIDERS
+    /* ------------------------------------------------------------------------------------ */
+    addGHandlers();
 
 
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL - still in testing phase
     /* ------------------------------------------------------------------------------------ */
-
+    Model animModel(fm->getPlayerPath("player"), true, true, PNG);
+    //Model animModel(fm->getObjPath("michelle"), true, true, PNG);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -176,13 +203,16 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
-   
+    startTimeSec = glfwGetTime();
     do {
         framebuffer.bindBuffer();
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
         /* ------------------------------------------------------------------------------------ */
         computeTimeLogic();
+        ///double currTimeSeconds = glfwGetTime();
+        //float animTimeSec = (float)(currTimeSeconds - startTimeSec);
+        
         if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm) {
             soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
             playedAlarm = true;
@@ -201,28 +231,45 @@ int main(void)
 
         // view/projection transformations
         projection = camera.GetProjection();
-        modelShader.setMat4("projection", projection);
         glm::mat4 view = camera.GetViewMatrix();
-        modelShader.setMat4("view", view);
 
 
         /* ------------------------------------------------------------------------------------ */
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
-        //world.draw(modelShader, glm::vec3(-30.0f, 10.0f, 30.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(3.0f));
         newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
-        collectionPoint.draw(modelShader, glm::vec3(-37.5f, 51.5f, 20.0f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f));
+        permWall.draw(modelShader, glm::vec3(-49, 18.265, 33.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
+        collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
         
+        if (snowballs.size() == 1)
+            bottomSnowballActive = true;
+
         for (const auto& item : snowballs) {  // item.second == Snowball*
-            item.second->shrink(deltaTime);
-            item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
+                item.second->shrink(deltaTime);
+                item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            }
+            else if (item.second->getID() == SNOWBALL_BOTTOM_ID && bottomSnowballActive) {
+                item.second->shrink(deltaTime);
+                item.second->s_draw(&modelShader, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            }
         }
 
 
         /* ------------------------------------------------------------------------------------ */
         // ANIMATED MODEL
         /* ------------------------------------------------------------------------------------ */
+        // get anim data
+        animModelShader.use();
+        std::vector<glm::mat4> transforms;
+        animModel.get_bone_transforms(animTimeSec, transforms);
 
+        for (int i = 0; i < transforms.size(); i++) {
+            animModelShader.setMat4("BoneTransforms[" + std::to_string(i) + "]", transforms[i]);
+            //std::cout << glm::to_string(transforms[i]) << std::endl;
+        }
+        animModelShader.use();
+        animModel.draw(animModelShader, glm::vec3(0, 0, 0), 180, glm::vec3(0,0,1), glm::vec3(0.5));
 
         /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
@@ -241,6 +288,11 @@ int main(void)
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
                 score += snowball->getBodyScale().x() * 100;
+                std::cout << "Score: " << score << std::endl;
+
+                if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
+                    hasWon = true;
+                }
             }
         }
 
@@ -275,7 +327,7 @@ int main(void)
         // GLFW: renew buffers and check all I/O events
         glfwSwapBuffers(window);
         glfwPollEvents();
-    } while (!firstWindowClose && !hasWon() && !hasLost());
+    } while (!firstWindowClose && !hasWon && !hasLost());
 
     transitionToEndOfGameScreen(window);
 
@@ -374,15 +426,6 @@ GLFWwindow* initGLFWandGLEW()
 }
 
 
-bool hasWon() {
-    if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
-        return true;
-    }
-    
-    return false;
-}
-
-
 bool hasLost() {
     if (glfwGetTime() > maxGameTime) {
         return true;
@@ -450,7 +493,15 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
         playWalkSound();
-    }    
+    }
+
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
+        zzz += 0.1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
+        zzz -= 0.1;
+    }
 }
 
 
@@ -497,6 +548,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 void computeTimeLogic()
 {
     float currentFrame = static_cast<float>(glfwGetTime());
+    animTimeSec = (float)(glfwGetTime() - startTimeSec);
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     msPerFrame = deltaTime * 1000;  // deltaTime is the time in s from frame to frame, i.e. taking to compute 1 frame; 1s = 1000ms
@@ -522,7 +574,7 @@ void playWalkSound() {
 
 
 void playEndOfGameSound() {
-    if (hasWon())
+    if (hasWon)
         soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
     else
         soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
@@ -578,12 +630,51 @@ void activateShader(Shader *shader)
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion)
 {
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
-    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.05f, 0.05f, 0.05f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.5f, 0.5f, 0.5f);
     shader.setVec3("pointLights[" + pointLightNumber + "].diffuse", 0.8f, 0.8f, 0.8f);
     shader.setVec3("pointLights[" + pointLightNumber + "].specular", 1.0f, 1.0f, 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
-    shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.027f);
-    shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0028f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.007f);
+    shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0002f);
 }
 
 
+void addGHandlers() {
+    float vertAxesScale = 19.5f;
+
+    // LEFT
+    btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
+    pHandler->activateColCallBack(leftGHandler);
+    pHandler->makePermeable(leftGHandler);
+    leftGHandler->setUserPointer(&leftGHandlerPtr);
+
+    // RIGHT
+    btRigidBody* rightGHandler = pHandler->addBox(RIGHT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
+    pHandler->activateColCallBack(rightGHandler);
+    pHandler->makePermeable(rightGHandler);
+    rightGHandler->setUserPointer(&rightGHandlerPtr);
+
+    // FRONT
+    btRigidBody* frontGHandler = pHandler->addBox(FRONT_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
+    pHandler->activateColCallBack(frontGHandler);
+    pHandler->makePermeable(frontGHandler);
+    frontGHandler->setUserPointer(&frontGHandlerPtr);
+
+    // BACK
+    btRigidBody* backGHandler = pHandler->addBox(BACK_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
+    pHandler->activateColCallBack(backGHandler);
+    pHandler->makePermeable(backGHandler);
+    backGHandler->setUserPointer(&backGHandlerPtr);
+
+    // TOP
+    btRigidBody* topGHandler = pHandler->addBox(TOP_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
+    pHandler->activateColCallBack(topGHandler);
+    pHandler->makePermeable(topGHandler);
+    topGHandler->setUserPointer(&topGHandlerPtr);
+
+    // BOTTOM
+    btRigidBody* bottomGHandler = pHandler->addBox(BOTTOM_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
+    pHandler->activateColCallBack(bottomGHandler);
+    pHandler->makePermeable(bottomGHandler);
+    bottomGHandler->setUserPointer(&bottomGHandlerPtr);
+}

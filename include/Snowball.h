@@ -5,10 +5,10 @@
 #include <Camera.h>
 #include <Model.h>
 #include <Physics.h>
+#include <Constants.h>
 
 
 extern Physics* pHandler;
-
 
 class Snowball {
 private:
@@ -23,41 +23,43 @@ private:
 	void updateGravity() {
 		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
 		btVector3 currPos = this->s_body->getWorldTransform().getOrigin();
-		// check if on LEFT
-		if (currPos.y() < 56 && currPos.y() > 26
-			&& currPos.z() < 38 && currPos.z() > 8
-			&& currPos.x() < -54) {
+
+		// LEFT
+		if (currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_max && currPos.z() > cubeBounds.z_min
+			&& currPos.x() < cubeBounds.x_min) {
+
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(9.81, 0.0, 0.0)));
 			cubeSide = CUBE_LEFT;
 		}
-		// check if on RIGHT
-		else if (currPos.y() < 56 && currPos.y() > 26
-			&& currPos.z() < 38 && currPos.z() > 8
-			&& currPos.x() > -22.9) {
+		// RIGHT
+		else if (currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_max && currPos.z() > cubeBounds.z_min
+			&& currPos.x() > cubeBounds.x_max) {
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(-9.81, 0.0, 0.0)));
-			cubeSide = CUBE_RIGHT;;
+			cubeSide = CUBE_RIGHT;
 		}
-		// check if on FRONT
-		else if (currPos.x() > -54 && currPos.x() < -24
-			&& currPos.y() < 56 && currPos.y() > 26
-			&& currPos.z() > 33) {
+		// FRONT
+		else if (currPos.x() > cubeBounds.x_min && currPos.x() < cubeBounds.x_max
+			&& currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() > cubeBounds.z_max) {
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, -9.81)));
 			cubeSide = CUBE_FRONT;
 		}
-		// check if on BACK
-		else if (currPos.x() > -54 && currPos.x() < -24
-			&& currPos.y() < 56 && currPos.y() > 26
-			&& currPos.z() < 2) {
+		// BACK
+		else if (currPos.x() > cubeBounds.x_min && currPos.x() < cubeBounds.x_max
+			&& currPos.y() < cubeBounds.y_max && currPos.y() > cubeBounds.y_min
+			&& currPos.z() < cubeBounds.z_min) {
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 0.0, 9.81)));
 			cubeSide = CUBE_BACK;
 		}
-		// check if on TOP
-		else if (currPos.y() > 51) {
+		// TOP
+		else if (currPos.y() > cubeBounds.y_max) {
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, -9.81, 0.0)));
 			cubeSide = CUBE_TOP;
 		}
-		// check if on BOTTOM
-		else if (currPos.y() < 22) {
+		// BOTTOM
+		else if (currPos.y() < cubeBounds.y_min) {
 			s_body->setGravity(pHandler->GlmVec3ToBulletVec3(glm::vec3(0.0, 9.81, 0.0)));
 			cubeSide = CUBE_BOTTOM;
 		}

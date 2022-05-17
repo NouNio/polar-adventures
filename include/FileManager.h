@@ -50,6 +50,11 @@ public:
 	}
 
 
+	std::string getPlayerPath(std::string playerKey) {
+		return this->pathToProject + ASSETS + PLAYER + pathToObject[playerKey];
+	}
+
+
 	std::string getProjectPath()
 	{
 		return pathToProject;
@@ -68,16 +73,18 @@ private:
 	const std::string AUDIO = "audio\\";
 	const std::string FONTS = "fonts\\";
 	const std::string OBJECTS = "objects\\";
+	const std::string PLAYER = "player\\";
 	const std::string SHADER = "shader\\";
 	const std::string SKYBOX = "skybox\\";
 	const std::string WORLD = "world\\";
 	
 	const char* fontPath;
-	std::map<std::string, std::string> pathToObject = { {"player", "kenny-block-characters\\player.fbx"},
+	std::map<std::string, std::string> pathToObject = { {"player", "losstronaut.dae"},
 														{"snowball", "snowball\\snowball.fbx"},
 														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
-														{"test-world", "world\\test-world.fbx"},
-														{"game-world", "game-world.fbx"} };
+														{"perm-wall", "kenny-nature-kit\\cliff_block_stone.fbx"},
+														{"game-world", "game-world.fbx"},
+														{"michelle", "michelle\\michelle-running.dae"} };
 	
 	std::map<std::string, std::string> pathToShader = { 
 		
@@ -87,6 +94,8 @@ private:
 		{"HUDfrag", "HUD.frag"},
 		{"modelVert", "model.vert"},
 		{"modelFrag", "model.frag"},
+		{"animModelVert", "animModel.vert"},
+		{"animModelFrag", "animModel.frag"},
 		{"pass_on", "pass_on.vert" },
 	    {"playerVert", "player.vert"},
 		{"playerFrag", "player.frag"},

@@ -25,7 +25,7 @@ struct PointLight {
     vec3 specular;      
 };
 
-#define N_PT_LIGHTS 5
+#define N_PT_LIGHTS 3
 
 in vec3 Normal;   // perpendicular to the vertex
 in vec3 FragPos;  // vertex position in world view
@@ -57,24 +57,33 @@ void main()
 
 //TODO: change this with 1D texture though not necessarily necessary
 float discretize(float f){
-if(f>=0.0&&f<0.1){
-f=0.1;}
-else if(f>=0.1&&f<0.2){
-f=0.2;}
-else if(f>=0.2&&f<0.3){
-f=0.3;}
-else if(f>=0.3&&f<0.4){
-f=0.4;}
-if(f>=0.4&&f<0.5){
-f=0.5;}
-else if(f>=0.5&&f<0.6){
-f=0.6;}
-else if(f>=0.6&&f<0.7){
-f=0.7;}
-else if(f>=0.7&&f<0.8){
-f=0.8;}
-else if(f>=0.9&&f<1.0){
-f=1.0;}
+    if(f>=0.0 && f<0.1){
+        f=0.1;
+    }
+    else if(f>=0.1 && f<0.2){
+        f=0.2;
+    }
+    else if(f>=0.2 && f<0.3){
+        f=0.3;
+    }
+    else if(f>=0.3 && f<0.4){
+        f=0.4;
+    }
+    if(f>=0.4 && f<0.5){
+        f=0.5;
+    }
+    else if(f>=0.5 && f<0.6){
+        f=0.6;
+    }
+    else if(f>=0.6 && f<0.7){
+        f=0.7;
+    }
+    else if(f>=0.7 && f<0.8){
+        f=0.8;
+    }
+    else if(f>=0.9 && f<1.0){
+        f=1.0;
+    }
 
 return f;
 }
@@ -129,7 +138,7 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
 	value=discretize(value);
 	diffuse=diffuse*value;
     specular *= attenuation;
-        vec3 saved= (diffuse+ambient);
+    vec3 saved= (diffuse+ambient);
     float maximum=max(saved.x,saved.y);
     maximum=max(maximum, saved.z);
     maximum=discretize(maximum);
