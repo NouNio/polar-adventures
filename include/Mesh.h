@@ -98,8 +98,9 @@ public:
     }
 
 
-    void draw(Shader& shader)
+    void draw(Shader& shader) 
     {
+        //glDisable(GL_CULL_FACE);
         setMaterialValues(shader);  // set the materials color values in the fragment shader
         
         if (this->withTexture)

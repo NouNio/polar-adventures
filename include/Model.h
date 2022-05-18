@@ -126,8 +126,16 @@ public:
 
     void draw(Shader& shader)
     {
+        shader.setMat4("projection", glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+        shader.setMat4("view", camera.GetViewMatrix());
+
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+        shader.setMat4("model", modelMatrix);
+
         bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++) {
+            meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))
                     meshes[i].draw(shader);
@@ -137,6 +145,7 @@ public:
                 camera.frustum->increaseRenderedObjects();
             }
             meshes[i].resetBound();
+
         }
         
     }
@@ -145,6 +154,8 @@ public:
     void drawUnculled(Shader& shader) {
         for (unsigned int i = 0; i < meshes.size(); i++) {
             meshes[i].draw(shader);
+            shader.setMat4("projection", glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
+            shader.setMat4("view", camera.GetViewMatrix());
             
         }
     }
@@ -156,7 +167,9 @@ public:
 
 
     bool isInFrustum (Mesh m) const {
-        return camera.frustum->isInside(m.bound.getPoints());
+        return 
+            //true;
+            camera.frustum->isInside(m.bound.getPoints());
     }
 
 

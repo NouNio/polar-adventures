@@ -37,7 +37,7 @@ public:
 		//setup color texture
 		{
 			glBindTexture(GL_TEXTURE_2D, color);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, window_width, window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			// attach texture to framebuffer
@@ -46,7 +46,7 @@ public:
 		//setup normal texture
 		{
 			glBindTexture(GL_TEXTURE_2D, normal);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_FLOAT, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
@@ -111,6 +111,7 @@ public:
 			GLenum attachments[] = { GL_COLOR_ATTACHMENT0};
 			glDrawBuffers(1,  attachments);
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+				std::cout << "fbo init failed for fbo2" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
 			}
 
 
@@ -129,6 +130,7 @@ public:
 	//*/
 	void bindBuffer() {
 		glBindFramebuffer(GL_FRAMEBUFFER, handle);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	void doImageProcessing() {
 		glDisable(GL_DEPTH_TEST);
@@ -138,11 +140,13 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		processor.use();
+		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);
 		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"),0);  // set the appropriate texture sampler variable in the fragment shader
+		 // set the appropriate texture sampler variable in the fragment shader
+		glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 0);
 		glBindTexture(GL_TEXTURE_2D, normal);
 		glActiveTexture(GL_TEXTURE1);
-		glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 0);  // set the appropriate texture sampler variable in the fragment shader
+	  // set the appropriate texture sampler variable in the fragment shader
 		glBindTexture(GL_TEXTURE_2D, normal);
 		renderMesh.draw(processor);
 		
@@ -162,17 +166,18 @@ public:
 		renderMesh.draw(combination);
 		glUseProgram(0);
 		bindBuffer();
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 		bindPostProcessor();
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		unbind();
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		//*/
 
 	}
 	void bindPostProcessor() {
 		glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	unsigned int getDepth() {
 		return depth;
@@ -189,6 +194,7 @@ public:
 	}
 	static void unbind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	~Framebuffer() {
 		glDeleteTextures(1, &color);

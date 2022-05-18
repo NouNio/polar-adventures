@@ -60,6 +60,7 @@ void addGHandlers();
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
 // gameplay 
+bool sound = false;
 double startTimeSec = 0.0;
 float animTimeSec = 0.0;
 double maxGameTime = 300.0;  // time in seconds until player looses
@@ -197,7 +198,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // sound
     /* ------------------------------------------------------------------------------------ */
-    //soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
+    if (sound)soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -213,7 +214,7 @@ int main(void)
         ///double currTimeSeconds = glfwGetTime();
         //float animTimeSec = (float)(currTimeSeconds - startTimeSec);
         
-        if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm) {
+        if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm  && sound) {
             soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
             playedAlarm = true;
         }
@@ -232,8 +233,8 @@ int main(void)
         // view/projection transformations
         projection = camera.GetProjection();
         glm::mat4 view = camera.GetViewMatrix();
-
-
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
         /* ------------------------------------------------------------------------------------ */
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
@@ -470,10 +471,14 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE){
-        if(playerController->getSnowBallAmmo() > 0)
-            soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
-        else
-            soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
+        if (sound) {
+            if (playerController->getSnowBallAmmo() > 0) {
+                 soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
+            }
+            else {
+                 soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
+            }
+        }
         playerController->shootSnowball();
         lastShotPress = glfwGetTime();
     }
@@ -559,13 +564,16 @@ void computeTimeLogic()
 // plays a sound for walking with some interval between the sounds and only if player on ground
 void playWalkSound() {
     if (glfwGetTime() - lastWalkSound >= WALK_SOUND_PAUSE && playerController->onGround()) {
-        switch (walkSound) {
+        
+        if (sound) {
+            switch (walkSound) {
             case WALK_SOUND_A:
                 soundEngine->play2D(fm->getAudioPath("walk1").c_str(), false);
                 break;
             case WALK_SOUND_B:
                 soundEngine->play2D(fm->getAudioPath("walk2").c_str(), false);
                 break;
+            }
         }
         walkSound = !walkSound;
         lastWalkSound = glfwGetTime();
@@ -574,10 +582,15 @@ void playWalkSound() {
 
 
 void playEndOfGameSound() {
-    if (hasWon)
-        soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
-    else
-        soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
+
+    if (sound) {
+        if (hasWon) {
+             soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
+        }
+        else {
+             soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
+        }
+    }
 }
 
 
