@@ -193,7 +193,7 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, INFO_LOG_SIZE, NULL, infoLog);
-                std::cout << "There was an error linking the program: " << type << "\n" << infoLog << SEPARATOR << std::endl;
+                std::cout << "There was an error linking the program: " << type << "\n" << this->path << infoLog << SEPARATOR << std::endl;
             }
         }
     }

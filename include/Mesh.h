@@ -43,6 +43,11 @@ struct Vertex {
         pos = (position);
         texCoords = uv;
     }
+    Vertex(glm::vec3 position, glm::vec3 n, glm::vec2 uv) {
+        pos = (position);
+        texCoords = uv;
+        normal = n;
+    }
 };
 
 struct Material {

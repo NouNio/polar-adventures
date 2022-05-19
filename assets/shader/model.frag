@@ -43,7 +43,7 @@ float discretize(float f);
 void main()
 {
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
-    normal=vec4(norm,1.0);
+   // normal=vec4(norm,1.0);
   //THIS CAUSES BUGS
     //gl_FragDepth=FragPos.z;
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
@@ -90,7 +90,7 @@ float discretize(float f){
 return f;
 }
 
-
+ 
 vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material)
 {
     vec3 lightDir = normalize(-light.direction);

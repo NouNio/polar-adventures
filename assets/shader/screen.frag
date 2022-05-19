@@ -5,22 +5,17 @@
 * This file is part of the ECG Lab Framework and must not be redistributed.
 */
 
-in VertexData {
-	vec3 position_world;
-	vec3 normal_world;
-	vec2 uv;
-} vert;
+layout(location=0)out vec4 color;
 
-out vec4 color;
+
+
+in vec2 TexCoords;
+
 
 
 
 //uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
 
-uniform vec3 materialAmbient; 
-uniform vec3 materialDiffuse;
-uniform vec3 materialSpecular;
-uniform float specularAlpha;
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D edge;
@@ -29,13 +24,17 @@ uniform float brightness;
 
 void main() {	
 
-	vec3 texColor = texture(diffuseTexture, vert.uv).rgb;
+	vec3 texColor = texture(diffuseTexture, TexCoords).rgb;
 	 // ambient
-	//texColor=texColor * texture(edge, vert.uv).rgb;
+	if(texture(edge, TexCoords).r>0.1){
+	texColor=vec3(1);
+	}
 	// ambient
+	//texColor = vec3(1)-texColor;
 	texColor*=brightness;
-	           color=vec4(texColor,1);
-			   //color=vec4(1.);
+
+	color=vec4(texColor,1.0);
+	//color=vec4(1.0,0.0,0.0,1.0);
 
 	}
 

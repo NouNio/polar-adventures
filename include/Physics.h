@@ -35,7 +35,7 @@ public:
 
     void deleteBody(btRigidBody* body) 
     {
-        this->world->removeCollisionObject(body);
+        if (this->world!=nullptr)  this->world->removeCollisionObject(body);
         btMotionState* motionState = body->getMotionState();
         btCollisionShape* shape = body->getCollisionShape();
 
