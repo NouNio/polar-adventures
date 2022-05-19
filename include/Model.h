@@ -124,18 +124,10 @@ public:
     }
 
 
-    void draw(Shader& shader)
-    {
-        shader.setMat4("projection", glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
-        shader.setMat4("view", camera.GetViewMatrix());
-
-        glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-        shader.setMat4("model", modelMatrix);
+    void draw(Shader& shader) {
 
         bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++) {
-            meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
                 if (isInFrustum(meshes[i]))
                     meshes[i].draw(shader);
