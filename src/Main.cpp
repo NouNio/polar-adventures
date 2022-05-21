@@ -337,6 +337,14 @@ int main(void)
         // render the loaded model
         playerController->drawPlayer(&animModelShader);
 
+        auto transforms = animator.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i) {
+            animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        }
+
+        // render the loaded model
+        playerController->drawPlayer(&animModelShader);
+
 
         /* ------------------------------------------------------------------------------------ */
         // SKYBOX
