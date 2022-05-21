@@ -23,17 +23,19 @@
 #include <string>
 
 // self made libs
-#include <Shader.h>
+#include <animation.h>
+#include <animator.h>
 #include <Camera.h>
-#include <Model.h>
-#include <HUD.h>
-#include <Physics.h>
-#include <KinematicPlayer.h>
-#include <Snowball.h>
-#include <Skybox.h>
-#include <FileManager.h>
 #include <Constants.h>
+#include <FileManager.h>
 #include <Framebuffer.h>
+#include <HUD.h>
+#include <KinematicPlayer.h>
+#include <Model.h>
+#include <Physics.h>
+#include <Shader.h>
+#include <Skybox.h>
+#include <Snowball.h>
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -100,7 +102,11 @@ int currRenderedObjects = 0;
 
 FileManager* fm;
 
-float zzz = 6.0f;
+// debug
+float xx = 0.0f;
+float yy = 0.0f;
+float zz = 0.0f;
+float step_size = 0.1;
 
 
 int main(void)
@@ -145,9 +151,14 @@ int main(void)
     Model permWall(fm->getObjPath("perm-wall"));
 
 
-    // player
-    Model player(fm->getPlayerPath("player"), true, false, PNG);
-    playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &player);
+    /* ------------------------------------------------------------------------------------ */
+    // ANIMATED PLAYER MODEL - still in testing phase
+    /* ------------------------------------------------------------------------------------ */
+    Model animPlayer(fm->getPlayerPath("player"), true, true, PNG);
+    Animation walkAnim(fm->getPlayerPath("player"), &animPlayer);
+    Animator animator(&walkAnim);
+    playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &animPlayer);
+
 
     // snowballs
     Snowball snowball_left(SNOWBALL_LEFT_ID, fm->getObjPath("snowball"), SNOWBALL_LEFT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_LEFT, pHandler, &camera);     // on LEFT side (cave)
@@ -182,12 +193,6 @@ int main(void)
 
 
     /* ------------------------------------------------------------------------------------ */
-    // ANIMATED PLAYER MODEL - still in testing phase
-    /* ------------------------------------------------------------------------------------ */
-    Model animModel(fm->getPlayerPath("player"), true, true, PNG);
-    //Model animModel(fm->getObjPath("michelle"), true, true, PNG);
-
-    /* ------------------------------------------------------------------------------------ */
     // HUD
     /* ------------------------------------------------------------------------------------ */
     HUD hud(fm->getFontPath("arial"));
@@ -203,6 +208,11 @@ int main(void)
     skybox = new Skybox("galaxy", TGA);
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
+    
+    
+    /* ------------------------------------------------------------------------------------ */
+    // edge detection
+    /* ------------------------------------------------------------------------------------ */
     unsigned int handle;
 
     unsigned int color;
@@ -217,7 +227,7 @@ int main(void)
     combination.use();
     combination.setFloat("brightness", brightness);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
-    GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     initialize(SCR_WIDTH, SCR_HEIGHT, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
 
     /* ------------------------------------------------------------------------------------ */
@@ -249,6 +259,7 @@ int main(void)
         // INPUT 
         /* ------------------------------------------------------------------------------------ */
         processInput(window);
+        animator.UpdateAnimation(deltaTime);
 
         // render
         //glClearColor(0.6f, 0.7f, 0.9f, 1.0f);;
@@ -283,21 +294,6 @@ int main(void)
 
 
         /* ------------------------------------------------------------------------------------ */
-        // ANIMATED MODEL
-        /* ------------------------------------------------------------------------------------ */
-        // get anim data
-        animModelShader.use();
-        std::vector<glm::mat4> transforms;
-        animModel.get_bone_transforms(animTimeSec, transforms);
-
-        for (int i = 0; i < transforms.size(); i++) {
-            animModelShader.setMat4("BoneTransforms[" + std::to_string(i) + "]", transforms[i]);
-            //std::cout << glm::to_string(transforms[i]) << std::endl;
-        }
-        animModelShader.use();
-        animModel.draw(animModelShader, glm::vec3(0, 0, 0), 180, glm::vec3(0,0,1), glm::vec3(0.5));
-
-        /* ------------------------------------------------------------------------------------ */
         // PHYSICS & PLAYER
         /* ------------------------------------------------------------------------------------ */
         // remove the rigidBodies of the collected and saved snowballs from the world to avoid null ptr exceptions (i.e. crashs) when collision callbacks are called
@@ -324,11 +320,22 @@ int main(void)
 
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
-        pHandler->debugDraw();                         // call the debug drawer
+        //pHandler->debugDraw();                         // call the debug drawer
 
+        /* ------------------------------------------------------------------------------------ */
+        // ANIMATED MODEL
+        /* ------------------------------------------------------------------------------------ */
         playerController->update(pNONE, deltaTime);
-        activateShader(&playerShader);
-        playerController->drawPlayer(&playerShader);
+        // get anim data
+        animModelShader.use();
+
+        auto transforms = animator.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i) {
+            animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        }
+
+        // render the loaded model
+        playerController->drawPlayer(&animModelShader);
 
 
         /* ------------------------------------------------------------------------------------ */
@@ -406,6 +413,9 @@ void readINI()
 
     // gameplay
     maxGameTime = iniReader.GetReal("gameplay", "maxGameTime", 300.0);
+
+    // sound 
+    sound = iniReader.GetBoolean("sound", "sound", true);
 }
 
 
@@ -527,12 +537,21 @@ void processInput(GLFWwindow* window)
     }
 
 
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-        zzz += 0.1;
-    }
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-        zzz -= 0.1;
-    }
+    // increase / decrease x translation of model
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+        xx += step_size;
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+        xx -= step_size;
+    // increase / decrease y translation of model
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+        yy += step_size;
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+        yy -= step_size;
+    // increase / decrease z translation of model
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+        zz += step_size;
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+        zz -= step_size;
 }
 
 
@@ -754,7 +773,7 @@ static void initialize(int window_width, int window_height, unsigned int& color,
     glGenTextures(1, &normal);
     {
         glBindTexture(GL_TEXTURE_2D, normal);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, window_width, window_height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_SNORM, window_width, window_height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
@@ -763,20 +782,16 @@ static void initialize(int window_width, int window_height, unsigned int& color,
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal, 0);
     }
     //setup depth texture
-    /*
+    //*
     {
         glBindTexture(GL_TEXTURE_2D, depth);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R,
-            window_width, window_height, 0, GL_R, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_SNORM,
+            window_width, window_height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        //*
-        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, depth, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -839,17 +854,15 @@ static void doImageProcessing(unsigned int& color, unsigned int& normal, unsigne
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     processor.use();
-    //glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);
+    glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, normal);
     // set the appropriate texture sampler variable in the fragment shader
-    //glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 1);
+    glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 1);
     glActiveTexture(GL_TEXTURE1);
     // set the appropriate texture sampler variable in the fragment shader
-    glBindTexture(GL_TEXTURE_2D, normal);
+    glBindTexture(GL_TEXTURE_2D,depth);
     renderQuad();
-    glActiveTexture(GL_TEXTURE0);
-    glActiveTexture(GL_TEXTURE1);
     //*/
     //*
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

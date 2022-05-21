@@ -2,6 +2,7 @@
 // NOTE: frag shader with multiple lights: 1 dir light and n point lights (spotlight to come)
 layout(location=0) out vec4 FragColor;
 layout(location=1) out vec4 normal;
+layout(location=2) out vec4 depth;
 
 struct Material {   
     vec3 ambient;
@@ -32,6 +33,7 @@ in vec3 FragPos;  // vertex position in world view
   
  
 uniform vec3 viewPos; 
+
 uniform Material material;                        // material vals of the vertex
 uniform DirectionalLight directionalLight;        // pos and material vals of directional light source
 uniform PointLight pointLights[N_PT_LIGHTS];
@@ -43,11 +45,12 @@ float discretize(float f);
 void main()
 {
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
-   // normal=vec4(norm,1.0);
+    normal=vec4(norm,1.0);
   //THIS CAUSES BUGS
     //gl_FragDepth=FragPos.z;
+
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
-    
+        depth = vec4(vec3(length(FragPos)),1);
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
     //vec3 result = vec3(normalize(norm));
     for(int i = 0; i < N_PT_LIGHTS; i++)

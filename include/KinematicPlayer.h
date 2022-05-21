@@ -62,7 +62,7 @@ private:
 	const float radius = 0.5f, height = 2.0f, mass = 1.0f;
 	const float stepHeight = 0.35;
 	glm::vec3 playerOffset = glm::vec3(0, -1.5, 0);  // start value, where camera wolrdUp = (0,1,0) --> playerOffset = -(worldUp * 1.5)
-	const glm::vec3 playerScale = glm::vec3(0.5f);
+	const glm::vec3 playerScale = glm::vec3(50.0f);
 	float playerCamRot = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
 	unsigned int snowBallAmmo = 0;
@@ -290,14 +290,10 @@ public:
 		shader->setMat4("projection", glm::perspective(glm::radians(this->camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
 		shader->setMat4("view", this->camera->GetViewMatrix());
 		
-		shader->use();
+		//shader->use();
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, getPos() + playerOffset);
-
-
-		float playerCubeSideRot;
-		glm::vec3 playerCubeSideRotAxes;
 		
 		model = updatePlayerRotation(model);
 

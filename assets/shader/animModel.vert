@@ -1,39 +1,39 @@
 #version 330 core
 
-#define N_BONES 60
+layout(location = 0) in vec3 pos;
+layout(location = 1) in vec3 norm;
+layout(location = 2) in vec2 tex;
+layout(location = 3) in ivec4 boneIds; 
+layout(location = 4) in vec4 weights;
 
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
-layout (location = 3) in ivec4 aBoneIDs;
-layout (location = 4) in vec4 aWeigths;
-
-out vec3 FragPos;  // the postion of the vertex in world coordinates
-out vec3 Normal;  // perpendicular to the vertex "surface" 
-out vec2 TexCoords;
-flat out ivec4 BoneIDs;
-out vec4 Weights;
-
-uniform mat4 model;
-uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
 
-uniform mat4 BoneTransforms[N_BONES];
+const int MAX_BONES = 100;
+const int MAX_BONE_INFLUENCE = 4;
+uniform mat4 finalBonesMatrices[MAX_BONES];
+
+out vec2 TexCoords;
 
 void main()
 {
-    mat4 boneTransform = BoneTransforms[aBoneIDs[0]] * aWeigths[0];
-    boneTransform += BoneTransforms[aBoneIDs[1]] * aWeigths[1];
-    boneTransform += BoneTransforms[aBoneIDs[2]] * aWeigths[2];
-    boneTransform += BoneTransforms[aBoneIDs[3]] * aWeigths[3];
-
-    vec4 PosL = boneTransform * vec4(aPos, 1.0);
-    FragPos = vec3(model * PosL);
-    //FragPos = vec3(model* vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(model))) * aNormal;  // bring the normal vector to world space, make sure it is scaled correctly, i.e. use normal matrix
-    TexCoords = aTexCoords;
-    BoneIDs = aBoneIDs;
-    Weights = aWeigths;
-    
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+    vec4 totalPosition = vec4(0.0f);
+    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+    {
+        if(boneIds[i] == -1) 
+            continue;
+        if(boneIds[i] >=MAX_BONES) 
+        {
+            totalPosition = vec4(pos,1.0f);
+            break;
+        }
+        vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos,1.0f);
+        totalPosition += localPosition * weights[i];
+        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
+   }
+	
+    mat4 viewModel = view * model;
+    gl_Position =  projection * viewModel * totalPosition;
+	TexCoords = tex;
 }

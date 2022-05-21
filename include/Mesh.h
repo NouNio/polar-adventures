@@ -35,7 +35,7 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 texCoords;
-    int boneIDs[MAX_BONES_PER_VERTEX];  // idx of the bones that influence this vertex
+    int boneIDs[MAX_BONES_PER_VERTEX];       // idx of the bones that influence this vertex
     float boneWeights[MAX_BONES_PER_VERTEX]; // weight of these bones
     Vertex() {
     }

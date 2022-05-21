@@ -26,7 +26,7 @@ void main() {
 
 	vec3 texColor = texture(diffuseTexture, TexCoords).rgb;
 	 // ambient
-	if(texture(edge, TexCoords).r>0.1){
+	if(distance(vec3(0),texture(edge, TexCoords).rgb)>0){
 	texColor=vec3(1);
 	}
 	// ambient
@@ -34,6 +34,7 @@ void main() {
 	texColor*=brightness;
 
 	color=vec4(texColor,1.0);
+	//color.rgb=vec3(1)-color.rgb;
 	//color=vec4(1.0,0.0,0.0,1.0);
 
 	}
