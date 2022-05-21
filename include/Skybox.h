@@ -73,6 +73,7 @@ float skyboxVertices[] = {
 
 class Skybox {  // another name for a skybox --> cube map texture
 public:
+    unsigned int skyboxTex;
 	Skybox(std::string name, std::string filetype) {
         this->name = name;
         this->filetype = filetype;
@@ -101,7 +102,7 @@ public:
 
 private:
     unsigned int VAO, VBO;
-    unsigned int skyboxTex;
+   
     std::string name;
     std::string filetype;
 	std::vector<std::string> fileNames = { "left", "right", "front", "back", "top", "bottom" };

@@ -208,8 +208,16 @@ int main(void)
     skybox = new Skybox("galaxy", TGA);
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
-    
-    
+
+    modelShader.use();
+    modelShader.setInt("skybox", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->skyboxTex);
+
+    animModelShader.use();
+    animModelShader.setInt("skybox", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->skyboxTex);
     /* ------------------------------------------------------------------------------------ */
     // edge detection
     /* ------------------------------------------------------------------------------------ */
@@ -263,8 +271,10 @@ int main(void)
 
         // render
         //glClearColor(0.6f, 0.7f, 0.9f, 1.0f);;
-
+        animModelShader.use();
+        animModelShader.setVec3("viewPos", camera.pos);
         activateShader(&modelShader);
+   
 
         // view/projection transformations
         projection = camera.GetProjection();

@@ -37,20 +37,21 @@ uniform vec3 viewPos;
 uniform Material material;                        // material vals of the vertex
 uniform DirectionalLight directionalLight;        // pos and material vals of directional light source
 uniform PointLight pointLights[N_PT_LIGHTS];
-
 vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material);
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
 float discretize(float f);
+uniform samplerCube skybox;
 
 void main()
 {
+float maxDist= 10;
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
     normal=vec4(norm,1.0);
   //THIS CAUSES BUGS
     //gl_FragDepth=FragPos.z;
 
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
-        depth = vec4(vec3(length(FragPos)),1);
+        depth = vec4(vec3(length(FragPos)/maxDist),1);
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
     //vec3 result = vec3(normalize(norm));
     for(int i = 0; i < N_PT_LIGHTS; i++)
@@ -108,6 +109,9 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
+    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
+    //if(spec>0.8){specular+=reflection*0.5;}
+    //specular+=reflection;
     vec3 saved= (diffuse+ambient);
     //float maximum=max(saved.x,saved.y);
     //maximum=max(maximum, saved.z);
@@ -133,8 +137,9 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
-    
+     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
     // attenuation
+     //  if(spec>0.8){specular+=reflection*0.5;}
     float distance = length(light.pos - fragPos);
     float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
     ambient *= attenuation;
