@@ -13,17 +13,14 @@ struct Material {
 
 struct DirectionalLight {
     vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;   
+    vec3 color;
+ 
 };
 
 struct PointLight {
     vec3 pos;
     float Kc, Kl, Kq;   // constant, linear and quadratic terms for attenuation formula
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;      
+    vec3 color;      
 };
 
 #define N_PT_LIGHTS 3
@@ -99,24 +96,26 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 {
     vec3 lightDir = normalize(-light.direction);
     
-    vec3 ambient  = light.ambient * material.ambient;  // ambient shading
+    vec3 ambient  = material.ambient;  // ambient shading
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-    diff=discretize(diff);
-    vec3 diffuse = light.diffuse * diff * material.diffuse;  
-
+    //diff=discretize(diff);
+    vec3 diffuse = diff * material.diffuse;  
+    vec3 toCel = (diffuse+ambient)*light.color;
+    toCel.r=discretize(toCel.r);
+     toCel.g=discretize(toCel.g);
+      toCel.b=discretize(toCel.b);
+          vec3 saved= toCel;
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * material.specular;
+    vec3 specular = spec * material.specular;
     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
     //if(spec>0.8){specular+=reflection*0.5;}
     //specular+=reflection;
-    vec3 saved= (diffuse+ambient);
-    //float maximum=max(saved.x,saved.y);
-    //maximum=max(maximum, saved.z);
-    //maximum=discretize(maximum);
-    //saved=saved*maximum;
+;
+    //saved.r=discretize(saved.r);
+
     return (saved + specular);
    
 }
@@ -124,35 +123,38 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
 {
     vec3 lightDir = normalize(light.pos - fragPos);   // get direction of light ray, pointing from the fragment (fragPos) to the light
+     float distance = length(light.pos - fragPos);
+    float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
+    light.color=light.color*attenuation;
     
-    // ambient shading
-     vec3 ambient = light.ambient * material.ambient;
-
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-       diff=discretize(diff);
-    vec3 diffuse = light.diffuse * diff * material.diffuse;
+    vec3 ambient  = material.ambient;  // ambient shading
+    
+    float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
+   
+    //diff=discretize(diff);
+    vec3 diffuse = diff * material.diffuse;  
+    vec3 toCel = (diffuse+ambient)*light.color;
+    toCel.r=discretize(toCel.r);
+     toCel.g=discretize(toCel.g);
+      toCel.b=discretize(toCel.b);
+          vec3 saved= toCel;
     
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * material.specular;
+    vec3 specular = light.color * spec * material.specular;
      vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
     // attenuation
      //  if(spec>0.8){specular+=reflection*0.5;}
-    float distance = length(light.pos - fragPos);
-    float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
-    ambient *= attenuation;
-    diffuse *= attenuation;
+
+    
     //float value= max(diffuse.r, diffuse.g);
 	//value=max(value, diffuse.b);
 	//value=discretize(value);
-	//diffuse=diffuse*value;
-    specular *= attenuation;
-    vec3 saved= (diffuse+ambient);
-    float maximum=max(saved.x,saved.y);
-    maximum=max(maximum, saved.z);
-    maximum=discretize(maximum);
-    saved=saved*maximum;
+	//diffuse=diffuse*val;
+    //float maximum=max(saved.x,saved.y);
+    //maximum=max(maximum, saved.z);
+    //maximum=discretize(maximum);
+    //saved=saved*maximum;
     return (saved + specular);  // combine results
 }
