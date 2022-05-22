@@ -54,8 +54,8 @@ float maxDist= 10;
         depth = vec4(vec3(length(FragPos)/maxDist),1);
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
     //vec3 result = vec3(normalize(norm));
-    for(int i = 0; i < N_PT_LIGHTS; i++)
-        result += computePointLight(pointLights[i], norm, FragPos, viewDir, material);     // compute influence on the vertex from all the point lights
+    //for(int i = 0; i < N_PT_LIGHTS; i++)
+    //    result += computePointLight(pointLights[i], norm, FragPos, viewDir, material);     // compute influence on the vertex from all the point lights
    
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
