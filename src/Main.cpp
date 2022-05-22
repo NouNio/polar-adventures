@@ -121,12 +121,9 @@ int main(void)
     camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
-
-    pHandler = new Physics(debug);
-  
-
-
    
+    pHandler = new Physics(debug);
+ 
     /* ------------------------------------------------------------------------------------ */
     // load shader
     /* ------------------------------------------------------------------------------------ */
@@ -163,16 +160,16 @@ int main(void)
     // snowballs
     Snowball snowball_left(SNOWBALL_LEFT_ID, fm->getObjPath("snowball"), SNOWBALL_LEFT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_LEFT, pHandler, &camera);     // on LEFT side (cave)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_LEFT_ID, &snowball_left));
-    
+
     Snowball snowball_right(SNOWBALL_RIGHT_ID, fm->getObjPath("snowball"), SNOWBALL_RIGHT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_RIGHT, pHandler, &camera);  // on RIGHT side (labyrinth)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_RIGHT_ID, &snowball_right));
-    
+
     Snowball snowball_front(SNOWBALL_FRONT_ID, fm->getObjPath("snowball"), SNOWBALL_FRONT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_FRONT, pHandler, &camera);  // on FRONT side (palm tree)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_FRONT_ID, &snowball_front));
-    
+
     Snowball snowball_back(SNOWBALL_BACK_ID, fm->getObjPath("snowball"), SNOWBALL_BACK_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_BACK, pHandler, &camera);      // on BACK side (platform)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BACK_ID, &snowball_back));
-    
+
     Snowball snowball_top(SNOWBALL_TOP_ID, fm->getObjPath("snowball"), SNOWBALL_TOP_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_TOP, pHandler, &camera);          // on TOP side (crater)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_TOP_ID, &snowball_top));
 
@@ -249,7 +246,6 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     startTimeSec = glfwGetTime();
     do {
-   
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
@@ -321,7 +317,6 @@ int main(void)
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
                 score += snowball->getBodyScale().x() * 100;
-                std::cout << "Score: " << score << std::endl;
 
                 if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
                     hasWon = true;
@@ -331,7 +326,7 @@ int main(void)
 
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
-        //pHandler->debugDraw();                         // call the debug drawer
+        pHandler->debugDraw();                         // call the debug drawer
 
         /* ------------------------------------------------------------------------------------ */
         // ANIMATED MODEL
@@ -718,7 +713,7 @@ void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber,
 
 
 void addGHandlers() {
-    float vertAxesScale = 19.5f;
+    float vertAxesScale = 19.f;
 
     // LEFT
     btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
