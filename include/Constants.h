@@ -50,12 +50,12 @@ const float HUDyOffset = 50.0;
 #define CUBE_TOP 4
 #define CUBE_BOTTOM 5
 
-const glm::vec3 LEFT_CUBE_MIDDLE(-58.0f, 17.5f, 35.0f);
-const glm::vec3 RIGHT_CUBE_MIDDLE(3.0f, 17.5f, 35.0f);
-const glm::vec3 FRONT_CUBE_MIDDLE(-27.5f, 17.0f, 65.0f);
-const glm::vec3 BACK_CUBE_MIDDLE(-27.75f, 17.0f, 4.0f);
+const glm::vec3 LEFT_CUBE_MIDDLE(-58.0f, 17.5f, 34.75f);
+const glm::vec3 RIGHT_CUBE_MIDDLE(3.0f, 17.5f, 34.75f);
+const glm::vec3 FRONT_CUBE_MIDDLE(-27.75f, 17.5f, 65.0f);
+const glm::vec3 BACK_CUBE_MIDDLE(-27.75f, 17.5f, 4.0f);
 const glm::vec3 TOP_CUBE_MIDDLE(-27.75f, 48.0f, 34.75f);
-const glm::vec3 BOTTOM_CUBE_MIDDLE(-27.75f, -13.0f, 35.0f);
+const glm::vec3 BOTTOM_CUBE_MIDDLE(-27.75f, -13.0f, 34.75f);
 
 glm::vec3 current_G(0.0f, -9.81f, 0.0f);
 const glm::vec3 G_LEFT(9.81f, 0.0f, 0.0f);
