@@ -93,6 +93,27 @@ private:
 	}
 
 
+	glm::vec3 getSnowBallShootingVec(glm::vec3 camFront) {
+		glm::vec3 shootingPos = camFront;
+		switch (this->cubeSide) {
+		case CUBE_LEFT:
+		case CUBE_RIGHT:
+			shootingPos.x = 0.0f;
+			break;
+		case CUBE_FRONT:
+		case CUBE_BACK:
+			shootingPos.z = 0.0f;
+			break;
+		case CUBE_TOP:
+		case CUBE_BOTTOM:
+			shootingPos.y = 0.0f;
+			break;
+		}
+
+		return shootingPos;
+	}
+
+
 	void updateCameraPos()
 	{	
 		btVector3 newPos = this->ghostObject->getWorldTransform().getOrigin();
@@ -333,8 +354,12 @@ public:
 			Snowball* snowball = collectedSnowballs[collectedSnowballs.size()-1];							// retrieve the last collected snow ball
 			collectedSnowballs.pop_back();																	// and remove it from the list of collected snowballs
 
-			btRigidBody* newSphere = pHandler->addSphere(getPos() + glm::vec3(0.0, 3.0, 0.0), 1.0, 1.0);	// create a new sphere object (since apparently this is more desirable, then translating an existing object
+			glm::vec3 shootingPos = getPos() + 3 * getSnowBallShootingVec(camera->front); // getPos() + 3*camera->front
+
+			btRigidBody* newSphere = pHandler->addSphere(shootingPos, 1.0, 1.0);	// create a new sphere object (since apparently this is more desirable, then translating an existing object
 			snowballs.insert(std::pair<unsigned int, Snowball*>(snowball->getID(), snowball));				// insert it into the list of snowballs in the world
+
+			
 			
 			// TODO the below 5 lines can be refactored to Snowball.h
 			snowball->setBody(newSphere);																	// set the snowballs rigidBody to this new sphere

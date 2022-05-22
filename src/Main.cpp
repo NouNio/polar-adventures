@@ -121,12 +121,9 @@ int main(void)
     camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
-
-    pHandler = new Physics(debug);
-  
-
-
    
+    pHandler = new Physics(debug);
+ 
     /* ------------------------------------------------------------------------------------ */
     // load shader
     /* ------------------------------------------------------------------------------------ */
@@ -249,7 +246,6 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     startTimeSec = glfwGetTime();
     do {
-   
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
         /* ------------------------------------------------------------------------------------ */
         // TIME LOGIC
@@ -321,7 +317,6 @@ int main(void)
                 btRigidBody* tempBody = snowball->getBody();
                 pHandler->getWorld()->removeCollisionObject(tempBody);
                 score += snowball->getBodyScale().x() * 100;
-                std::cout << "Score: " << score << std::endl;
 
                 if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
                     hasWon = true;
@@ -331,7 +326,7 @@ int main(void)
 
         pHandler->stepSim(deltaTime);
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
-        //pHandler->debugDraw();                         // call the debug drawer
+        pHandler->debugDraw();                         // call the debug drawer
 
         /* ------------------------------------------------------------------------------------ */
         // ANIMATED MODEL
