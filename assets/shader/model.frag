@@ -109,7 +109,7 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = spec * material.specular;
+    vec3 specular = spec * material.specular*light.color;
     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
     //if(spec>0.8){specular+=reflection*0.5;}
     //specular+=reflection;
@@ -144,17 +144,6 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.color * spec * material.specular;
      vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
-    // attenuation
-     //  if(spec>0.8){specular+=reflection*0.5;}
 
-    
-    //float value= max(diffuse.r, diffuse.g);
-	//value=max(value, diffuse.b);
-	//value=discretize(value);
-	//diffuse=diffuse*val;
-    //float maximum=max(saved.x,saved.y);
-    //maximum=max(maximum, saved.z);
-    //maximum=discretize(maximum);
-    //saved=saved*maximum;
     return (saved + specular);  // combine results
 }
