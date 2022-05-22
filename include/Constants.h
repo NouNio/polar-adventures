@@ -33,7 +33,7 @@ float lastFrame = 0.0f;
 double FPS = 0.0;
 double msPerFrame = 0.0;
 const double BUTTON_PAUSE = 0.2;
-const double WALK_SOUND_PAUSE = 0.25;
+const double WALK_SOUND_PAUSE = 0.4;
 bool playedAlarm = false;
 
 // HUD
