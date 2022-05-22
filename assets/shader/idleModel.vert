@@ -10,6 +10,7 @@ uniform mat4 model;
 
 
 out vec2 TexCoords;
+out vec3 n;
 
 void main()
 {
