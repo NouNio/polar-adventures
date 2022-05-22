@@ -61,18 +61,18 @@ private:
 		normals.push_back(glm::normalize(viewDir));
 		normals.push_back(glm::normalize( - viewDir));
 		*/
-		std::ostringstream vts;
-		if (!normals.empty())
-		{
-			// Convert all but the last element to avoid a trailing ","
-			for (size_t i = 0; i < normals.size(); i++)
-			{
-				vts << normals[i].x << ' ' << normals[i].y << ' ' << normals[i].z << std::endl;
-			}
+		//std::ostringstream vts;
+		//if (!normals.empty())
+		//{
+		//	// Convert all but the last element to avoid a trailing ","
+		//	for (size_t i = 0; i < normals.size(); i++)
+		//	{
+		//		vts << normals[i].x << ' ' << normals[i].y << ' ' << normals[i].z << std::endl;
+		//	}
 	
-		}
+		//}
 
-		std::cout << vts.str() << std::endl;
+		//std::cout << vts.str() << std::endl;
 	}
 
 

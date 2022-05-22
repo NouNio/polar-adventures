@@ -131,9 +131,9 @@ int main(void)
     // load shader
     /* ------------------------------------------------------------------------------------ */
     Shader modelShader(fm->getShaderPath("modelVert"), fm->getShaderPath("modelFrag"));
-    Shader animModelShader(fm->getShaderPath("animModelVert"), fm->getShaderPath("animModelFrag"));
     Shader directLightShader(fm->getShaderPath("directLightVert"), fm->getShaderPath("directLightFrag"));
-    Shader playerShader(fm->getShaderPath("playerVert"), fm->getShaderPath("playerFrag"));
+    Shader idleShader(fm->getShaderPath("idleVert"), fm->getShaderPath("idleFrag"));
+    Shader animModelShader(fm->getShaderPath("animModelVert"), fm->getShaderPath("animModelFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
 
@@ -288,6 +288,7 @@ int main(void)
         permWall.draw(modelShader, glm::vec3(-49, 18.265, 33.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
         collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
         
+        
         if (snowballs.size() == 1)
             bottomSnowballActive = true;
 
@@ -337,17 +338,21 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         playerController->update(pNONE, deltaTime);
         // get anim data
-        animModelShader.use();
+        if (playerController->isWalking()) {
+            animModelShader.use();
 
-        auto transforms = animator.GetFinalBoneMatrices();
-        for (int i = 0; i < transforms.size(); ++i) {
-            animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+            auto transforms = animator.GetFinalBoneMatrices();
+            for (int i = 0; i < transforms.size(); ++i) {
+                animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+            }
+
+            // render the loaded model
+            playerController->draw(&animModelShader, 1.0);
         }
-
-        // render the loaded model
-        playerController->drawPlayer(&animModelShader);
-
-
+        else {
+            idleShader.use();
+            playerController->draw(&idleShader, 0.01);
+        }
 
 
         /* ------------------------------------------------------------------------------------ */
@@ -532,6 +537,7 @@ void processInput(GLFWwindow* window)
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        playerController->setWalking(true);
         camera.processKeyboard(BACKWARD, deltaTime);
         playerController->update(pBACKWARD, deltaTime);
         playWalkSound();
@@ -543,9 +549,14 @@ void processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+        playerController->setWalking(true);
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
         playWalkSound();
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE) {
+        playerController->setWalking(false);
     }
 
 

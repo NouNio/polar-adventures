@@ -67,6 +67,7 @@ private:
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
 	unsigned int snowBallAmmo = 0;
 	unsigned int cubeSide = CUBE_TOP;
+	bool walking = false;
 
 	void activatePlayer()
 	{
@@ -232,6 +233,7 @@ private:
 public:
 	Physics* pHandler;
 	Model* player;
+	Model* idleModel;
 	btPairCachingGhostObject* ghostObject;  // according to bullet docs, good for player controller, makes use of AABB
 	btKinematicCharacterController* controller;
 
@@ -242,6 +244,7 @@ public:
 		this->pHandler = pHandler;
 		this->pos = position;
 		this->player = model;
+		this->idleModel = idleModel;
 		this->activatePlayer();
 	}
 
@@ -285,19 +288,18 @@ public:
 	}
 
 
-	void drawPlayer(Shader* shader)
+	void draw(Shader* shader, float rescale)
 	{
 		shader->setMat4("projection", glm::perspective(glm::radians(this->camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
 		shader->setMat4("view", this->camera->GetViewMatrix());
 		
-		//shader->use();
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, getPos() + playerOffset);
 		
 		model = updatePlayerRotation(model);
 
-		model = glm::scale(model, playerScale);
+		model = glm::scale(model, playerScale * rescale);
 		shader->setMat4("model", model);
 
 		player->draw(*shader);
@@ -310,8 +312,18 @@ public:
 	}
 
 
+	bool isWalking() const {
+		return this->walking;
+	}
+
+
 	unsigned int getSnowBallAmmo()  {
 		return this->snowBallAmmo;
+	}
+
+
+	void setWalking(bool newWalking) {
+		this->walking = newWalking;
 	}
 
 
