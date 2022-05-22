@@ -705,7 +705,7 @@ void activateShader(Shader *shader)
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion)
 {
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
-    shader.setVec3("pointLights[" + pointLightNumber + "].color", 0.75f, 0.75f, 0.75f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].color",0.75f, 0.75f, 0.75f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.007f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0002f);
