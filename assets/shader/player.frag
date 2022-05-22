@@ -6,6 +6,7 @@ in vec2 TexCoords;
 
 layout(location=0) out vec4 FragColor;
 layout(location=1) out vec4 normal;
+layout(location=2) out vec4 depth;
 
 
 struct Material {   
@@ -44,6 +45,8 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
 void main()
 {
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
+    normal =vec4(norm, 1);
+    depth=vec4(0,0,0,1);
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
     
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
