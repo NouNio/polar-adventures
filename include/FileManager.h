@@ -81,10 +81,9 @@ private:
 	const char* fontPath;
 	std::map<std::string, std::string> pathToObject = { {"player", "losstronaut.dae"},
 														{"snowball", "snowball\\snowball.fbx"},
-														{"obelisk", "kenny-nature-kit\\statue_obelisk.fbx"},
+														{"snowman", "kenny-holiday-kit\\snowmanFancy.fbx"},
 														{"perm-wall", "kenny-nature-kit\\cliff_block_stone.fbx"},
-														{"game-world", "game-world.fbx"},
-														{"michelle", "michelle\\michelle-running.dae"} };
+														{"game-world", "game-world.fbx"}, };
 	
 	std::map<std::string, std::string> pathToShader = { 
 		
@@ -99,6 +98,8 @@ private:
 		{"pass_on", "pass_on.vert" },
 	    {"idleVert", "idleModel.vert"},
 		{"idleFrag", "idleModel.frag"},
+		{"particleVert", "particle.vert"},
+		{"particleFrag", "particle.frag"},
 		{"sobel", "sobel.frag"},
 	    {"screen","screen.frag"},
 		{"skyboxVert", "skybox.vert"}, 
