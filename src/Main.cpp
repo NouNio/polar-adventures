@@ -33,6 +33,7 @@
 #include <KinematicPlayer.h>
 #include <Model.h>
 #include <Physics.h>
+#include <ParticleSystem.h>
 #include <Shader.h>
 #include <Skybox.h>
 #include <Snowball.h>
@@ -102,6 +103,7 @@ float HUDstart;
 int currRenderedObjects = 0;
 
 FileManager* fm;
+ParticleSystem* parSys;
 
 // debug
 float xx = 0.0f;
@@ -143,6 +145,7 @@ int main(void)
     Shader animModelShader(fm->getShaderPath("animModelVert"), fm->getShaderPath("animModelFrag"));
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
+    Shader particleShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
@@ -159,7 +162,7 @@ int main(void)
 
 
     /* ------------------------------------------------------------------------------------ */
-    // ANIMATED PLAYER MODEL - still in testing phase
+    // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
     Model animPlayer(fm->getPlayerPath("player"), true, true, PNG);
     Animation walkAnim(fm->getPlayerPath("player"), &animPlayer);
@@ -167,7 +170,9 @@ int main(void)
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &animPlayer);
 
 
-    // snowballs
+    /* ------------------------------------------------------------------------------------ */
+    // SNOWBALLS
+    /* ------------------------------------------------------------------------------------ */
     Snowball snowball_left(SNOWBALL_LEFT_ID, fm->getObjPath("snowball"), SNOWBALL_LEFT_POS, SNOWBALL_RADIUS, SNOWBALL_MASS, G_LEFT, pHandler, &camera);     // on LEFT side (cave)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_LEFT_ID, &snowball_left));
 
@@ -187,8 +192,10 @@ int main(void)
     snowballs.insert(std::pair<unsigned int, Snowball*>(SNOWBALL_BOTTOM_ID, &snowball_bottom));
 
 
-    // collection point place holder
-    Model collectionPoint(fm->getObjPath("obelisk"));
+    /* ------------------------------------------------------------------------------------ */
+    // Collection point
+    /* ------------------------------------------------------------------------------------ */
+    Model collectionPoint(fm->getObjPath("snowman"));
     btRigidBody* colPntBody = pHandler->addCylinder(COLLECTION_POINT_POS, COLLECTION_POINT_MASS, COLLECTION_POINT_BODY_SCALE);
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
@@ -198,6 +205,11 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     addGHandlers();
 
+
+    /* ------------------------------------------------------------------------------------ */
+    // Particle System
+    /* ------------------------------------------------------------------------------------ */
+    parSys = new ParticleSystem(&particleShader);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -331,6 +343,7 @@ int main(void)
         pHandler->setDebugMatrices(view, projection);  // set debug draw matrices
         pHandler->debugDraw();                         // call the debug drawer
 
+
         /* ------------------------------------------------------------------------------------ */
         // ANIMATED MODEL
         /* ------------------------------------------------------------------------------------ */
@@ -351,6 +364,18 @@ int main(void)
             idleShader.use();
             playerController->draw(&idleShader, 0.01);
         }
+
+
+        /* ------------------------------------------------------------------------------------ */
+        // PARTICLE SYSTEM
+        /* ------------------------------------------------------------------------------------ */
+        parSys->updateParticlesPerFrame(deltaTime);
+        parSys->generateParticles();                // generate new rand particles values
+        parSys->simulate();                         // simulate particles
+        parSys->sortParticles();                    // sort particles
+        parSys->updateBuffers();                    // update bufers
+        parSys->setShader(projection, view);        // set shader values
+        parSys->draw();                             // draw particles
 
 
         /* ------------------------------------------------------------------------------------ */

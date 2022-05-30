@@ -354,7 +354,7 @@ public:
 			Snowball* snowball = collectedSnowballs[collectedSnowballs.size()-1];							// retrieve the last collected snow ball
 			collectedSnowballs.pop_back();																	// and remove it from the list of collected snowballs
 
-			glm::vec3 shootingPos = getPos() + 3 * getSnowBallShootingVec(camera->front); // getPos() + 3*camera->front
+			glm::vec3 shootingPos = getPos() + 3.0f * getSnowBallShootingVec(camera->front); // getPos() + 3*camera->front
 
 			btRigidBody* newSphere = pHandler->addSphere(shootingPos, 1.0, 1.0);	// create a new sphere object (since apparently this is more desirable, then translating an existing object
 			snowballs.insert(std::pair<unsigned int, Snowball*>(snowball->getID(), snowball));				// insert it into the list of snowballs in the world

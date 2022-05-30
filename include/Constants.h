@@ -119,9 +119,9 @@ int playerPtr = 123;
 // COLLECTION POINT
 std::string cpPtr = "collectionPoint";
 const glm::vec3 COLLECTION_POINT_SCALE(0.5);
-const glm::vec3 COLLECTION_POINT_POS(-26.0f, 39.0f, 37.0f);
-const float COLLECTION_POINT_ROT_ANGLE = 0.0f;
-const glm::vec3 COLLECTION_POINT_ROT_AXES(1.0f, 0.0f, 0.0f);
+const glm::vec3 COLLECTION_POINT_POS(-26.0f, 37.5f, 37.0f);
+const float COLLECTION_POINT_ROT_ANGLE = 180.0f;
+const glm::vec3 COLLECTION_POINT_ROT_AXES(0.0f, 1.0f, 0.0f);
 const float COLLECTION_POINT_MASS = 0.0f;
 const glm::vec3 COLLECTION_POINT_BODY_SCALE(0.5, 2, 0.5);
 
@@ -133,7 +133,7 @@ bool debug = false;
 const unsigned int nPointLights = 3; 
 glm::vec3 pointLightPositions[] = {
         glm::vec3(-55.0f, 14.0f, 34.0f),  // LEFT
-        glm::vec3(-34.0f, 8.0f, -10.0f),    // BACK
+        glm::vec3(-34.0f, 8.0f, -10.0f),  // BACK
         glm::vec3(-29.0f, -20.0f, 34.0f)  // BOTTOM
 };
 
