@@ -18,6 +18,7 @@ bool firstWindowClose = false;
 
 // WIN / LOOSE
 double score = 0.0;
+const int highScore = 498;
 bool hasWon = false;
 
 // SOUND

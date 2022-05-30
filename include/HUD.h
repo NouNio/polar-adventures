@@ -108,7 +108,7 @@ public:
 
 	void renderEndOfGame(Shader& shader, float x, float y) {
 		renderLine(shader, "YOUR SCORE: " +  std::to_string(lround(score)), x, y - 0 * newLineOffset);
-		renderLine(shader, "HIGH SCORE: 972", x, y - 1 * newLineOffset);
+		renderLine(shader, "HIGH SCORE: " + std::to_string(highScore), x, y - 1 * newLineOffset);
 	}
 
 
