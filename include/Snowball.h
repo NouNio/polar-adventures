@@ -90,7 +90,12 @@ public:
 		
 		// probably infer all these values from the physics model
 		btVector3 currPos = this->s_body->getWorldTransform().getOrigin();
+		s_shader->use();
+		s_shader->setBool("isSnowball", true);
+		s_shader->setVec3("position", s_pHandler->BulletVec3ToGlmVec3(currPos));
 		this->s_model->draw(*s_shader, s_pHandler->BulletVec3ToGlmVec3(currPos), s_angle, s_rotationAxes, this->s_modelScale);
+		s_shader->use();
+		s_shader->setBool("isSnowball", false);
 	}
 
 

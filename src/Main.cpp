@@ -47,6 +47,7 @@ GLFWwindow* initGLFWandGLEW();
 static void initialize(int window_width, int window_height, unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo, GLenum attachments[]);
 static void doImageProcessing(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, Shader& processor, Shader& combination);
 void clearAll(unsigned int& fbo, unsigned int& postprocessor);
+static void deleteBuffers(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo);
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -108,6 +109,15 @@ float yy = 0.0f;
 float zz = 0.0f;
 float step_size = 0.1;
 
+unsigned int handle;
+
+unsigned int color;
+unsigned int normal;
+unsigned int depth;
+unsigned int postprocessor;
+unsigned int edge;
+unsigned int rbo;
+GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
 int main(void)
 {
@@ -218,21 +228,14 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // edge detection
     /* ------------------------------------------------------------------------------------ */
-    unsigned int handle;
 
-    unsigned int color;
-    unsigned int normal;
-    unsigned int depth;
-    unsigned int postprocessor;
-    unsigned int edge;
-    unsigned int rbo;
   
   
     Shader combination(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("screen.frag", true));
     combination.use();
     combination.setFloat("brightness", brightness);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
-    GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+   
     initialize(SCR_WIDTH, SCR_HEIGHT, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
 
     /* ------------------------------------------------------------------------------------ */
@@ -578,6 +581,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
+    deleteBuffers(color, normal, depth, edge, handle, postprocessor, rbo);
+    initialize(width, height, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
+
     glViewport(0, 0, width, height);
 }
 

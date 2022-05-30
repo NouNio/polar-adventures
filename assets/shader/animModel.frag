@@ -13,14 +13,14 @@ void main()
 {    
     FragColor = texture(texture_diffuse, TexCoords);
     vec3 norm=normalize(n);
-         //vec3 viewDir=normalize(position-viewPos);
-       //  vec3 reflectDir=reflect(viewDir, norm);
-     //vec3 reflection  = texture(skybox, reflectDir).rgb;
+         vec3 viewDir=normalize(position-viewPos);
+         vec3 reflectDir=reflect(viewDir, norm);
+     vec3 reflection  = texture(skybox, reflectDir).rgb;
 
-      //if (FragColor.r<0.35){
-      //FragColor.rgb=mix(FragColor.rgb, reflection, 0.8);
+      if (FragColor.r+FragColor.g+FragColor.b>0.3){
+      //FragColor.rgb=mix(FragColor.rgb, reflection, 0.5);
       //FragColor.rgb+=reflection;
-      //}
+      }
     normal= vec4(norm,1);
     depth=vec4(vec3(0),1);
 }

@@ -28,8 +28,9 @@ struct PointLight {
 in vec3 Normal;   // perpendicular to the vertex
 in vec3 FragPos;  // vertex position in world view
   
- 
+ uniform vec3 position;
 uniform vec3 viewPos; 
+uniform bool isSnowball;
 
 uniform Material material;                        // material vals of the vertex
 uniform DirectionalLight directionalLight;        // pos and material vals of directional light source
@@ -44,8 +45,7 @@ void main()
 float maxDist= 10;
     vec3 norm = normalize(Normal);                // ambiguously the vector "Normal" is not normalized yet (necesserily), only perpendicular
     normal=vec4(norm,1.0);
-  //THIS CAUSES BUGS
-    //gl_FragDepth=FragPos.z;
+
 
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
         depth = vec4(vec3(length(FragPos)/maxDist),1);
@@ -53,7 +53,13 @@ float maxDist= 10;
     //vec3 result = vec3(normalize(norm));
    for(int i = 0; i < N_PT_LIGHTS; i++){
       result += computePointLight(pointLights[i], norm, FragPos, viewDir, material); }    // compute influence on the vertex from all the point lights
-   
+    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, norm)).rgb;
+    if(isSnowball){
+    result=mix(result, reflection,0.4);
+    normal=vec4((position-viewPos), 1.0);
+    depth=vec4(vec3(length(FragPos)/maxDist),1.0);
+    
+    }
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
 }
@@ -109,9 +115,7 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = spec * material.specular*light.color;
-    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
-    //if(spec>0.8){specular+=reflection*0.5;}
-    //specular+=reflection;
+
 ;
     //saved.r=discretize(saved.r);
 
@@ -142,7 +146,6 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.color * spec * material.specular;
-     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
 
     return (saved + specular);  // combine results
 }
