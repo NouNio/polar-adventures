@@ -39,7 +39,9 @@ uniform Material material;                        // material vals of the vertex
 uniform DirectionalLight directionalLight;        // pos and material vals of directional light source
 uniform PointLight pointLights[N_PT_LIGHTS];
 vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material);
+vec3 computeDirectionalLightSpec(DirectionalLight light, vec3 normal, vec3 viewDir, Material material);
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
+vec3 computePointLightSpec(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
 float discretize(float f);
 uniform samplerCube skybox;
 
@@ -117,7 +119,10 @@ float maxDist= 10;
    else if(hi>=4&&hi<5)result=vec3(t,p,v); 
      else if(hi>=5&&hi<6)result=vec3(v,p,q);
 
- 
+ result+=computeDirectionalLightSpec(directionalLight, norm, viewDir, material);
+    for(int i = 0; i < N_PT_LIGHTS; i++){
+      result += computePointLightSpec(pointLights[i], norm, FragPos, viewDir, material); } 
+
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
 }
@@ -166,19 +171,10 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
     diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
 
-    vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
-
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * material.specular;
-    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
-    //if(spec>0.8){specular+=reflection*0.5;}
-    //specular+=reflection;
+   
     vec3 saved= (diffuse+ambient);
-    //float maximum=max(saved.x,saved.y);
-    //maximum=max(maximum, saved.z);
-    //maximum=discretize(maximum);
-    //saved=saved*maximum;
-    return (saved + specular);
+
+    return (saved);
    
 }
 
@@ -195,22 +191,32 @@ vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
     vec3 diffuse = light.diffuse * diff * material.diffuse;
     
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * material.specular;
-     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
-    // attenuation
-     //  if(spec>0.8){specular+=reflection*0.5;}
+   
     float distance = length(light.pos - fragPos);
     float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
     ambient *= attenuation;
     diffuse *= attenuation;
-    //float value= max(diffuse.r, diffuse.g);
-	//value=max(value, diffuse.b);
-	//value=discretize(value);
-	//diffuse=diffuse*value;
-    specular *= attenuation;
+   
     vec3 saved= (diffuse+ambient);
 
-    return (saved + specular);  // combine results
+    return (saved );  // combine results
+}
+vec3 computeDirectionalLightSpec(DirectionalLight light, vec3 normal, vec3 viewDir, Material material){
+ vec3 lightDir = normalize(-light.direction);
+ vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
+
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.specular * spec * material.specular;
+return specular;
+}
+vec3 computePointLightSpec(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material){
+     vec3 lightDir = normalize(light.pos - fragPos);   // get direction of light ray, pointing from the fragment (fragPos) to the light
+
+  vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.specular * spec * material.specular;
+ float distance = length(light.pos - fragPos);
+    float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
+ specular *= attenuation;
+ return specular;
 }
