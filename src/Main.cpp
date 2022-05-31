@@ -708,10 +708,12 @@ void delay(double seconds) {
 
 
 // set some prominent vaues for the shader used fr most of the models in the scene
-void activateShader(Shader *shader)
+void activateShader(Shader* shader)
 {
     // be sure to activate shader when setting uniforms/drawing objects
     shader->use();
+    //for efficiency reasons
+    shader->setFloat("pi", glm::pi<float>());
     shader->setVec3("viewPos", camera.pos);
 
     /*
@@ -722,8 +724,9 @@ void activateShader(Shader *shader)
     */
     // directional light
     shader->setVec3("directionalLight.direction", -20.2f, -21.0f, -20.3f);
-    shader->setVec3("directionalLight.color", 0.5f, 0.5f, 0.5f);              // change here for scene brightness
-
+    shader->setVec3("directionalLight.ambient", 0.2f, 0.2f, 0.2f);
+    shader->setVec3("directionalLight.diffuse", 1.0f, 1.0f, 1.0f);              // change here for scene brightness
+    shader->setVec3("directionalLight.specular", 0.5f, 0.5f, 0.5f);
 
     for (unsigned int i = 0; i < nPointLights; i++)
     {
@@ -736,11 +739,14 @@ void activateShader(Shader *shader)
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion)
 {
     shader.setVec3("pointLights[" + pointLightNumber + "].pos", postion);
-    shader.setVec3("pointLights[" + pointLightNumber + "].color",0.75f, 0.75f, 0.75f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].ambient", 0.5f, 0.5f, 0.5f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].diffuse", 0.8f, 0.8f, 0.8f);
+    shader.setVec3("pointLights[" + pointLightNumber + "].specular", 1.0f, 1.0f, 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.007f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0002f);
 }
+
 
 
 void addGHandlers() {

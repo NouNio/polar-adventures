@@ -13,14 +13,17 @@ struct Material {
 
 struct DirectionalLight {
     vec3 direction;
-    vec3 color;
- 
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;   
 };
 
 struct PointLight {
     vec3 pos;
     float Kc, Kl, Kq;   // constant, linear and quadratic terms for attenuation formula
-    vec3 color;      
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;      
 };
 
 #define N_PT_LIGHTS 3
@@ -31,7 +34,7 @@ in vec3 FragPos;  // vertex position in world view
  uniform vec3 position;
 uniform vec3 viewPos; 
 uniform bool isSnowball;
-
+uniform float pi;
 uniform Material material;                        // material vals of the vertex
 uniform DirectionalLight directionalLight;        // pos and material vals of directional light source
 uniform PointLight pointLights[N_PT_LIGHTS];
@@ -60,6 +63,61 @@ float maxDist= 10;
     depth=vec4(vec3(length(FragPos)/maxDist),1.0);
     
     }
+    //translate to hsv
+    float cmax= max(result.r, max(result.g,result.b));
+    float v=cmax;
+    float cmin= min(result.r, min(result.g,result.b));
+    float diff= cmax-cmin;
+    float s= diff;
+    float h=0;
+    if (v>0.0){
+    s/=v;
+    float a; 
+    float b;
+    float c;
+    if(v==result.r){
+    a=result.g;
+    b=result.b;
+    c= 0;}
+    else if(v==result.g){
+    a=result.b;
+    b=result.r;
+    c=2;}
+    else{
+    a=result.r;
+    b=result.g;
+    c=4;
+    }
+
+    //leave out the pi meaning 
+    h=(1/3*pi)*(((a-b)/diff)+c);
+    while(h>=(2*pi)){
+    h=h-2*pi;
+    }
+        while(h<0){
+    h=h+2*pi;
+    }
+   
+
+    }
+    //discretize value
+    v= discretize(v);
+    //transform result back into rgb
+    float hi  = (floor(h/(1/3*pi)));//why floor doesnt cast to int is a mystery to me but whatever
+    //float hi=0;
+    float f = (h/(1/3))-hi;
+    float p= v*(1-s);
+    float q = v*(1-s*f);
+    float t = v*(1-s*(1-f)); 
+    
+    if((hi>=0&&hi<1)||(hi>=6&&hi<7))result=vec3(v,t,p);
+    else if(hi>=1&&hi<2)result=vec3(q,v,p);
+    else if(hi>=2&&hi<3)result=vec3(p,v,t);
+   else if(hi>=3&&hi<4)result=vec3(p,q,v);
+   else if(hi>=4&&hi<5)result=vec3(t,p,v); 
+     else if(hi>=5&&hi<6)result=vec3(v,p,q);
+
+ 
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
 }
@@ -102,23 +160,24 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 {
     vec3 lightDir = normalize(-light.direction);
     
-    vec3 ambient  = material.ambient;  // ambient shading
+    vec3 ambient  = light.ambient * material.ambient;  // ambient shading
     
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-    vec3 diffuse = diff * material.diffuse;  
-    vec3 toCel = (diffuse+ambient)*light.color;
-    toCel.r=discretize(toCel.r);
-    toCel.g=discretize(toCel.g);
-    toCel.b=discretize(toCel.b);
-    vec3 saved= toCel;
+    diff=discretize(diff);
+    vec3 diffuse = light.diffuse * diff * material.diffuse;  
+
     vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = spec * material.specular*light.color;
-
-;
-    //saved.r=discretize(saved.r);
-
+    vec3 specular = light.specular * spec * material.specular;
+    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
+    //if(spec>0.8){specular+=reflection*0.5;}
+    //specular+=reflection;
+    vec3 saved= (diffuse+ambient);
+    //float maximum=max(saved.x,saved.y);
+    //maximum=max(maximum, saved.z);
+    //maximum=discretize(maximum);
+    //saved=saved*maximum;
     return (saved + specular);
    
 }
@@ -126,26 +185,32 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
 {
     vec3 lightDir = normalize(light.pos - fragPos);   // get direction of light ray, pointing from the fragment (fragPos) to the light
-     float distance = length(light.pos - fragPos);
-    float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
-    light.color=light.color*attenuation;
     
-    vec3 ambient  = material.ambient;  // ambient shading
-    
-    float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-   
-    //diff=discretize(diff);
-    vec3 diffuse = diff * material.diffuse;  
-    vec3 toCel = (diffuse+ambient)*light.color;
-    toCel.r=discretize(toCel.r);
-    toCel.g=discretize(toCel.g);
-    toCel.b=discretize(toCel.b);
-    vec3 saved= toCel;
+    // ambient shading
+     vec3 ambient = light.ambient * material.ambient;
+
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+       diff=discretize(diff);
+    vec3 diffuse = light.diffuse * diff * material.diffuse;
     
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.color * spec * material.specular;
+    vec3 specular = light.specular * spec * material.specular;
+     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, normal)).rgb;
+    // attenuation
+     //  if(spec>0.8){specular+=reflection*0.5;}
+    float distance = length(light.pos - fragPos);
+    float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    //float value= max(diffuse.r, diffuse.g);
+	//value=max(value, diffuse.b);
+	//value=discretize(value);
+	//diffuse=diffuse*value;
+    specular *= attenuation;
+    vec3 saved= (diffuse+ambient);
 
     return (saved + specular);  // combine results
 }
