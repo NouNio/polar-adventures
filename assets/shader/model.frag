@@ -56,13 +56,14 @@ float maxDist= 10;
         depth = vec4(vec3(length(FragPos)/maxDist),1);
     vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
     //vec3 result = vec3(normalize(norm));
-   for(int i = 0; i < N_PT_LIGHTS; i++){
-      result += computePointLight(pointLights[i], norm, FragPos, viewDir, material); }    // compute influence on the vertex from all the point lights
+    for(int i = 0; i < N_PT_LIGHTS; i++){
+      result += computePointLight(pointLights[i], norm, FragPos, viewDir, material); 
+      }    // compute influence on the vertex from all the point lights
     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, norm)).rgb;
     if(isSnowball){
-    result=mix(result, reflection,0.4);
-    normal=vec4((position-viewPos), 1.0);
-    depth=vec4(vec3(length(FragPos)/maxDist),1.0);
+        result=mix(result, reflection,0.4);
+        normal=vec4((position-viewPos), 1.0);
+        depth=vec4(vec3(length(FragPos)/maxDist),1.0);
     
     }
     //translate to hsv
@@ -73,34 +74,34 @@ float maxDist= 10;
     float s= diff;
     float h=0;
     if (v>0.0){
-    s/=v;
-    float a; 
-    float b;
-    float c;
-    if(v==result.r){
-    a=result.g;
-    b=result.b;
-    c= 0;}
-    else if(v==result.g){
-    a=result.b;
-    b=result.r;
-    c=2;}
-    else{
-    a=result.r;
-    b=result.g;
-    c=4;
-    }
+        s/=v;
+        float a; 
+        float b;
+        float c;
+        if(v==result.r){
+            a=result.g;
+            b=result.b;
+            c= 0;
+            }
+       else if(v==result.g){
+            a=result.b;
+            b=result.r;
+            c=2;
+            }
+        else{
+            a=result.r;
+            b=result.g;
+            c=4;
+            }         
 
     //leave out the pi meaning 
-    h=(1/3*pi)*(((a-b)/diff)+c);
-    while(h>=(2*pi)){
-    h=h-2*pi;
-    }
+        h=(1/3*pi)*(((a-b)/diff)+c);
+        while(h>=(2*pi)){
+            h=h-2*pi;
+        }
         while(h<0){
-    h=h+2*pi;
-    }
-   
-
+            h=h+2*pi;
+        }
     }
     //discretize value
     v= discretize(v);
@@ -115,13 +116,13 @@ float maxDist= 10;
     if((hi>=0&&hi<1)||(hi>=6&&hi<7))result=vec3(v,t,p);
     else if(hi>=1&&hi<2)result=vec3(q,v,p);
     else if(hi>=2&&hi<3)result=vec3(p,v,t);
-   else if(hi>=3&&hi<4)result=vec3(p,q,v);
-   else if(hi>=4&&hi<5)result=vec3(t,p,v); 
-     else if(hi>=5&&hi<6)result=vec3(v,p,q);
+    else if(hi>=3&&hi<4)result=vec3(p,q,v);
+    else if(hi>=4&&hi<5)result=vec3(t,p,v); 
+    else if(hi>=5&&hi<6)result=vec3(v,p,q);
 
- result+=computeDirectionalLightSpec(directionalLight, norm, viewDir, material);
+    result+=computeDirectionalLightSpec(directionalLight, norm, viewDir, material);
     for(int i = 0; i < N_PT_LIGHTS; i++){
-      result += computePointLightSpec(pointLights[i], norm, FragPos, viewDir, material); } 
+        result += computePointLightSpec(pointLights[i], norm, FragPos, viewDir, material); } 
 
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
@@ -164,16 +165,10 @@ return f;
 vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, Material material)
 {
     vec3 lightDir = normalize(-light.direction);
-    
     vec3 ambient  = light.ambient * material.ambient;  // ambient shading
-    
     float diff = max(dot(normal, lightDir), 0.0);  // diffuse shading
-    diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;  
-
-   
     vec3 saved= (diffuse+ambient);
-
     return (saved);
    
 }
@@ -181,42 +176,34 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, 
 vec3 computePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
 {
     vec3 lightDir = normalize(light.pos - fragPos);   // get direction of light ray, pointing from the fragment (fragPos) to the light
-    
     // ambient shading
-     vec3 ambient = light.ambient * material.ambient;
-
+    vec3 ambient = light.ambient * material.ambient;
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
-       diff=discretize(diff);
+    diff=discretize(diff);
     vec3 diffuse = light.diffuse * diff * material.diffuse;
-    
     // specular shading
-   
     float distance = length(light.pos - fragPos);
     float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
     ambient *= attenuation;
     diffuse *= attenuation;
-   
     vec3 saved= (diffuse+ambient);
-
-    return (saved );  // combine results
+    return (saved);  // combine results
 }
 vec3 computeDirectionalLightSpec(DirectionalLight light, vec3 normal, vec3 viewDir, Material material){
- vec3 lightDir = normalize(-light.direction);
- vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
-
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * material.specular;
+vec3 lightDir = normalize(-light.direction);
+vec3 reflectDir = reflect(-lightDir, normal);  // specular shading
+float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+vec3 specular = light.specular * spec * material.specular;
 return specular;
 }
 vec3 computePointLightSpec(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material){
      vec3 lightDir = normalize(light.pos - fragPos);   // get direction of light ray, pointing from the fragment (fragPos) to the light
-
-  vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * material.specular;
- float distance = length(light.pos - fragPos);
+    float distance = length(light.pos - fragPos);
     float attenuation = 1.0 / (light.Kc + light.Kl * distance + light.Kq * (distance * distance));    
- specular *= attenuation;
- return specular;
+    specular *= attenuation;
+     return specular;
 }
