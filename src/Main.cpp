@@ -65,9 +65,6 @@ void addGHandlers();
 void renderQuad();
 
 
-
-
-
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
 /* ------------------------------------------------------------------------------------ */
@@ -82,7 +79,7 @@ irrklang::ISoundEngine* soundEngine = irrklang::createIrrKlangDevice();
 
 
 // camera & physics
-Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(-30.0f, 58.0f, 30.0f));
+Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(0.0f, 22.0f, 3.0f));
 Physics* pHandler;
 KinematicPlayer* playerController;
 std::map<unsigned int, Snowball*> snowballs;
@@ -121,6 +118,44 @@ unsigned int edge;
 unsigned int rbo;
 GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
+struct CubeGravtiy {
+    glm::vec3 objectPos;    // e.g. playerPos
+    glm::vec3 d ;           // half the width of the planet
+    glm::vec3 zeroVec = glm::vec3(0.0f);
+
+    glm::vec3 e_x = glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 e_y = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 e_z = glm::vec3(0.0f, 0.0f, 1.0f);
+    float epsilon = 0.1f;
+    glm::vec3 gradient = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    CubeGravtiy(glm::vec3 pos, glm::vec3 halfWay) {
+        objectPos = pos;
+        d = halfWay;
+    }
+
+    void updateObjPos(glm::vec3 newPos) {
+        objectPos = newPos;
+    }
+
+    void approxGradient() {
+        gradient = glm::vec3(
+            f(objectPos + epsilon * e_x) - f(objectPos - epsilon * e_x),
+            f(objectPos + epsilon * e_y) - f(objectPos - epsilon * e_y),
+            f(objectPos + epsilon * e_z) - f(objectPos - epsilon * e_z)
+        );
+    }
+
+    float f(glm::vec3 pos) {
+        glm::vec3 absPos = glm::abs(pos);
+        glm::vec3 distance = absPos - d;
+        glm::vec3 maxPos = glm::max(distance, zeroVec);
+        return glm::length(maxPos);
+
+        //return glm::length( glm::max( (glm::abs(objectPos) - d), zeroVec) );
+    }
+};
+
 int main(void)
 {
     
@@ -130,7 +165,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     fm = new FileManager();
     readINI();
-    camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(-30.0f, 58.0f, 30.0f));
+    camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(0.0f, 22.0f, 3.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
    
@@ -151,7 +186,7 @@ int main(void)
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
     // world
-    Model newWorld(fm->getWorldPath("game-world"));
+    Model newWorld(fm->getWorldPath("game-world-centered"));
     btRigidBody* newWorldBody = pHandler->addMeshShape(&newWorld, glm::vec3(0), 0);                     // create a physics obj
     btBvhTriangleMeshShape* newWorldShape = ((btBvhTriangleMeshShape*)(newWorldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
@@ -204,6 +239,10 @@ int main(void)
     // GRAVITIY CHANGING COLLIDERS
     /* ------------------------------------------------------------------------------------ */
     addGHandlers();
+
+    // new gravity model
+    CubeGravtiy cube_g_model(playerController->getPos(), HALF_SIDES);
+    cube_g_model.approxGradient();
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -259,6 +298,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
+    
     startTimeSec = glfwGetTime();
     do {
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
@@ -365,6 +405,9 @@ int main(void)
             playerController->draw(&idleShader, 0.01);
         }
 
+        // new g model
+        cube_g_model.updateObjPos(playerController->getPos());
+        cube_g_model.approxGradient();
 
         /* ------------------------------------------------------------------------------------ */
         // PARTICLE SYSTEM
