@@ -408,7 +408,6 @@ int main(void)
         // new g model
         cube_g_model.updateObjPos(playerController->getPos());
         cube_g_model.approxGradient();
-        printf("Approx G = %.2f, %.2f, %.2f\n\n", cube_g_model.gradient.x, cube_g_model.gradient.y, cube_g_model.gradient.z);
 
         /* ------------------------------------------------------------------------------------ */
         // PARTICLE SYSTEM
