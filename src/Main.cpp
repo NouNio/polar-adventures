@@ -29,6 +29,7 @@
 #include <Constants.h>
 #include <FileManager.h>
 #include <Framebuffer.h>
+#include <GravityModel.h>
 #include <HUD.h>
 #include <KinematicPlayer.h>
 #include <Model.h>
@@ -61,7 +62,6 @@ void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
 void transitionToEndOfGameScreen(GLFWwindow* window);
-void addGHandlers();
 void renderQuad();
 
 
@@ -95,6 +95,9 @@ double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress, l
 Skybox* skybox;
 float fov, near, far;
 
+// new gravity model
+CubeGravtiy cubeGravity(HALF_SIDES);
+
 
 float HUDstart;
 int currRenderedObjects = 0;
@@ -118,43 +121,7 @@ unsigned int edge;
 unsigned int rbo;
 GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
-struct CubeGravtiy {
-    glm::vec3 objectPos;    // e.g. playerPos
-    glm::vec3 d ;           // half the width of the planet
-    glm::vec3 zeroVec = glm::vec3(0.0f);
 
-    glm::vec3 e_x = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 e_y = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 e_z = glm::vec3(0.0f, 0.0f, 1.0f);
-    float epsilon = 0.1f;
-    glm::vec3 gradient = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    CubeGravtiy(glm::vec3 pos, glm::vec3 halfWay) {
-        objectPos = pos;
-        d = halfWay;
-    }
-
-    void updateObjPos(glm::vec3 newPos) {
-        objectPos = newPos;
-    }
-
-    void approxGradient() {
-        gradient = glm::vec3(
-            f(objectPos + epsilon * e_x) - f(objectPos - epsilon * e_x),
-            f(objectPos + epsilon * e_y) - f(objectPos - epsilon * e_y),
-            f(objectPos + epsilon * e_z) - f(objectPos - epsilon * e_z)
-        );
-    }
-
-    float f(glm::vec3 pos) {
-        glm::vec3 absPos = glm::abs(pos);
-        glm::vec3 distance = absPos - d;
-        glm::vec3 maxPos = glm::max(distance, zeroVec);
-        return glm::length(maxPos);
-
-        //return glm::length( glm::max( (glm::abs(objectPos) - d), zeroVec) );
-    }
-};
 
 int main(void)
 {
@@ -234,15 +201,6 @@ int main(void)
     btRigidBody* colPntBody = pHandler->addCylinder(COLLECTION_POINT_POS, COLLECTION_POINT_MASS, COLLECTION_POINT_BODY_SCALE);
     pHandler->activateColCallBack(colPntBody);
     colPntBody->setUserPointer(&cpPtr);
-
-    /* ------------------------------------------------------------------------------------ */
-    // GRAVITIY CHANGING COLLIDERS
-    /* ------------------------------------------------------------------------------------ */
-    addGHandlers();
-
-    // new gravity model
-    CubeGravtiy cube_g_model(playerController->getPos(), HALF_SIDES);
-    cube_g_model.approxGradient();
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -404,10 +362,6 @@ int main(void)
             idleShader.use();
             playerController->draw(&idleShader, 0.01);
         }
-
-        // new g model
-        cube_g_model.updateObjPos(playerController->getPos());
-        cube_g_model.approxGradient();
 
         /* ------------------------------------------------------------------------------------ */
         // PARTICLE SYSTEM
@@ -788,48 +742,6 @@ void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber,
     shader.setFloat("pointLights[" + pointLightNumber + "].Kc", 1.0f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kl", 0.007f);
     shader.setFloat("pointLights[" + pointLightNumber + "].Kq", 0.0002f);
-}
-
-
-
-void addGHandlers() {
-    float vertAxesScale = 19.f;
-
-    // LEFT
-    btRigidBody* leftGHandler = pHandler->addBox(LEFT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
-    pHandler->activateColCallBack(leftGHandler);
-    pHandler->makePermeable(leftGHandler);
-    leftGHandler->setUserPointer(&leftGHandlerPtr);
-
-    // RIGHT
-    btRigidBody* rightGHandler = pHandler->addBox(RIGHT_CUBE_MIDDLE, 0.0f, glm::vec3(10.0, vertAxesScale, vertAxesScale));
-    pHandler->activateColCallBack(rightGHandler);
-    pHandler->makePermeable(rightGHandler);
-    rightGHandler->setUserPointer(&rightGHandlerPtr);
-
-    // FRONT
-    btRigidBody* frontGHandler = pHandler->addBox(FRONT_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
-    pHandler->activateColCallBack(frontGHandler);
-    pHandler->makePermeable(frontGHandler);
-    frontGHandler->setUserPointer(&frontGHandlerPtr);
-
-    // BACK
-    btRigidBody* backGHandler = pHandler->addBox(BACK_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, vertAxesScale, 10.0));
-    pHandler->activateColCallBack(backGHandler);
-    pHandler->makePermeable(backGHandler);
-    backGHandler->setUserPointer(&backGHandlerPtr);
-
-    // TOP
-    btRigidBody* topGHandler = pHandler->addBox(TOP_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
-    pHandler->activateColCallBack(topGHandler);
-    pHandler->makePermeable(topGHandler);
-    topGHandler->setUserPointer(&topGHandlerPtr);
-
-    // BOTTOM
-    btRigidBody* bottomGHandler = pHandler->addBox(BOTTOM_CUBE_MIDDLE, 0.0f, glm::vec3(vertAxesScale, 10.0, vertAxesScale));
-    pHandler->activateColCallBack(bottomGHandler);
-    pHandler->makePermeable(bottomGHandler);
-    bottomGHandler->setUserPointer(&bottomGHandlerPtr);
 }
 
 

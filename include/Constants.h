@@ -59,12 +59,6 @@ const glm::vec3 G_BACK(0.0f, 0.0f, 9.81f);
 const glm::vec3 G_TOP(0.0f, -9.81f, 0.0f);
 const glm::vec3 G_BOTTOM(0.0f, 9.81f, 0.0f);
 
-std::string leftGHandlerPtr = "0";
-std::string rightGHandlerPtr = "1";
-std::string frontGHandlerPtr = "2";
-std::string backGHandlerPtr = "3";
-std::string topGHandlerPtr = "4";
-std::string bottomGHandlerPtr = "5";
 
 const struct CubeBounds {
 	const float x_max = 20.20f;   // right boundary

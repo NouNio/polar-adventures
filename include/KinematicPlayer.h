@@ -2,11 +2,12 @@
 #ifndef KINEMATICPLAYER_H
 #define KINEMATICPLAYER_H
 
+#include <Constants.h>
+#include <FileManager.h>
+#include <GravityModel.h>
 #include <Model.h>
 #include <Physics.h>
 #include <Snowball.h>
-#include <Constants.h>
-#include <FileManager.h>
 
 #include <bullet/BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <bullet/BulletDynamics/Character/btKinematicCharacterController.h>
@@ -26,6 +27,7 @@ extern std::map<unsigned int, Snowball*> snowballs;
 extern std::vector<Snowball*> collectedSnowballs;
 extern irrklang::ISoundEngine* soundEngine;
 extern FileManager* fm;
+extern CubeGravtiy cubeGravity;
 
 
 enum Movement {
@@ -129,36 +131,72 @@ private:
 
 
 	void updateGravity() {
-		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
-		if (current_G == G_LEFT) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_LEFT));
+		glm::vec3 newG = cubeGravity.getGradient(this->getPos());
+		controller->setGravity(pHandler->GlmVec3ToBulletVec3(newG));
+
+		updateCubeSide(newG);  // newG can be e.g. (0.0, -7, 2.81) then this should still be considered as being on the top side
+		updateJumpDir();
+	}
+
+
+	void updateCubeSide(glm::vec3 newG) {
+		glm::vec3 absG = glm::abs(newG);
+
+		// search for the index of the max val
+		int maxIdx = -1;
+		float maxVal = 0;
+
+		for (int i = 0; i < 3; i++) {
+			if (absG[i] > maxVal) {
+				maxIdx = i;
+				maxVal = absG[i];
+			}
+		}
+
+		// check LEFT or RIGHT
+		if (maxIdx == 0) {
+			if (newG[maxIdx] < 0)
+				cubeSide = CUBE_RIGHT;
+			if (newG[maxIdx] > 0)
+				cubeSide = CUBE_LEFT;
+		}
+		// check TOP or BOTTOM
+		else if (maxIdx == 1) {
+			if (newG[maxIdx] < 0)
+				cubeSide = CUBE_TOP;
+			if (newG[maxIdx] > 0)
+				cubeSide = CUBE_BOTTOM;
+		}
+		// cehck FRONT or BACK
+		else if (maxIdx == 2) {
+			if (newG[maxIdx] < 0)
+				cubeSide = CUBE_FRONT;
+			if (newG[maxIdx] > 0)
+				cubeSide = CUBE_BACK;
+		}
+	}
+
+
+	void updateJumpDir() {
+		switch (cubeSide) {
+		case CUBE_LEFT:
 			jumpDir = btVector3(-jumpForce, 0.0f, 0.0f);
-			cubeSide = CUBE_LEFT;
-		}
-		else if (current_G == G_RIGHT) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_RIGHT));
+			break;
+		case CUBE_RIGHT:
 			jumpDir = btVector3(jumpForce, 0.0f, 0.0f);
-			cubeSide = CUBE_RIGHT;
-		}
-		else if (current_G == G_FRONT) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_FRONT));
+			break;
+		case CUBE_FRONT:
 			jumpDir = btVector3(0.0f, 0.0f, jumpForce);
-			cubeSide = CUBE_FRONT;
-		}
-		else if (current_G == G_BACK) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BACK));
+			break;
+		case CUBE_BACK:
 			jumpDir = btVector3(0.0f, 0.0f, -jumpForce);
-			cubeSide = CUBE_BACK;
-		}
-		else if (current_G == G_TOP) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_TOP));
+			break;
+		case CUBE_TOP:
 			jumpDir = btVector3(0.0f, jumpForce, 0.0f);
-			cubeSide = CUBE_TOP;
-		}
-		else if (current_G == G_BOTTOM) {
-			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BOTTOM));
+			break;
+		case CUBE_BOTTOM:
 			jumpDir = btVector3(0.0f, -jumpForce, 0.0f);
-			cubeSide = CUBE_BOTTOM;
+			break;
 		}
 	}
 
