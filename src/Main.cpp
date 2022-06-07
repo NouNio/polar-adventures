@@ -105,12 +105,6 @@ int currRenderedObjects = 0;
 FileManager* fm;
 ParticleSystem* parSys;
 
-// debug
-float xx = 0.0f;
-float yy = 0.0f;
-float zz = 0.0f;
-float step_size = 0.1;
-
 unsigned int handle;
 
 unsigned int color;
@@ -294,7 +288,7 @@ int main(void)
         // GAME OBJECTS
         /* ------------------------------------------------------------------------------------ */
         newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
-        permWall.draw(modelShader, glm::vec3(-49, 18.265, 33.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
+        permWall.draw(modelShader, glm::vec3(-21.5, 0.725, -1.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
         collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
         
         
@@ -578,23 +572,6 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE) {
         playerController->setWalking(false);
     }
-
-
-    // increase / decrease x translation of model
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-        xx += step_size;
-    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-        xx -= step_size;
-    // increase / decrease y translation of model
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-        yy += step_size;
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-        yy -= step_size;
-    // increase / decrease z translation of model
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-        zz += step_size;
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-        zz -= step_size;
 }
 
 
