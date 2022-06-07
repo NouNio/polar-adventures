@@ -95,7 +95,7 @@ private:
 	}
 
 
-	glm::vec3 getSnowBallShootingVec(glm::vec3 camFront) {
+	glm::vec3 getPlayerFront(glm::vec3 camFront) {
 		glm::vec3 shootingPos = camFront;
 		switch (this->cubeSide) {
 		case CUBE_LEFT:
@@ -135,6 +135,7 @@ private:
 		controller->setGravity(pHandler->GlmVec3ToBulletVec3(newG));
 
 		updateCubeSide(newG);  // newG can be e.g. (0.0, -7, 2.81) then this should still be considered as being on the top side
+		updateCameraPos();
 		updateJumpDir();
 	}
 
@@ -204,20 +205,23 @@ private:
 	void updateMovement(Movement direction, float deltaTime) {
 		if (direction == pUP)
 			if (controller->canJump()) {
-				soundEngine->play2D(fm->getAudioPath("jump").c_str(), false);
+				if (sound)
+					soundEngine->play2D(fm->getAudioPath("jump").c_str(), false);
 				controller->jump(jumpDir);
 			}
 
 
 		float velocity = this->moveSpeed * deltaTime;
 		glm::vec3 walkDir(0, 0, 0);
+		glm::vec3 playerFrontDir = getPlayerFront(camera->front);
 		switch (direction)
 		{
 		case pFORWARD:
-			walkDir += this->camera->front * velocity;
+			//walkDir += this->camera->front * velocity;
+			walkDir += playerFrontDir * velocity;
 			break;
 		case pBACKWARD:
-			walkDir -= this->camera->front * velocity;
+			walkDir -= playerFrontDir * velocity;
 			break;
 		case pLEFT:
 			walkDir -= this->camera->right * velocity;
@@ -392,7 +396,7 @@ public:
 			Snowball* snowball = collectedSnowballs[collectedSnowballs.size()-1];							// retrieve the last collected snow ball
 			collectedSnowballs.pop_back();																	// and remove it from the list of collected snowballs
 
-			glm::vec3 shootingPos = getPos() + 3.0f * getSnowBallShootingVec(camera->front); // getPos() + 3*camera->front
+			glm::vec3 shootingPos = getPos() + 3.0f * getPlayerFront(camera->front); // getPos() + 3*camera->front
 
 			btRigidBody* newSphere = pHandler->addSphere(shootingPos, 1.0, 1.0);	// create a new sphere object (since apparently this is more desirable, then translating an existing object
 			snowballs.insert(std::pair<unsigned int, Snowball*>(snowball->getID(), snowball));				// insert it into the list of snowballs in the world
