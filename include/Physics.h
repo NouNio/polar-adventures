@@ -20,6 +20,7 @@ extern std::vector<Snowball*> collectedSnowballs;
 extern std::vector<Snowball*> savedSnowballs;
 extern irrklang::ISoundEngine* soundEngine;
 extern FileManager* fm;
+extern bool sound;
 
 bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectWrapper* obj1, int id1, int idx1, const btCollisionObjectWrapper* obj2, int id2, int idx2);
 
@@ -261,7 +262,8 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
             Snowball* p_snowball = snowballs[*p_snowballID];
             snowballs.erase(*p_snowballID);
             collectedSnowballs.push_back(p_snowball);
-            soundEngine->play2D(fm->getAudioPath("pickUp").c_str(), false);
+            if (sound)
+                soundEngine->play2D(fm->getAudioPath("pickUp").c_str(), false);
         }
     }
     // and somehow the shot snowball is also always obj2, when colliding with the collection point
@@ -270,7 +272,8 @@ bool collisionCallback(btManifoldPoint& collisionPoint, const btCollisionObjectW
         Snowball* p_snowball = snowballs[*p_snowballID];
         snowballs.erase(*p_snowballID);
         savedSnowballs.push_back(p_snowball);
-        soundEngine->play2D(fm->getAudioPath("deliver").c_str(), false);
+        if (sound)
+            soundEngine->play2D(fm->getAudioPath("deliver").c_str(), false);
     }
 
     return false;
