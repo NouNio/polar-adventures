@@ -83,7 +83,6 @@ private:
 														{"snowball", "snowball\\snowball.fbx"},
 														{"snowman", "kenny-holiday-kit\\snowmanFancy.fbx"},
 														{"perm-wall", "kenny-nature-kit\\cliff_block_stone.fbx"},
-														{"game-world", "game-world.fbx"}, 
 														{"game-world-centered", "game-world-centered.fbx"}, };
 	
 	std::map<std::string, std::string> pathToShader = { 
