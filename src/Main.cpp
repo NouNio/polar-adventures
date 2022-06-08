@@ -768,13 +768,13 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
             var = 1;
             break;
         case 3:
-            var = 5;
+            var = 0;
             break;
         case 4:
             var = 3;
             break;
         case 5:
-            var = 0;
+            var=5;
             break;
         }
         /*
@@ -788,7 +788,7 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
 
             } */
 
-        if (i == 5 && !bottomSnowballActive) {
+        if (i== 5&& !bottomSnowballActive) {
             return glm::vec3(1, 0, 0);
         }
         for each (Snowball * v in savedSnowballs)
@@ -801,7 +801,32 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
         }
         return glm::vec3(1, 1, 0);
     }
-   
+
+   void drawHUDVAO(unsigned int vao) {
+       glBindVertexArray(vao);
+       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+       glBindVertexArray(0);
+   }
+void generateHUDVAO(Mesh m, unsigned int vao, unsigned int vbo) {
+    std::vector<Vertex> vertices= m.vertices;
+    std::vector<unsigned int> indices = m.indices;
+    std::vector<glm::vec4> hudcoords;
+    for each (Vertex v in vertices)
+    {
+        hudcoords.push_back(glm::vec4(v.pos.x, v.pos.y, 0.0f, 0.0f));
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vao);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(hudcoords), &hudcoords, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(glm::vec4), (void*)0);
+    glBindVertexArray(0);
+ 
+
+}
 void setCubeSides() {
 
     int min = 0;
