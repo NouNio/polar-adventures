@@ -23,6 +23,7 @@
 #include <string>
 
 // self made libs
+#include <glm/gtx/rotate_vector.hpp>
 #include <animation.h>
 #include <animator.h>
 #include <Camera.h>
@@ -394,7 +395,8 @@ int main(void)
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
         setCubeSides();
-        hud.renderNumbers(HUDShader, 100.0f, 100.0f, sides, offsets, glm::vec3(0, 1, 0), 50.f);
+
+        hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, glm::vec3(0, 1, 0), 50.f);
 
         
         camera.frustum->resetRenderedObjects();
@@ -774,21 +776,26 @@ glm::vec3 determineColour(int i) {
         if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
      
         } */
-        auto ball = snowballs.find(var);
-        if (true) {
-            return glm::vec3();
-        }
-     else if (bottomSnowballActive && i == 5) {
-
+   
+    if (var == 5 && !bottomSnowballActive) {
+        return glm::vec3(1, 0, 0);
+    }
+            for each (Snowball* v in savedSnowballs)
+            {
+                if (v->getID() == var) { return glm::vec3(0.5f,0.5f, 0.5f); }
             }
-    return glm::vec3(0, 0, 1);
+            for each (Snowball * v in collectedSnowballs)
+            {
+                if (v->getID() == var) { return glm::vec3(0, 1, 0); }
+            }
+            return glm::vec3(1, 1, 0);
 }
 
 void setCubeSides() {
 
     int min = 0;
    
-    glm::vec3 front= playerController->getSnowBallShootingVec(camera.front);
+    glm::vec3 front= glm::normalize(playerController->getPlayerFront(camera.front));
    // glm::vec3 front = camera.front;
     switch (playerController->cubeSide) {
     case CUBE_TOP:
@@ -814,9 +821,10 @@ void setCubeSides() {
     sides[3] = 5 - min;
 
     glm::vec3 right = camera.right;
-    std::vector <glm::vec3> referenceValues = { glm::vec3(0,1,0),glm::vec3(0,0,-1) ,glm::vec3(1,0,0) ,glm::vec3(0,-1,0) ,glm::vec3(0,0,1) ,glm::vec3(-1,0,0) };
+    //std::vector< int> OGsides = { 0, 1, 2 ,5, 4, 3 };
+    std::vector <glm::vec3> referenceValues = { glm::vec3(0,1,0),glm::vec3(0,0,1) ,glm::vec3(1,0,0) ,glm::vec3(0,-1,0) ,glm::vec3(0,0,-1) ,glm::vec3(-1,0,0) };
 
-    right = glm::cross(front,referenceValues[sides[0]]);
+    //right = glm::rotate(front,glm::radians(-90.0f), referenceValues[sides[0]]);
 
     min = 0;
     for (size_t i = 0; i < referenceValues.size(); i++)
@@ -835,6 +843,7 @@ void setCubeSides() {
             min = i;
         }
     }
+
     sides[2] = OGsides[min];
     sides[5] = 5-OGsides[min];
 

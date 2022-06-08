@@ -95,25 +95,7 @@ private:
 	}
 
 
-	glm::vec3 getPlayerFront(glm::vec3 camFront) {
-		glm::vec3 shootingPos = camFront;
-		switch (this->cubeSide) {
-		case CUBE_LEFT:
-		case CUBE_RIGHT:
-			shootingPos.x = 0.0f;
-			break;
-		case CUBE_FRONT:
-		case CUBE_BACK:
-			shootingPos.z = 0.0f;
-			break;
-		case CUBE_TOP:
-		case CUBE_BOTTOM:
-			shootingPos.y = 0.0f;
-			break;
-		}
 
-		return shootingPos;
-	}
 
 
 	void updateCameraPos()
@@ -301,7 +283,7 @@ public:
 	btPairCachingGhostObject* ghostObject;  // according to bullet docs, good for player controller, makes use of AABB
 	btKinematicCharacterController* controller;
 
-	glm::vec3 getSnowBallShootingVec(glm::vec3 camFront) {
+	glm::vec3 getPlayerFront(glm::vec3 camFront) {
 		glm::vec3 shootingPos = camFront;
 		switch (this->cubeSide) {
 		case CUBE_LEFT:
