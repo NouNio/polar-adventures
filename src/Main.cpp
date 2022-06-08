@@ -63,6 +63,7 @@ void transitionToEndOfGameScreen(GLFWwindow* window);
 
 
 void setCubeSides();
+std::vector<glm::vec3> determineColours(std::vector<int> numbers);
 glm::vec3 determineColour(int i);
 
 
@@ -396,7 +397,7 @@ int main(void)
         }
         setCubeSides();
 
-        hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, glm::vec3(0, 1, 0), 50.f);
+        hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
 
         
         camera.frustum->resetRenderedObjects();
@@ -742,55 +743,65 @@ void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber,
 
 
 
-glm::vec3 determineColour(int i) {
+std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
     // I top, front, right, bottom, back, left
     // snowballs: left, right, front, back, top bottom
-    int var = i;
-    switch (i) {
-    case 0:
-        var = 4;
-        break;
-    case 1:
-        var = 2;
-        break;
-    case 2:
-        var = 1;
-        break;
-    case 3:
-        var = 5;
-        break;
-    case 4:
-        var = 3;
-        break;
-    case 5:
-        var = 0;
-        break;
-    }
-    /*
-                    if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
-                    hasWon = true;
-                }
-    */
+    std::vector<glm::vec3> result;
+    for (size_t i = 0; i < numbers.size(); i++)
+    {
 
-    /*for (const auto& item : snowballs) {  // item.second == Snowball*
-        if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
-     
-        } */
-   
-    if (var == 5 && !bottomSnowballActive) {
-        return glm::vec3(1, 0, 0);
+        result.push_back(determineColour(numbers[i]));
+
     }
-            for each (Snowball* v in savedSnowballs)
-            {
-                if (v->getID() == var) { return glm::vec3(0.5f,0.5f, 0.5f); }
-            }
-            for each (Snowball * v in collectedSnowballs)
-            {
-                if (v->getID() == var) { return glm::vec3(0, 1, 0); }
-            }
-            return glm::vec3(1, 1, 0);
+    return result;
 }
+    glm::vec3 determineColour(int i) {
+        int var = i;
+        switch (i) {
+        case 0:
+            var = 4;
+            break;
+        case 1:
+            var = 2;
+            break;
+        case 2:
+            var = 1;
+            break;
+        case 3:
+            var = 5;
+            break;
+        case 4:
+            var = 3;
+            break;
+        case 5:
+            var = 0;
+            break;
+        }
+        /*
+                        if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
+                        hasWon = true;
+                    }
+        */
 
+        /*for (const auto& item : snowballs) {  // item.second == Snowball*
+            if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
+
+            } */
+
+        if (i == 5 && !bottomSnowballActive) {
+            return glm::vec3(1, 0, 0);
+        }
+        for each (Snowball * v in savedSnowballs)
+        {
+            if (v->getID() == var) { return glm::vec3(0.5f, 0.5f, 0.5f); }
+        }
+        for each (Snowball * v in collectedSnowballs)
+        {
+            if (v->getID() == var) { return glm::vec3(0, 1, 0); }
+        }
+        return glm::vec3(1, 1, 0);
+    }
+   
 void setCubeSides() {
 
     int min = 0;
