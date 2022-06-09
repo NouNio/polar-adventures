@@ -840,7 +840,7 @@ void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo
     std::vector<glm::vec2> hudcoords;
     for each (Vertex v in vertices)
     {
-        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.y));
+        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.z));
     }
     /*
             glGenVertexArrays(1, &quadVAO);
