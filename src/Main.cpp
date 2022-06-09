@@ -119,7 +119,7 @@ unsigned int postprocessor;
 unsigned int edge;
 unsigned int rbo;
 //top, front right, bottom, back, left sum of opposite sides = 5
-std::vector< int> sides = { 0, 1, 2 ,5, 4, 3};
+std::vector< int> sides = { 0, 1, 2 ,5, 4, 3 };
 std::vector< int> OGsides = { 0, 1, 2 ,5, 4, 3 };
 std::vector<glm::vec2> offsets{ glm::vec2(0,0), glm::vec2(0,1) ,glm::vec2(1,0) ,glm::vec2(1,1) ,glm::vec2(0,-1) ,glm::vec2(-1,0) };
 Model mapOutline();
@@ -134,19 +134,19 @@ GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_AT
 
 int main(void)
 {
-    
+
     stbi_set_flip_vertically_on_load(false);
     /* ------------------------------------------------------------------------------------ */
     // load setting.ini and inititalize openGL & bullet as well as physics handler and file manager
     /* ------------------------------------------------------------------------------------ */
     fm = new FileManager();
     readINI();
-    camera = Camera( fov,  float(SCR_WIDTH)/float(SCR_HEIGHT), near, far, glm::vec3(0.0f, 22.0f, 3.0f));
+    camera = Camera(fov, float(SCR_WIDTH) / float(SCR_HEIGHT), near, far, glm::vec3(0.0f, 22.0f, 3.0f));
     HUDstart = SCR_HEIGHT - HUDyOffset;
     GLFWwindow* window = initGLFWandGLEW();
-   
+
     pHandler = new Physics(debug);
- 
+
     /* ------------------------------------------------------------------------------------ */
     // load shader
     /* ------------------------------------------------------------------------------------ */
@@ -160,7 +160,7 @@ int main(void)
     Shader snowBottomShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
 
 
-    Shader hud2(fm->getShaderPath("hud2.vert",true), fm->getShaderPath("hud2.frag", true));
+    Shader hud2(fm->getShaderPath("hud2.vert", true), fm->getShaderPath("hud2.frag", true));
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
@@ -170,7 +170,7 @@ int main(void)
     btBvhTriangleMeshShape* newWorldShape = ((btBvhTriangleMeshShape*)(newWorldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
     pHandler->getWorld()->removeRigidBody(newWorldBody);
-   
+
     // permeable wall
     Model permWall(fm->getObjPath("perm-wall"));
 
@@ -225,7 +225,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // Particle System
     /* ------------------------------------------------------------------------------------ */
-    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -30, 0), 0.1);
+    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -50, 0), 0.01);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -233,13 +233,13 @@ int main(void)
     HUD hud(fm->getFontPath("arial"));
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
-    glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
+    glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
     hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
 
     hud2.use();
     glUniformMatrix4fv(glGetUniformLocation(hud2.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
 
-    
+
     /* ------------------------------------------------------------------------------------ */
     // skybox
     /* ------------------------------------------------------------------------------------ */
@@ -260,13 +260,13 @@ int main(void)
     // edge detection
     /* ------------------------------------------------------------------------------------ */
 
-  
-  
+
+
     Shader combination(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("screen.frag", true));
     combination.use();
     combination.setFloat("brightness", brightness);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
-   
+
     initialize(SCR_WIDTH, SCR_HEIGHT, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
 
     /* ------------------------------------------------------------------------------------ */
@@ -278,7 +278,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // main render loop
     /* ------------------------------------------------------------------------------------ */
-    
+
     startTimeSec = glfwGetTime();
     do {
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
@@ -288,8 +288,8 @@ int main(void)
         computeTimeLogic();
         ///double currTimeSeconds = glfwGetTime();
         //float animTimeSec = (float)(currTimeSeconds - startTimeSec);
-        
-        if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm  && sound) {
+
+        if (maxGameTime - glfwGetTime() < 30.0 && !playedAlarm && sound) {
             soundEngine->play2D(fm->getAudioPath("alarm").c_str(), false);
             playedAlarm = true;
         }
@@ -305,7 +305,7 @@ int main(void)
         animModelShader.use();
         animModelShader.setVec3("viewPos", camera.pos);
         activateShader(&modelShader);
-   
+
 
         // view/projection transformations
         projection = camera.GetProjection();
@@ -318,8 +318,8 @@ int main(void)
         newWorld.draw(modelShader, WORLD_POS, WORLD_ROT_ANGLE, WORLD_ROT_AXES, WORLD_SCALE);
         permWall.draw(modelShader, glm::vec3(-21.5, 0.725, -1.35), 0, glm::vec3(1, 0, 0), glm::vec3(0.9f, 0.01f, 0.53f));
         collectionPoint.draw(modelShader, COLLECTION_POINT_POS, COLLECTION_POINT_ROT_ANGLE, COLLECTION_POINT_ROT_AXES, COLLECTION_POINT_SCALE);
-        
-        
+
+
         if (snowballs.size() == 1)
             bottomSnowballActive = true;
 
@@ -396,15 +396,15 @@ int main(void)
         // SKYBOX
         /* ------------------------------------------------------------------------------------ */
         skybox->draw(&skyboxShader);
-        doImageProcessing(color, normal, depth, edge, handle,postprocessor,  processor, combination);
+        doImageProcessing(color, normal, depth, edge, handle, postprocessor, processor, combination);
 
         currRenderedObjects = camera.frustum->getRenderedObjects();
-        /* ------------------------------------------------------------------------------------ */      
+        /* ------------------------------------------------------------------------------------ */
         // HUD
         /* ------------------------------------------------------------------------------------ */
         hud.update(&camera, FPS, msPerFrame, pHandler, playerController);  //--> updates all HUD messages
         if (showHUD)
-        {   
+        {
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
 
@@ -414,7 +414,7 @@ int main(void)
         drawMap(hud2, outvao, invao, 0.5, glm::vec2(1000.0f, 100.0f), 50.0, glm::vec3(0.8));
         hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
 
-        
+
         camera.frustum->resetRenderedObjects();
 
         // GLFW: renew buffers and check all I/O events
@@ -436,12 +436,12 @@ int main(void)
         glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        hud.renderEndOfGame(HUDShader, SCR_WIDTH/2.0f-100.0f, SCR_HEIGHT/2.0f);
+        hud.renderEndOfGame(HUDShader, SCR_WIDTH / 2.0f - 100.0f, SCR_HEIGHT / 2.0f);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window));
-        
+
 
     /* ------------------------------------------------------------------------------------ */
     // TERMINATE
@@ -487,29 +487,29 @@ GLFWwindow* initGLFWandGLEW()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);  // use GLFW_OPENGL_COMPAT_PROFILE when using the BulletViewer for debugging, else GLFW_OPENGL_CORE_PROFILE
-    glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);               
+    glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);
 
 
     // creat the window, set as context and activate necessary callbacks; the monitor is needed for fullscreen mode
     GLFWmonitor* monitor = nullptr;
-    
+
     if (fullscreen)
         monitor = glfwGetPrimaryMonitor();
-    
+
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Polar Adventures Test", monitor, NULL);
-    
+
     if (window == NULL)
     {
         std::cout << "There was an error creating the GLFW window" << std::endl;
         glfwTerminate();
     }
-    
+
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetScrollCallback(window, scrollCallback);
 
-   
+
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);   // make GLFW measure our mouse
     glEnable(GL_DEPTH_TEST);
 
@@ -527,49 +527,49 @@ bool hasLost() {
     if (glfwGetTime() > maxGameTime) {
         return true;
     }
- 
+
     return false;
 }
 
 
 // process all input that is triggered by the keyboard
 void processInput(GLFWwindow* window)
-{   
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && (glfwGetTime() - lastESCPress) >= BUTTON_PAUSE) {
         if (!firstWindowClose)
             firstWindowClose = !firstWindowClose;
         else
             glfwSetWindowShouldClose(window, true);
-        
+
         lastESCPress = glfwGetTime();
     }
-        
-    
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         camera.processKeyboard(UP, deltaTime);
         playerController->update(pUP, deltaTime);
     }
-        
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
+
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         camera.processKeyboard(LEFT, deltaTime);
         playerController->update(pLEFT, deltaTime);
     }
 
 
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         camera.processKeyboard(RIGHT, deltaTime);
         playerController->update(pRIGHT, deltaTime);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= BUTTON_PAUSE){
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && (glfwGetTime() - lastHUDPress) >= BUTTON_PAUSE) {
         showHUD = !showHUD;
         lastHUDPress = glfwGetTime();
     }
 
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE){
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE) {
         if (sound) {
             if (playerController->getSnowBallAmmo() > 0) {
-                 soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
+                soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
             }
             else {
                 soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
@@ -578,7 +578,7 @@ void processInput(GLFWwindow* window)
         playerController->shootSnowball();
         lastShotPress = glfwGetTime();
     }
-    
+
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         playerController->setWalking(true);
         camera.processKeyboard(BACKWARD, deltaTime);
@@ -591,7 +591,7 @@ void processInput(GLFWwindow* window)
         lastVFCPress = glfwGetTime();
     }
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         playerController->setWalking(true);
         camera.processKeyboard(FORWARD, deltaTime);
         playerController->update(pFORWARD, deltaTime);
@@ -661,7 +661,7 @@ void computeTimeLogic()
 // plays a sound for walking with some interval between the sounds and only if player on ground
 void playWalkSound() {
     if (glfwGetTime() - lastWalkSound >= WALK_SOUND_PAUSE && playerController->onGround()) {
-        
+
         if (sound) {
             switch (walkSound) {
             case WALK_SOUND_A:
@@ -682,10 +682,10 @@ void playEndOfGameSound() {
 
     if (sound) {
         if (hasWon) {
-             soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
+            soundEngine->play2D(fm->getAudioPath("win").c_str(), false);
         }
         else {
-             soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
+            soundEngine->play2D(fm->getAudioPath("lose").c_str(), false);
         }
     }
 }
@@ -770,74 +770,74 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
     }
     return result;
 }
-    glm::vec3 determineColour(int i) {
-        int var = i;
-        switch (i) {
-        case 0:
-            var = 4;
-            break;
-        case 1:
-            var = 2;
-            break;
-        case 2:
-            var = 1;
-            break;
-        case 3:
-            var = 0;
-            break;
-        case 4:
-            var = 3;
-            break;
-        case 5:
-            var=5;
-            break;
-        }
-        /*
-                        if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
-                        hasWon = true;
-                    }
-        */
-
-        /*for (const auto& item : snowballs) {  // item.second == Snowball*
-            if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
-
-            } */
-
-        if (i== 5&& !bottomSnowballActive) {
-            return glm::vec3(1, 0, 0);
-        }
-        for each (Snowball * v in savedSnowballs)
-        {
-            if (v->getID() == var) { return glm::vec3(0.5f, 0.5f, 0.5f); }
-        }
-        for each (Snowball * v in collectedSnowballs)
-        {
-            if (v->getID() == var) { return glm::vec3(0, 1, 0); }
-        }
-        return glm::vec3(1, 1, 0);
+glm::vec3 determineColour(int i) {
+    int var = i;
+    switch (i) {
+    case 0:
+        var = 4;
+        break;
+    case 1:
+        var = 2;
+        break;
+    case 2:
+        var = 1;
+        break;
+    case 3:
+        var = 0;
+        break;
+    case 4:
+        var = 3;
+        break;
+    case 5:
+        var = 5;
+        break;
     }
-    void drawMap(Shader &s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour) {
-        s.use();
-        s.setFloat("transparency", transparency);
-        s.setVec2("xyoffset", pos);
-        s.setFloat("scale", scale);
-        s.setVec3("colour", colour);
-        drawHUDVAO(vao);
-        s.setFloat("transparency", 1.0f);
-        drawHUDVAO(outlineVao);
+    /*
+                    if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
+                    hasWon = true;
+                }
+    */
+
+    /*for (const auto& item : snowballs) {  // item.second == Snowball*
+        if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
+
+        } */
+
+    if (i == 5 && !bottomSnowballActive) {
+        return glm::vec3(1, 0, 0);
     }
-   void drawHUDVAO(unsigned int vao) {
-       glBindVertexArray(vao);
-       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-       glBindVertexArray(0);
-   }
+    for (Snowball * v : savedSnowballs)
+    {
+        if (v->getID() == var) { return glm::vec3(0.5f, 0.5f, 0.5f); }
+    }
+    for (Snowball * v : collectedSnowballs)
+    {
+        if (v->getID() == var) { return glm::vec3(0, 1, 0); }
+    }
+    return glm::vec3(1, 1, 0);
+}
+void drawMap(Shader& s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour) {
+    s.use();
+    s.setFloat("transparency", transparency);
+    s.setVec2("xyoffset", pos);
+    s.setFloat("scale", scale);
+    s.setVec3("colour", colour);
+    drawHUDVAO(vao);
+    s.setFloat("transparency", 1.0f);
+    drawHUDVAO(outlineVao);
+}
+void drawHUDVAO(unsigned int vao) {
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
 void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo) {
-    std::vector<Vertex> vertices= m.vertices;
+    std::vector<Vertex> vertices = m.vertices;
     std::vector<unsigned int> indices = m.indices;
     std::vector<glm::vec2> hudcoords;
-    for each (Vertex v in vertices)
+    for (Vertex v : vertices)
     {
-        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.y));
+        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.z));
     }
     /*
             glGenVertexArrays(1, &quadVAO);
@@ -866,9 +866,9 @@ void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo
 void setCubeSides() {
 
     int min = 0;
-   
-    glm::vec3 front= glm::normalize(playerController->getPlayerFront(camera.front));
-   // glm::vec3 front = camera.front;
+
+    glm::vec3 front = glm::normalize(playerController->getPlayerFront(camera.front));
+    // glm::vec3 front = camera.front;
     switch (playerController->cubeSide) {
     case CUBE_TOP:
         min = 0;
@@ -917,6 +917,6 @@ void setCubeSides() {
     }
 
     sides[2] = OGsides[min];
-    sides[5] = 5-OGsides[min];
+    sides[5] = 5 - OGsides[min];
 
 }
