@@ -117,7 +117,7 @@ int playerPtr = 123;
 std::string cpPtr = "collectionPoint";
 const glm::vec3 COLLECTION_POINT_SCALE(0.5);
 const glm::vec3 COLLECTION_POINT_POS(0.0f, 20.0f, 0.0f);
-const float COLLECTION_POINT_ROT_ANGLE = 180.0f;
+const float COLLECTION_POINT_ROT_ANGLE = 0.0f;
 const glm::vec3 COLLECTION_POINT_ROT_AXES(0.0f, 1.0f, 0.0f);
 const float COLLECTION_POINT_MASS = 0.0f;
 const glm::vec3 COLLECTION_POINT_BODY_SCALE(0.5, 2, 0.5);

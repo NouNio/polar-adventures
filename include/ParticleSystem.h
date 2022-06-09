@@ -5,6 +5,7 @@
 #include <chrono>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/random.hpp>
 
 #include <Constants.h>
 #include <Shader.h>
@@ -33,9 +34,17 @@ struct Particle {
 
 
 class ParticleSystem {
+private:
+	glm::vec3 G;
+	glm::vec3 spawnPos;
+	float speedFac;
+
 public:
-	ParticleSystem(Shader* shader) {
+	ParticleSystem(Shader* shader, glm::vec3 gravity, glm::vec3 pos, float speed) {
 		this->shader = shader;
+		this->G = gravity;
+		this->spawnPos = pos;
+		this->speedFac = speed;
 		initParticleContainer();
 		initBuffers();
 		bindBuffers();
@@ -55,8 +64,9 @@ public:
 	void generateParticles() {
 		for (int i = 0; i < this->numNewParticles; i++) {
 			int particleIdx = findNextParticle();
-			particleContainer[particleIdx].life = 5.0f;	 // lifetime of 5s
-			particleContainer[particleIdx].pos = COLLECTION_POINT_POS;
+			particleContainer[particleIdx].life = 12.0f;	 // lifetime of 5s
+			glm::vec2 randomPos = glm::diskRand(18.0f);
+			particleContainer[particleIdx].pos = this->spawnPos + glm::vec3(randomPos.x, 0.0f, randomPos.y);
 
 			float spread = 1.5f;
 			glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
@@ -74,7 +84,7 @@ public:
 			particleContainer[particleIdx].r = 255; //rand() % 256;
 			particleContainer[particleIdx].g = 255; //rand() % 256;
 			particleContainer[particleIdx].b = 255; //rand() % 256;
-			particleContainer[particleIdx].a = (rand() % 256) / 3;
+			particleContainer[particleIdx].a = 150; // (rand() % 256) / 3;
 
 			particleContainer[particleIdx].size = (rand() % 1000) / 2000.0f + 0.1f;
 
@@ -92,8 +102,8 @@ public:
 
 					if (p.life > 0.0f) {
 						// simulate simple physics
-						p.speed += G_TOP * (float)delta * 0.5f;
-						p.pos += p.speed * (float)delta;
+						p.speed += G * (float)delta * 0.5f;
+						p.pos += p.speed * (float)delta * speedFac;
 						p.camDist = glm::length2( p.pos - camera.pos);
 
 						// fill GPU buffer
@@ -120,6 +130,17 @@ public:
 
 	void sortParticles() {
 		std::sort(&particleContainer[0], &particleContainer[maxParticles]);
+	}
+
+
+	void update(float dt, glm::mat4 projection, glm::mat4 view) {
+		this->updateParticlesPerFrame(dt);
+		this->generateParticles();                // generate new rand particles values
+		this->simulate();                         // simulate particles
+		this->sortParticles();                    // sort particles
+		this->updateBuffers();                    // update bufers
+		this->setShader(projection, view);        // set shader values
+		this->draw();                             // draw particles
 	}
 
 
