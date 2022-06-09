@@ -225,7 +225,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // Particle System
     /* ------------------------------------------------------------------------------------ */
-    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -50, 0), 0.01);
+    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -35, 0), 0.01);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD

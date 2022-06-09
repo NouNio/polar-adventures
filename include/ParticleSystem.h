@@ -81,7 +81,7 @@ public:
 
 			randomdir = glm::vec3(0);
 
-			particleContainer[particleIdx].speed = maindir + randomdir * spread;
+			particleContainer[particleIdx].speed = maindir * spread;
 
 			setParticleColor(particleIdx, particleColor);
 			
@@ -101,7 +101,7 @@ public:
 
 					if (p.life > 0.0f) {
 						// simulate simple physics
-						p.speed += G * (float)delta * 0.2f;
+						p.speed += G * (float)delta * 0.1f;
 						p.pos += p.speed * (float)delta * speedFac;
 						p.camDist = glm::length2( p.pos - camera.pos);
 
@@ -150,10 +150,10 @@ public:
 
 
 	void updateParticlesPerFrame(float dt) {
-		numNewParticles = (int)(dt * 5000.0);
+		numNewParticles = (int)(dt * 4000.0);
 
-		if (numNewParticles > (int)(0.016f * 5000.0))
-			numNewParticles = (int)(0.016f * 5000.0);
+		//if (numNewParticles > (int)(0.016f * 5000.0))
+			//numNewParticles = (int)(0.016f * 5000.0);
 	}
 
 
