@@ -11,7 +11,7 @@
 #include <Shader.h>
 
 
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 5000
 
 
 // the paricle system has 3 buffers:
@@ -35,9 +35,11 @@ struct Particle {
 
 class ParticleSystem {
 private:
+	float lifeTime = 80.0f;
 	glm::vec3 G;
 	glm::vec3 spawnPos;
 	float speedFac;
+	glm::vec4 particleColor = glm::vec4(255, 255, 255, 200);
 
 public:
 	ParticleSystem(Shader* shader, glm::vec3 gravity, glm::vec3 pos, float speed) {
@@ -64,7 +66,7 @@ public:
 	void generateParticles() {
 		for (int i = 0; i < this->numNewParticles; i++) {
 			int particleIdx = findNextParticle();
-			particleContainer[particleIdx].life = 12.0f;	 // lifetime of 5s
+			particleContainer[particleIdx].life = lifeTime;	 // lifetime in s
 			glm::vec2 randomPos = glm::diskRand(18.0f);
 			particleContainer[particleIdx].pos = this->spawnPos + glm::vec3(randomPos.x, 0.0f, randomPos.y);
 
@@ -77,15 +79,12 @@ public:
 				(rand() % 2000 - 1000.0f) / 1000.0f
 			);
 
+			randomdir = glm::vec3(0);
+
 			particleContainer[particleIdx].speed = maindir + randomdir * spread;
 
-
-			// generate random colors (there are better ways)
-			particleContainer[particleIdx].r = 255; //rand() % 256;
-			particleContainer[particleIdx].g = 255; //rand() % 256;
-			particleContainer[particleIdx].b = 255; //rand() % 256;
-			particleContainer[particleIdx].a = 150; // (rand() % 256) / 3;
-
+			setParticleColor(particleIdx, particleColor);
+			
 			particleContainer[particleIdx].size = (rand() % 1000) / 2000.0f + 0.1f;
 
 		}
@@ -102,7 +101,7 @@ public:
 
 					if (p.life > 0.0f) {
 						// simulate simple physics
-						p.speed += G * (float)delta * 0.5f;
+						p.speed += G * (float)delta * 0.2f;
 						p.pos += p.speed * (float)delta * speedFac;
 						p.camDist = glm::length2( p.pos - camera.pos);
 
@@ -151,10 +150,10 @@ public:
 
 
 	void updateParticlesPerFrame(float dt) {
-		numNewParticles = (int)(dt * 10000.0);
+		numNewParticles = (int)(dt * 5000.0);
 
-		if (numNewParticles > (int)(0.016f * 10000.0))
-			numNewParticles = (int)(0.016f * 10000.0);
+		if (numNewParticles > (int)(0.016f * 5000.0))
+			numNewParticles = (int)(0.016f * 5000.0);
 	}
 
 
@@ -167,9 +166,17 @@ public:
 	}
 
 
+	void setParticleColor(int idx, glm::vec4 rgba) {
+		particleContainer[idx].r = rgba.x;
+		particleContainer[idx].g = rgba.y;
+		particleContainer[idx].b = rgba.z;
+		particleContainer[idx].a = rgba.w;
+	}
+
+
 private:
 	Shader* shader;
-	const static unsigned int maxParticles = 1000;
+	const static unsigned int maxParticles = 5000;
 	const GLfloat g_vertex_buffer_data[12] = {
 	-0.5f, -0.5f, 0.0f,
 	 0.5f, -0.5f, 0.0f,
