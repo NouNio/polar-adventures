@@ -68,7 +68,7 @@ private:
 	float playerCamRot = 0.0f;
 	glm::vec3 playerRotationAxes = glm::vec3(0.0f, 1.0f, 0.0f);
 	unsigned int snowBallAmmo = 0;
-	unsigned int cubeSide = CUBE_TOP;
+	
 	bool walking = false;
 
 	void activatePlayer()
@@ -95,25 +95,7 @@ private:
 	}
 
 
-	glm::vec3 getPlayerFront(glm::vec3 camFront) {
-		glm::vec3 shootingPos = camFront;
-		switch (this->cubeSide) {
-		case CUBE_LEFT:
-		case CUBE_RIGHT:
-			shootingPos.x = 0.0f;
-			break;
-		case CUBE_FRONT:
-		case CUBE_BACK:
-			shootingPos.z = 0.0f;
-			break;
-		case CUBE_TOP:
-		case CUBE_BOTTOM:
-			shootingPos.y = 0.0f;
-			break;
-		}
 
-		return shootingPos;
-	}
 
 
 	void updateCameraPos()
@@ -294,13 +276,32 @@ private:
 
 
 public:
+	unsigned int cubeSide = CUBE_TOP;
 	Physics* pHandler;
 	Model* player;
 	Model* idleModel;
 	btPairCachingGhostObject* ghostObject;  // according to bullet docs, good for player controller, makes use of AABB
 	btKinematicCharacterController* controller;
 
+	glm::vec3 getPlayerFront(glm::vec3 camFront) {
+		glm::vec3 shootingPos = camFront;
+		switch (this->cubeSide) {
+		case CUBE_LEFT:
+		case CUBE_RIGHT:
+			shootingPos.x = 0.0f;
+			break;
+		case CUBE_FRONT:
+		case CUBE_BACK:
+			shootingPos.z = 0.0f;
+			break;
+		case CUBE_TOP:
+		case CUBE_BOTTOM:
+			shootingPos.y = 0.0f;
+			break;
+		}
 
+		return shootingPos;
+	}
 	KinematicPlayer(Physics* pHandler, glm::vec3 position, Camera* camera, Model* model)
 	{
 		this->camera = camera;

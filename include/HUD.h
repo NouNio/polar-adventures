@@ -19,6 +19,7 @@
 #include <Physics.h>
 #include <KinematicPlayer.h>
 #include <Constants.h>
+#include <sstream>
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -52,7 +53,7 @@ public:
 		createVAOandVBO();
 	}
 
-	void renderLine(Shader& shader, std::string text, float x, float y)
+	void renderLine(Shader& shader, std::string text, float x, float y, glm::vec3 textColor= glm::vec3(0.1f, 0.6f, 0.9f))
 	{
 		// activate corresponding render state	
 		shader.use();
@@ -105,6 +106,14 @@ public:
 		}
 	}
 
+	void renderNumbers(Shader& shader, float x, float y, std::vector<int> numbers, std::vector<glm::vec2> offsets, std::vector<glm::vec3> colours, float scale)
+	{
+		for (unsigned int i = 0; i < numbers.size(); i++)
+		{
+			glm::vec2 offset = offsets[i]*scale;
+			renderLine(shader, std::to_string(numbers[i]), x + offset.x, y + offset.y, colours[i]);   // set each message 20 below the first
+		}
+	}
 
 	void renderEndOfGame(Shader& shader, float x, float y) {
 		renderLine(shader, "YOUR SCORE: " +  std::to_string(lround(score)), x, y - 0 * newLineOffset);

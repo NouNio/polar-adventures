@@ -23,6 +23,7 @@
 #include <string>
 
 // self made libs
+#include <glm/gtx/rotate_vector.hpp>
 #include <animation.h>
 #include <animator.h>
 #include <Camera.h>
@@ -46,10 +47,7 @@
 void readINI();
 GLFWwindow* initGLFWandGLEW();
 //bool hasWon();
-static void initialize(int window_width, int window_height, unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo, GLenum attachments[]);
-static void doImageProcessing(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, Shader& processor, Shader& combination);
-void clearAll(unsigned int& fbo, unsigned int& postprocessor);
-static void deleteBuffers(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo);
+
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -62,8 +60,14 @@ void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
 void transitionToEndOfGameScreen(GLFWwindow* window);
-void renderQuad();
 
+
+void setCubeSides();
+std::vector<glm::vec3> determineColours(std::vector<int> numbers);
+glm::vec3 determineColour(int i);
+void drawMap(Shader& s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour);
+void drawHUDVAO(unsigned int vao);
+void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo);
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
@@ -114,6 +118,16 @@ unsigned int depth;
 unsigned int postprocessor;
 unsigned int edge;
 unsigned int rbo;
+//top, front right, bottom, back, left sum of opposite sides = 5
+std::vector< int> sides = { 0, 1, 2 ,5, 4, 3};
+std::vector< int> OGsides = { 0, 1, 2 ,5, 4, 3 };
+std::vector<glm::vec2> offsets{ glm::vec2(0,0), glm::vec2(0,1) ,glm::vec2(1,0) ,glm::vec2(1,1) ,glm::vec2(0,-1) ,glm::vec2(-1,0) };
+Model mapOutline();
+Model map();
+
+
+
+
 GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
 
@@ -145,6 +159,8 @@ int main(void)
     Shader particleShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
     Shader snowBottomShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
 
+
+    Shader hud2(fm->getShaderPath("hud2.vert",true), fm->getShaderPath("hud2.frag", true));
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
@@ -154,11 +170,17 @@ int main(void)
     btBvhTriangleMeshShape* newWorldShape = ((btBvhTriangleMeshShape*)(newWorldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
     pHandler->getWorld()->removeRigidBody(newWorldBody);
-
+   
     // permeable wall
     Model permWall(fm->getObjPath("perm-wall"));
 
-
+    //models for map and shit
+    Model outline(fm->getObjPath("map_outline.fbx", true));
+    unsigned int outvao, outvbo, outebo;
+    generateMapVAO(outline.meshes[0], outvao, outvbo, outebo);
+    unsigned int invao, invbo, inebo;
+    Model map(fm->getObjPath("map.fbx", true));
+    generateMapVAO(map.meshes[0], invao, invbo, inebo);
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
@@ -166,6 +188,7 @@ int main(void)
     Animation walkAnim(fm->getPlayerPath("player"), &animPlayer);
     Animator animator(&walkAnim);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &animPlayer);
+
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -212,6 +235,9 @@ int main(void)
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
     hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
+
+    hud2.use();
+    glUniformMatrix4fv(glGetUniformLocation(hud2.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
 
     
     /* ------------------------------------------------------------------------------------ */
@@ -381,6 +407,12 @@ int main(void)
         {   
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
+
+        setCubeSides();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        drawMap(hud2, outvao, invao, 0.5, glm::vec2(1000.0f, 100.0f), 50.0, glm::vec3(0.8));
+        hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
 
         
         camera.frustum->resetRenderedObjects();
@@ -726,203 +758,165 @@ void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber,
 
 
 
-static void initialize(int window_width, int window_height, unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo, GLenum attachments[]) //fm(&fm),
-{
-    //this->fm = &fm;
-
-   
-    
-    glGenTextures(1, &depth);
-  
-  
-    
-    
-
-    glGenFramebuffers(1, &handle);
-    glBindFramebuffer(GL_FRAMEBUFFER, handle);
-    //setup color texture
-    glGenTextures(1, &color);
+std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
+    // I top, front, right, bottom, back, left
+    // snowballs: left, right, front, back, top bottom
+    std::vector<glm::vec3> result;
+    for (size_t i = 0; i < numbers.size(); i++)
     {
-        glBindTexture(GL_TEXTURE_2D, color);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, window_width, window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // attach texture to framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+
+        result.push_back(determineColour(numbers[i]));
+
     }
-    //setup normal texture
-    glGenTextures(1, &normal);
-    {
-        glBindTexture(GL_TEXTURE_2D, normal);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_SNORM, window_width, window_height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        // attach texture to framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal, 0);
+    return result;
+}
+    glm::vec3 determineColour(int i) {
+        int var = i;
+        switch (i) {
+        case 0:
+            var = 4;
+            break;
+        case 1:
+            var = 2;
+            break;
+        case 2:
+            var = 1;
+            break;
+        case 3:
+            var = 0;
+            break;
+        case 4:
+            var = 3;
+            break;
+        case 5:
+            var=5;
+            break;
+        }
+        /*
+                        if (snowballs.size() == 0 && collectedSnowballs.size() == 0) {
+                        hasWon = true;
+                    }
+        */
+
+        /*for (const auto& item : snowballs) {  // item.second == Snowball*
+            if (item.second->getID() != SNOWBALL_BOTTOM_ID) {
+
+            } */
+
+        if (i== 5&& !bottomSnowballActive) {
+            return glm::vec3(1, 0, 0);
+        }
+        for each (Snowball * v in savedSnowballs)
+        {
+            if (v->getID() == var) { return glm::vec3(0.5f, 0.5f, 0.5f); }
+        }
+        for each (Snowball * v in collectedSnowballs)
+        {
+            if (v->getID() == var) { return glm::vec3(0, 1, 0); }
+        }
+        return glm::vec3(1, 1, 0);
     }
-    //setup depth texture
-    //*
+    void drawMap(Shader &s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour) {
+        s.use();
+        s.setFloat("transparency", transparency);
+        s.setVec2("xyoffset", pos);
+        s.setFloat("scale", scale);
+        s.setVec3("colour", colour);
+        drawHUDVAO(vao);
+        s.setFloat("transparency", 1.0f);
+        drawHUDVAO(outlineVao);
+    }
+   void drawHUDVAO(unsigned int vao) {
+       glBindVertexArray(vao);
+       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+       glBindVertexArray(0);
+   }
+void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo) {
+    std::vector<Vertex> vertices= m.vertices;
+    std::vector<unsigned int> indices = m.indices;
+    std::vector<glm::vec2> hudcoords;
+    for each (Vertex v in vertices)
     {
-        glBindTexture(GL_TEXTURE_2D, depth);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_SNORM,
-            window_width, window_height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the edge filter would otherwise sample repeated texture values!
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, depth, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-    }//*/
-    //glBindTexture(GL_TEXTURE_2D, 0);
-    //GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    //glDrawBuffers(2, attachments);
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window_width, window_height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-
-    //finish fbo initialization
-    
-
-       
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            std::cout << "fbo init failed for fbo1" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
-        }
-        glClearColor(0.0, 0.0, 0.0, 1.0);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glDrawBuffers(2, attachments);
-
-    
-
-
-    glGenFramebuffers(1, &postprocessor);
-    glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
-    glGenTextures(1, &edge);
-    //init edge texture
-    
-
-        glBindTexture(GL_TEXTURE_2D, edge);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window_width, window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // attach texture to framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, edge, 0);
-        GLenum attachment[] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1, attachment);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            std::cout << "fbo init failed for fbo2" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
-        }
-
-
-
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-//*/
-
-static void doImageProcessing(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, Shader& processor, Shader& combination) 
-{
-    //*
-    glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    processor.use();
-    glUniform1i(glGetUniformLocation(processor.ID, "diffuseTexture"), 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, normal);
-    // set the appropriate texture sampler variable in the fragment shader
-    glUniform1i(glGetUniformLocation(processor.ID, "depthText"), 1);
-    glActiveTexture(GL_TEXTURE1);
-    // set the appropriate texture sampler variable in the fragment shader
-    glBindTexture(GL_TEXTURE_2D,depth);
-    renderQuad();
-    //*/
-    //*
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    combination.use();
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-
-
-    glUniform1i(glGetUniformLocation(combination.ID, "diffuseTexture"), 0);
-    glActiveTexture(GL_TEXTURE0);
-  // set the appropriate texture sampler variable in the fragment shader
-    glBindTexture(GL_TEXTURE_2D, color);
-    glUniform1i(glGetUniformLocation(combination.ID, "edge"), 1);
-    glActiveTexture(GL_TEXTURE1);
-   // set the appropriate texture sampler variable in the fragment shader
-
-    glBindTexture(GL_TEXTURE_2D, edge);
-    renderQuad();
-    glActiveTexture(GL_TEXTURE0);
-    glActiveTexture(GL_TEXTURE1);
-    //glUseProgram(0);
-    //bindBuffer();
-    //glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
-    //bindPostProcessor();
-    //glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    //unbind();
-    //glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    //*/
-
-}
-void clearAll(unsigned int& fbo, unsigned int& postprocessor)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, postprocessor);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-}
-static void deleteBuffers(unsigned int& color, unsigned int& normal, unsigned int& depth, unsigned int& edge, unsigned int& handle, unsigned int& postprocessor, unsigned int& rbo) 
-{
-    glDeleteTextures(1, &color);
-    glDeleteTextures(1, &normal);
-    glDeleteTextures(1, &depth);
-    glDeleteTextures(1, &edge);
-    glDeleteFramebuffers(1, &handle);
-    glDeleteFramebuffers(1, &postprocessor);
-    glDeleteRenderbuffers(1, &rbo);
-
-}
-
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad()
-{
-    if (quadVAO == 0)
-    {
-        float quadVertices[] = {
-            // positions        // texture Coords
-            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        };
-        // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
+        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.y));
+    }
+    /*
+            glGenVertexArrays(1, &quadVAO);
         glGenBuffers(1, &quadVBO);
         glBindVertexArray(quadVAO);
         glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    }
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-}
+    */
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+    glBindVertexArray(vao);
 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, hudcoords.size() * sizeof(glm::vec2), &hudcoords[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    //(location in shader, size of vertex attrib, data type, normalize flag, space between consecutive vertices, offset in buffer)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+    glBindVertexArray(0);
+
+
+}
+void setCubeSides() {
+
+    int min = 0;
+   
+    glm::vec3 front= glm::normalize(playerController->getPlayerFront(camera.front));
+   // glm::vec3 front = camera.front;
+    switch (playerController->cubeSide) {
+    case CUBE_TOP:
+        min = 0;
+        break;
+    case CUBE_FRONT:
+        min = 1;
+        break;
+    case CUBE_RIGHT:
+        min = 2;
+        break;
+    case CUBE_BOTTOM:
+        min = 5;
+        break;
+    case CUBE_BACK:
+        min = 4;
+        break;
+    case CUBE_LEFT:
+        min = 3;
+        break;
+    };
+    sides[0] = min;
+    sides[3] = 5 - min;
+
+    glm::vec3 right = camera.right;
+    //std::vector< int> OGsides = { 0, 1, 2 ,5, 4, 3 };
+    std::vector <glm::vec3> referenceValues = { glm::vec3(0,1,0),glm::vec3(0,0,1) ,glm::vec3(1,0,0) ,glm::vec3(0,-1,0) ,glm::vec3(0,0,-1) ,glm::vec3(-1,0,0) };
+
+    //right = glm::rotate(front,glm::radians(-90.0f), referenceValues[sides[0]]);
+
+    min = 0;
+    for (size_t i = 0; i < referenceValues.size(); i++)
+    {
+        if (glm::dot(front, referenceValues[i]) > glm::dot(front, referenceValues[min])) {
+            min = i;
+        }
+    }
+    sides[1] = OGsides[min];
+    sides[4] = 5 - OGsides[min];
+
+    min = 0;
+    for (size_t i = 0; i < referenceValues.size(); i++)
+    {
+        if (glm::dot(right, referenceValues[i]) > glm::dot(right, referenceValues[min])) {
+            min = i;
+        }
+    }
+
+    sides[2] = OGsides[min];
+    sides[5] = 5-OGsides[min];
+
+}
