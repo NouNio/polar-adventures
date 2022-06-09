@@ -264,7 +264,9 @@ int main(void)
 
     Shader combination(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("screen.frag", true));
     combination.use();
+    glm::vec3 edgeCol(1.0,1,1.0);
     combination.setFloat("brightness", brightness);
+    combination.setVec3("edgeCol", edgeCol);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
 
     initialize(SCR_WIDTH, SCR_HEIGHT, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
