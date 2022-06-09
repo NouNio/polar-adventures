@@ -65,7 +65,9 @@ void transitionToEndOfGameScreen(GLFWwindow* window);
 void setCubeSides();
 std::vector<glm::vec3> determineColours(std::vector<int> numbers);
 glm::vec3 determineColour(int i);
-
+void drawMap(Shader& s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour);
+void drawHUDVAO(unsigned int vao);
+void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo);
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
@@ -155,6 +157,8 @@ int main(void)
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
     Shader particleShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
 
+
+    Shader hud2(fm->getShaderPath("hud2.vert",true), fm->getShaderPath("hud2.frag", true));
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
     /* ------------------------------------------------------------------------------------ */
@@ -164,10 +168,17 @@ int main(void)
     btBvhTriangleMeshShape* newWorldShape = ((btBvhTriangleMeshShape*)(newWorldBody->getCollisionShape()));   // now create an easily scalable version of that body
     pHandler->addScaledMeshShape(newWorldShape, WORLD_POS, WORLD_MASS, WORLD_SCALE);      // add to world
     pHandler->getWorld()->removeRigidBody(newWorldBody);
-
+   
     // permeable wall
     Model permWall(fm->getObjPath("perm-wall"));
 
+    //models for map and shit
+    Model outline(fm->getObjPath("map_outline.fbx", true));
+    unsigned int outvao, outvbo, outebo;
+    generateMapVAO(outline.meshes[0], outvao, outvbo, outebo);
+    unsigned int invao, invbo, inebo;
+    Model map(fm->getObjPath("map.fbx", true));
+    generateMapVAO(map.meshes[0], invao, invbo, inebo);
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
@@ -175,6 +186,7 @@ int main(void)
     Animation walkAnim(fm->getPlayerPath("player"), &animPlayer);
     Animator animator(&walkAnim);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &animPlayer);
+
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -221,6 +233,9 @@ int main(void)
     HUDShader.use();
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection)); 
     hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
+
+    hud2.use();
+    glUniformMatrix4fv(glGetUniformLocation(hud2.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
 
     
     /* ------------------------------------------------------------------------------------ */
@@ -395,8 +410,11 @@ int main(void)
         {   
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
-        setCubeSides();
 
+        setCubeSides();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        drawMap(hud2, outvao, invao, 0.5, glm::vec2(1000.0f, 100.0f), 50.0, glm::vec3(0.8));
         hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
 
         
@@ -801,30 +819,51 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
         }
         return glm::vec3(1, 1, 0);
     }
-
+    void drawMap(Shader &s, unsigned int outlineVao, unsigned int vao, float transparency, glm::vec2 pos, float scale, glm::vec3 colour) {
+        s.use();
+        s.setFloat("transparency", transparency);
+        s.setVec2("xyoffset", pos);
+        s.setFloat("scale", scale);
+        s.setVec3("colour", colour);
+        drawHUDVAO(vao);
+        s.setFloat("transparency", 1.0f);
+        drawHUDVAO(outlineVao);
+    }
    void drawHUDVAO(unsigned int vao) {
        glBindVertexArray(vao);
        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
        glBindVertexArray(0);
    }
-void generateHUDVAO(Mesh m, unsigned int vao, unsigned int vbo) {
+void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo) {
     std::vector<Vertex> vertices= m.vertices;
     std::vector<unsigned int> indices = m.indices;
-    std::vector<glm::vec4> hudcoords;
+    std::vector<glm::vec2> hudcoords;
     for each (Vertex v in vertices)
     {
-        hudcoords.push_back(glm::vec4(v.pos.x, v.pos.y, 0.0f, 0.0f));
+        hudcoords.push_back(glm::vec2(v.pos.x, v.pos.y));
     }
-
+    /*
+            glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    */
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
     glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vao);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(hudcoords), &hudcoords, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, hudcoords.size() * sizeof(glm::vec2), &hudcoords[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    // vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(glm::vec4), (void*)0);
+    //(location in shader, size of vertex attrib, data type, normalize flag, space between consecutive vertices, offset in buffer)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
     glBindVertexArray(0);
- 
+
 
 }
 void setCubeSides() {

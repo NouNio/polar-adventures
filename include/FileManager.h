@@ -31,9 +31,12 @@ public:
 	}
 
 
-	std::string getObjPath(std::string objKey)
+	std::string getObjPath(std::string objKey, bool isKnownPath = false)
+
 	{
-		return this->pathToProject + ASSETS + OBJECTS + this->pathToObject[objKey];
+		if (isKnownPath) return  this->pathToProject + ASSETS + OBJECTS + objKey;
+		else 
+			return this->pathToProject + ASSETS + OBJECTS + this->pathToObject[objKey];
 	}
 
 
