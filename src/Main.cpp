@@ -104,6 +104,7 @@ int currRenderedObjects = 0;
 
 FileManager* fm;
 ParticleSystem* parSys;
+ParticleSystem* snowBottom;
 
 unsigned int handle;
 
@@ -142,6 +143,7 @@ int main(void)
     Shader skyboxShader(fm->getShaderPath("skyboxVert"), fm->getShaderPath("skyboxFrag"));
     Shader HUDShader(fm->getShaderPath("HUDvert"), fm->getShaderPath("HUDfrag"));
     Shader particleShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
+    Shader snowBottomShader(fm->getShaderPath("particleVert"), fm->getShaderPath("particleFrag"));
 
     /* ------------------------------------------------------------------------------------ */
     // load models related physics objects
@@ -200,7 +202,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // Particle System
     /* ------------------------------------------------------------------------------------ */
-    parSys = new ParticleSystem(&particleShader);
+    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -30, 0), 0.1);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -360,13 +362,8 @@ int main(void)
         /* ------------------------------------------------------------------------------------ */
         // PARTICLE SYSTEM
         /* ------------------------------------------------------------------------------------ */
-        parSys->updateParticlesPerFrame(deltaTime);
-        parSys->generateParticles();                // generate new rand particles values
-        parSys->simulate();                         // simulate particles
-        parSys->sortParticles();                    // sort particles
-        parSys->updateBuffers();                    // update bufers
-        parSys->setShader(projection, view);        // set shader values
-        parSys->draw();                             // draw particles
+        if (!bottomSnowballActive)
+            snowBottom->update(deltaTime, projection, view);
 
 
         /* ------------------------------------------------------------------------------------ */
