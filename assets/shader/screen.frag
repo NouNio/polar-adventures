@@ -19,7 +19,7 @@ in vec2 TexCoords;
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D edge;
-
+uniform vec3 edgeCol;
 uniform float brightness;
 
 void main() {	
@@ -27,7 +27,7 @@ void main() {
 	vec3 texColor = texture(diffuseTexture, TexCoords).rgb;
 	 // ambient
 	if(distance(vec3(0),texture(edge, TexCoords).rgb)>1.7320507165){
-	texColor=vec3(1);
+	texColor=edgeCol;
 	}
 	// ambient
 	//texColor = vec3(1)-texColor;

@@ -264,7 +264,9 @@ int main(void)
   
     Shader combination(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("screen.frag", true));
     combination.use();
+    glm::vec3 edgeCol(1.0,1,1.0);
     combination.setFloat("brightness", brightness);
+    combination.setVec3("edgeCol", edgeCol);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
    
     initialize(SCR_WIDTH, SCR_HEIGHT, color, normal, depth, edge, handle, postprocessor, rbo, attachments);
@@ -806,12 +808,14 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers) {
         if (i== 5&& !bottomSnowballActive) {
             return glm::vec3(1, 0, 0);
         }
-        for each (Snowball * v in savedSnowballs)
+        for (size_t i = 0; i < savedSnowballs.size(); i++)
         {
+            Snowball* v = savedSnowballs[i];
             if (v->getID() == var) { return glm::vec3(0.5f, 0.5f, 0.5f); }
         }
-        for each (Snowball * v in collectedSnowballs)
+        for (size_t i = 0; i < collectedSnowballs.size(); i++)
         {
+            Snowball* v = collectedSnowballs[i];
             if (v->getID() == var) { return glm::vec3(0, 1, 0); }
         }
         return glm::vec3(1, 1, 0);
@@ -835,8 +839,9 @@ void generateMapVAO(Mesh m, unsigned int vao, unsigned int vbo, unsigned int ebo
     std::vector<Vertex> vertices= m.vertices;
     std::vector<unsigned int> indices = m.indices;
     std::vector<glm::vec2> hudcoords;
-    for each (Vertex v in vertices)
+    for (size_t i = 0; i < vertices.size(); i++)
     {
+        Vertex v = vertices[i];
         hudcoords.push_back(glm::vec2(v.pos.x, v.pos.z));
     }
     /*
