@@ -118,7 +118,7 @@ public:
 				text = "TOP";
 				break;
 			case 1:
-				text = "FRONT";
+				text = "BACK";
 				break;
 			case 2:
 				text = "RIGHT";
@@ -127,7 +127,7 @@ public:
 				text = "LEFT";
 				break;
 			case 4:
-				text = "BACK";
+				text = "FRONT";
 				break;
 			case 5:
 				text = "BOTTOM";
