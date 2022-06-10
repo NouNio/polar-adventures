@@ -123,7 +123,7 @@ public:
     bool isInFrustum (Mesh m) const {
         return 
             //true;
-            camera.frustum->isInside(m.bound.getPoints());
+            camera.frustum->isInside(m.bound.getPoints(), camera.GetProjection() * camera.GetViewMatrix());
     }
 
 

@@ -10,29 +10,42 @@ private:
 	glm::vec3 originPoint;
 	glm::vec3 farPoint;
 	glm::vec3 nearPoint;
+	glm::mat4 projection;
 	int renderedObjects = 0;
 	float pitch, yaw, fov, hfov, near, far, aspect;
 	std::vector<glm::vec3> normals;  //length 6 = top, bottom, right, left, front, back
 
 
 	//TODO: Fix this mess
-	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, std::vector<glm::vec3> points) {
+	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec4 point) {
 		//FacesFromPlanes as in is inside frustum
-		return 
-			//(glm::dot(glm::normalize(normal-planeOrigin), (points[0] - planeOrigin)) >= -glm::distance(points[0], points[1]));
-			(glm::dot(glm::normalize(normal), (points[0] - planeOrigin)) >= -glm::distance(points[0], points[1]));
+
+		return isInbetween(point[0], -point[3], point[3]) && (point[1], -point[3], point[3]) && (point[2], 0.0, point[3]);
+			
+	};
+	bool isInbetween(float value, float lower, float upper) {
+
+		return(value <= upper && lower <= value);
+		/*facesPlane(originPoint, normals[0], points) &&
+			facesPlane(originPoint, normals[1], points) &&
+			facesPlane(originPoint, normals[2], points) &&
+			facesPlane(originPoint, normals[3], points) &&
+			facesPlane(nearPoint, normals[4], points) &&
+			facesPlane(farPoint, normals[5], points)*/
 	};
 
 	//´TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
-	bool FacesFromAllPlanes(std::vector<glm::vec3> points) {
-		return (
-			facesPlane(originPoint, normals[0], points)&&
-			facesPlane(originPoint, normals[1], points)&&
-			facesPlane(originPoint, normals[2], points)&&
-			facesPlane(originPoint, normals[3], points)&&
-			facesPlane(nearPoint, normals[4], points)&&
-			facesPlane(farPoint, normals[5], points)
-			);
+	bool FacesFromAllPlanes(std::vector<glm::vec4> points) {
+		bool isInAtLeastOnePlane = false;
+		for (size_t i = 0; i < points.size(); i++)
+		{
+
+
+			isInAtLeastOnePlane = isInAtLeastOnePlane || (facesPlane(originPoint, normals[0], points[i])
+
+				);
+		}
+		return isInAtLeastOnePlane;
 
 	}
 
@@ -86,7 +99,8 @@ public:
 		aspect(aspect),
 		right(glm::normalize(glm::cross(up, viewDir))),
 		up(glm::normalize(up)),
-		viewDir(glm::normalize(viewDir))
+		viewDir(glm::normalize(viewDir)),
+		projection(glm::perspective(fov, aspect, near, far))
 	{
 		hfov = 2 * atan(tan(fov / 2) * aspect);
 		//ensure everything is 
@@ -115,15 +129,23 @@ public:
 	}
 	
 	
-	bool isInside(std::vector<glm::vec3> points) {
-		if (FacesFromAllPlanes(points)) { increaseRenderedObjects(); }
-		return FacesFromAllPlanes(points);
+	bool isInside(std::vector<glm::vec3> points, glm::mat4 viewProj) {
+		std::vector<glm::vec4> p;
+		for (size_t i = 0; i < points.size(); i++)
+		{
+			glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
+			temp = viewProj * temp;
+			p.push_back(temp);
+		}
+		if (FacesFromAllPlanes(p)) { increaseRenderedObjects(); }
+		return FacesFromAllPlanes(p);
 	};
 	
 	void changeFOV(float fov) {
 		this->fov = fov;
 		hsize = 2 * far * tanf(fov * 0.5f);
 		vsize = hsize * aspect;
+		glm::perspective(fov, aspect, near, far);
 		setPlanes();
 	}
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 

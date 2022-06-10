@@ -128,7 +128,7 @@ std::vector<glm::vec2> offsets{ glm::vec2(0,0), glm::vec2(0,1) ,glm::vec2(1,0) ,
 
 GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
-
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 int main(void)
 {
@@ -504,6 +504,7 @@ GLFWwindow* initGLFWandGLEW()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);   // make GLFW measure our mouse
@@ -892,4 +893,22 @@ void setCubeSides() {
     sides[2] = OGsides[min];
     sides[5] = 5 - OGsides[min];
 
+}
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        {
+            if (sound) {
+                if (playerController->getSnowBallAmmo() > 0) {
+                    soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
+                }
+                else {
+                    soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
+                }
+            }
+            playerController->shootSnowball();
+            lastShotPress = glfwGetTime();
+        }
+
+    }
 }

@@ -80,9 +80,9 @@ public:
 		this->s_body->setUserPointer(&this->s_id);
 	}
 
-
+	/////delete all should already handle this?
 	~Snowball() {
-		this->s_pHandler->deleteBody(this->s_body);
+		//this->s_pHandler->deleteBody(this->s_body);
 	}
 
 
