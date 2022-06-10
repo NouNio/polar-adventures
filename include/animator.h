@@ -8,8 +8,8 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
-#include <animation.h>
-#include <bone.h>
+#include <Animation.h>
+#include <Bone.h>
 
 class Animator
 {
@@ -51,13 +51,13 @@ public:
 
 		if (Bone)
 		{
-			Bone->Update(m_CurrentTime);
-			nodeTransform = Bone->GetLocalTransform();
+			Bone->update(m_CurrentTime);
+			nodeTransform = Bone->getLocalTransform();
 		}
 
 		glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-		auto boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
+		auto boneInfoMap = m_CurrentAnimation->getBoneIDMap();
 		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
 		{
 			int index = boneInfoMap[nodeName].id;

@@ -302,6 +302,8 @@ public:
 
 		return shootingPos;
 	}
+	
+	
 	KinematicPlayer(Physics* pHandler, glm::vec3 position, Camera* camera, Model* model)
 	{
 		this->camera = camera;
@@ -324,6 +326,7 @@ public:
 	bool onGround() {
 		return this->controller->onGround();
 	}
+
 
 	void update(Movement direction, float deltaTime) 
 	{
@@ -388,6 +391,16 @@ public:
 
 	void setWalking(bool newWalking) {
 		this->walking = newWalking;
+	}
+
+
+	void setJumpForce(float newForce) {
+		this->jumpForce = newForce;
+	}
+
+
+	void resetJumpForce() {
+		this->jumpForce = 20.0;
 	}
 
 

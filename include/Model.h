@@ -14,6 +14,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
 #include <Mesh.h>
 #include <Shader.h>
 #include <Camera.h>
@@ -40,6 +41,12 @@ extern Camera camera;
 
 #define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs)
 #define MAX_NUM_BONES_PER_VERTEX 4
+
+
+struct BoneInfo {
+    int id;				// idx in finalBoneMatrices
+    glm::mat4 offset;	// this transfrom vertex from model to bone space
+};
 
 
 class Model

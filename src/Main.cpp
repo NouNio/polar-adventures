@@ -24,8 +24,8 @@
 
 // self made libs
 #include <glm/gtx/rotate_vector.hpp>
-#include <animation.h>
-#include <animator.h>
+#include <Animation.h>
+#include <Animator.h>
 #include <Camera.h>
 #include <Constants.h>
 #include <FileManager.h>
@@ -73,6 +73,10 @@ void drawonHUd(Shader& s, Mesh& m);
 /* ------------------------------------------------------------------------------------ */
 // gameplay 
 bool sound = false;
+bool spaceWasDown = false;
+float currJumpForce = 2.0;
+const float START_JUMP_FORCE = 2.0;
+const float MAX_JUMP_FORCE = 20.0;
 double startTimeSec = 0.0;
 float animTimeSec = 0.0;
 double maxGameTime = 300.0;  // time in seconds until player looses
@@ -541,11 +545,24 @@ void processInput(GLFWwindow* window)
         lastESCPress = glfwGetTime();
     }
 
-
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        if (currJumpForce < MAX_JUMP_FORCE)
+            currJumpForce += 0.1;
+        else
+            currJumpForce = MAX_JUMP_FORCE;
+
+        playerController->setJumpForce(currJumpForce);
+        spaceWasDown = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE && spaceWasDown) {
         camera.processKeyboard(UP, deltaTime);
         playerController->update(pUP, deltaTime);
+        currJumpForce = START_JUMP_FORCE;
+        spaceWasDown = false;
     }
+
+
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         camera.processKeyboard(LEFT, deltaTime);
