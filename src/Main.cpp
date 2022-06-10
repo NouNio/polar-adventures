@@ -407,7 +407,7 @@ int main(void)
 
         setCubeSides();
 
-        drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1005., 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
+        drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
         hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
 
 

@@ -108,6 +108,8 @@ public:
 
 	void renderNumbers(Shader& shader, float x, float y, std::vector<int> numbers, std::vector<glm::vec2> offsets, std::vector<glm::vec3> colours, float scale)
 	{
+		float ts = textScale;
+		textScale = 0.25;
 		for (unsigned int i = 0; i < numbers.size(); i++)
 		{
 			std::string text= std::to_string(numbers[i]);
@@ -131,11 +133,18 @@ public:
 				text = "BOTTOM";
 				break;
 			}
-			text = std::to_string(numbers[i]);
+		
+			//text = std::to_string(numbers[i]);
 			glm::vec2 offset = offsets[i]*scale;
-			if (i == 3) { offset.x += scale * 0.25; }
+			if (i == 3) { offset += glm::vec2(scale * 0.25); 
+			textScale /= 2.0;
+			}
 			renderLine(shader, text, x + offset.x, y + offset.y, colours[i]);   // set each message 20 below the first
+			if (i == 3) {
+				textScale *= 2.0;
+			}
 		}
+		textScale = ts;
 
 	}
 
@@ -164,7 +173,7 @@ private:
 	const char* fontPath;
 	unsigned int nSnowballs = 0;
 	unsigned int pixelHeight = 48;
-	const float textScale = 0.5;
+	float textScale = 0.5;
 	const float newLineOffset = 25.0;
 	const glm::vec3 textColor = glm::vec3(0.1f, 0.6f, 0.9f);
 	FT_Library ft;
