@@ -1,11 +1,15 @@
 #version 330 core
-layout (location = 0) in vec2 vertex;  // first two items are position, the last two items are texture coords
-
+in vec2 vertex;  // first two items are position, the last two items are texture coords
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
 uniform mat4 proj; 
 uniform float scale;
 uniform vec2 xyoffset;
+bool front;
 
 void main()
 {
-	gl_Position = proj * (vec4((vertex.xy*scale)+xyoffset, 0.5, 1.0));
+float zoff = 0.5;
+if(front) zoff =1.0;
+	gl_Position = proj * (vec4((aPos.xy*scale)+xyoffset, zoff, 1.0));
 }

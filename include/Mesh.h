@@ -128,13 +128,7 @@ public:
     {
         bound.reset();
     }
-
-
-private:
-    unsigned int VAO, VBO, EBO;  // vertex array / buffer object | element buffer object
-    bool animated;
-
-    void drawMesh() 
+    void drawMesh()
     {
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -143,6 +137,12 @@ private:
         if (this->withTexture)
             glActiveTexture(GL_TEXTURE0);  // set back to default after configuration is done
     }
+
+private:
+    unsigned int VAO, VBO, EBO;  // vertex array / buffer object | element buffer object
+    bool animated;
+
+
 
 
     void setMaterialValues(Shader& shader)
@@ -200,7 +200,7 @@ private:
     void enableAndSetPtr() {
         // vertex positions
         glEnableVertexAttribArray(0);
-                             //(location in shader, size of vertex attrib, data type, normalize flag, space between consecutive vertices, offset in buffer)
+        //(location in shader, size of vertex attrib, data type, normalize flag, space between consecutive vertices, offset in buffer)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         
         // vertex normals

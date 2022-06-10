@@ -110,9 +110,33 @@ public:
 	{
 		for (unsigned int i = 0; i < numbers.size(); i++)
 		{
+			std::string text= std::to_string(numbers[i]);
+			switch (numbers[i]) {
+			case 0:
+				text = "TOP";
+				break;
+			case 1:
+				text = "FRONT";
+				break;
+			case 2:
+				text = "RIGHT";
+				break;
+			case 3:
+				text = "LEFT";
+				break;
+			case 4:
+				text = "BACK";
+				break;
+			case 5:
+				text = "BOTTOM";
+				break;
+			}
+			text = std::to_string(numbers[i]);
 			glm::vec2 offset = offsets[i]*scale;
-			renderLine(shader, std::to_string(numbers[i]), x + offset.x, y + offset.y, colours[i]);   // set each message 20 below the first
+			if (i == 3) { offset.x += scale * 0.25; }
+			renderLine(shader, text, x + offset.x, y + offset.y, colours[i]);   // set each message 20 below the first
 		}
+
 	}
 
 	void renderEndOfGame(Shader& shader, float x, float y) {
