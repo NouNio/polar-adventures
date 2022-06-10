@@ -7,13 +7,12 @@
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
 
-#include <bone.h>
-#include <animdata.h>
+#include <Bone.h>
 #include <Model.h>
 
+#include <Animdata.h>
 
-struct AssimpNodeData
-{
+struct AssimpNodeData {
 	glm::mat4 transformation;
 	std::string name;
 	int childrenCount;

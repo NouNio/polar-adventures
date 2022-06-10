@@ -5,13 +5,8 @@
 
 #include<glm/glm.hpp>
 
-struct BoneInfo
-{
-	/*id is index in finalBoneMatrices*/
-	int id;
-
-	/*offset matrix transforms vertex from model space to bone space*/
-	glm::mat4 offset;
-
+struct BoneInfo {
+	int id;				// idx in finalBoneMatrices
+	glm::mat4 offset;	// this transfrom vertex from model to bone space
 };
 #endif

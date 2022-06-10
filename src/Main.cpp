@@ -24,8 +24,8 @@
 
 // self made libs
 #include <glm/gtx/rotate_vector.hpp>
-#include <animation.h>
-#include <animator.h>
+#include <Animation.h>
+#include <Animator.h>
 #include <Camera.h>
 #include <Constants.h>
 #include <FileManager.h>

@@ -14,6 +14,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <Animdata.h>
 #include <Mesh.h>
 #include <Shader.h>
 #include <Camera.h>
