@@ -10,7 +10,6 @@
 #include <Bone.h>
 #include <Model.h>
 
-#include <Animdata.h>
 
 struct AssimpNodeData {
 	glm::mat4 transformation;
