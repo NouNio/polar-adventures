@@ -299,7 +299,7 @@ int main(void)
         // INPUT 
         /* ------------------------------------------------------------------------------------ */
         processInput(window);
-        animator.UpdateAnimation(deltaTime);
+        animator.updateAnim(deltaTime);
 
         // render
         //glClearColor(0.6f, 0.7f, 0.9f, 1.0f);;
@@ -373,9 +373,9 @@ int main(void)
         if (playerController->isWalking()) {
             animModelShader.use();
 
-            auto transforms = animator.GetFinalBoneMatrices();
-            for (int i = 0; i < transforms.size(); ++i) {
-                animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+            auto boneTransforms = animator.getBoneTransforms();
+            for (int i = 0; i < boneTransforms->size(); ++i) {
+                animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]",  (*boneTransforms)[i]);
             }
 
             // render the loaded model
