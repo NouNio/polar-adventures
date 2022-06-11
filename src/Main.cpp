@@ -580,19 +580,6 @@ void processInput(GLFWwindow* window)
         lastHUDPress = glfwGetTime();
     }
 
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE) {
-        if (sound) {
-            if (playerController->getSnowBallAmmo() > 0) {
-                soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
-            }
-            else {
-                soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
-            }
-        }
-        playerController->shootSnowball();
-        lastShotPress = glfwGetTime();
-    }
-
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         playerController->setWalking(true);
         camera.processKeyboard(BACKWARD, deltaTime);
