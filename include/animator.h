@@ -30,9 +30,9 @@ public:
 		m_DeltaTime = dt;
 		if (m_CurrentAnimation)
 		{
-			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt;
-			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
-			CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+			m_CurrentTime += m_CurrentAnimation->getTPS() * dt;
+			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->getDuration());
+			CalculateBoneTransform(&m_CurrentAnimation->getRootNode(), glm::mat4(1.0f));
 		}
 	}
 
@@ -42,12 +42,12 @@ public:
 		m_CurrentTime = 0.0f;
 	}
 
-	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
+	void CalculateBoneTransform(const AnimNode* node, glm::mat4 parentTransform)
 	{
 		std::string nodeName = node->name;
 		glm::mat4 nodeTransform = node->transformation;
 
-		Bone* Bone = m_CurrentAnimation->FindBone(nodeName);
+		Bone* Bone = m_CurrentAnimation->findBone(nodeName);
 
 		if (Bone)
 		{
@@ -57,7 +57,7 @@ public:
 
 		glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-		auto boneInfoMap = m_CurrentAnimation->getBoneIDMap();
+		auto boneInfoMap = m_CurrentAnimation->getBoneInfo();
 		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
 		{
 			int index = boneInfoMap[nodeName].id;
