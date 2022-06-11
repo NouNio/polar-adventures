@@ -72,7 +72,7 @@ public:
 	}
 
 
-	inline const std::map<std::string, BoneInfo>& getBoneInfo() {
+	inline const std::map<std::string, BoneData>& getBoneInfo() {
 		return boneInfo;
 	}
 
@@ -82,12 +82,12 @@ private:
 	int ticksPerSec;
 	std::vector<Bone> bones;
 	AnimNode rootNode;
-	std::map<std::string, BoneInfo> boneInfo;
+	std::map<std::string, BoneData> boneInfo;
 
 
 	void parseMissingBones(const aiAnimation* animation, Model& model) {
-		auto& newBoneInfo = model.GetBoneInfoMap();
-		int& boneCount = model.GetBoneCount();
+		auto& newBoneInfo = model.getBoneInfo();
+		int& boneCount = model.getNumBones();
 
 		// going throught the channels, i.e bones taking part in an animation and the the corresponding keyframes
 		for (int i = 0; i < animation->mNumChannels; i++) {
