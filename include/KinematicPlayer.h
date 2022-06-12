@@ -95,11 +95,7 @@ private:
 	}
 
 
-
-
-
-	void updateCameraPos()
-	{	
+	void updateCameraPos() {	
 		btVector3 newPos = this->ghostObject->getWorldTransform().getOrigin();
 		cameraOffset = 5.0f * this->camera->front + (-this->camera->worldUp); //glm::vec3(0, -1, 0);
 		this->camera->setPosition(this->pHandler->BulletVec3ToGlmVec3(newPos) - cameraOffset);
@@ -125,7 +121,7 @@ private:
 	void updateCubeSide(glm::vec3 newG) {
 		glm::vec3 absG = glm::abs(newG);
 
-		// search for the index of the max val
+		// search for the index of the max val, i.e. the position in the gravitiy vector with strongest force
 		int maxIdx = -1;
 		float maxVal = 0;
 
@@ -265,7 +261,7 @@ private:
 			model = glm::rotate(model, glm::radians(playerCamRot), glm::vec3(0, 1, 0));  // rotate  player with the camera left and right
 			break;
 		}
-
+		
 		return model;
 	}
 
@@ -328,22 +324,8 @@ public:
 	}
 
 
-	void update(Movement direction, float deltaTime) 
-	{
-		btTransform t = controller->getGhostObject()->getWorldTransform();
-		// position
-		btVector3 pos = t.getOrigin();
-		
-		// rotation
-		btQuaternion quat = t.getRotation();
-		float angle = quat.getAngle();
-		btVector3 axis = quat.getAxis();
-
-		glm::vec3 dir(0, 0, 0);
-
+	void update(Movement direction, float deltaTime) {
 		updateMovement(direction, deltaTime);
-
-		updateCameraPos();
 
 		updatePlayerOffset();
 
