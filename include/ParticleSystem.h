@@ -11,7 +11,7 @@
 #include <Shader.h>
 
 
-#define MAX_PARTICLES 5000
+#define MAX_PARTICLES 6000
 
 
 // the paricle system has 3 buffers:
@@ -25,7 +25,16 @@ struct Particle {
 	unsigned char r, g, b, a; 
 	float size, angle, weight;
 	float life;     // if < 0 particle is unused so far or dead
-	float camDist;  // squared distance to camera, -1.0 of dead 
+	float camDist;  // squared distance to camera, -1.0 of dead
+
+	void reset() {
+		life = -1;
+		camDist = -1;
+	}
+
+	bool outOfYBounds() {
+		return pos.y > cubeBounds.y_min;
+	}
 
 	bool operator<(Particle& that) {
 		return this->camDist > that.camDist;  // sorted in reverse, i.e. far away particles rendered first
@@ -35,11 +44,13 @@ struct Particle {
 
 class ParticleSystem {
 private:
-	float lifeTime = 80.0f;
+	float lifeTime = 51.0f;
+	float spread = 1.3f;
+	float deltaLifeTime = 0.01f;
+	glm::vec4 particleColor = glm::vec4(255, 255, 255, 200);
 	glm::vec3 G;
 	glm::vec3 spawnPos;
 	float speedFac;
-	glm::vec4 particleColor = glm::vec4(255, 255, 255, 200);
 
 public:
 	ParticleSystem(Shader* shader, glm::vec3 gravity, glm::vec3 pos, float speed) {
@@ -67,19 +78,17 @@ public:
 		for (int i = 0; i < this->numNewParticles; i++) {
 			int particleIdx = findNextParticle();
 			particleContainer[particleIdx].life = lifeTime;	 // lifetime in s
-			glm::vec2 randomPos = glm::diskRand(18.0f);
+			glm::vec2 randomPos = glm::diskRand(22.0f);
 			particleContainer[particleIdx].pos = this->spawnPos + glm::vec3(randomPos.x, 0.0f, randomPos.y);
 
-			float spread = 1.5f;
+			
 			glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
-			// generate random directions (there are better ways) 
+			// generate random directions (there are better ways)  in range (-1,1)
 			glm::vec3 randomdir = glm::vec3(
-				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f,  // (0 bis 1999) --> (-1000 bis 999) --> (-1 bis 0.999)
 				(rand() % 2000 - 1000.0f) / 1000.0f,
 				(rand() % 2000 - 1000.0f) / 1000.0f
 			);
-
-			randomdir = glm::vec3(0);
 
 			particleContainer[particleIdx].speed = maindir * spread;
 
@@ -97,29 +106,25 @@ public:
 			Particle& p = particleContainer[i];
 
 			if (p.life > 0.0f) {
-				p.life -= delta;
-
+				p.life -= deltaLifeTime;
 					if (p.life > 0.0f) {
 						// simulate simple physics
-						p.speed += G * (float)delta * 0.1f;
-						p.pos += p.speed * (float)delta * speedFac;
+						p.speed += G * (float)deltaLifeTime * 0.01f ;
+						p.pos += p.speed * speedFac * ((rand() % 4));
+
+						// check if out ouf bounds
+						if (p.outOfYBounds()) {
+							p.reset();
+							continue;
+						}
+
 						p.camDist = glm::length2( p.pos - camera.pos);
 
-						// fill GPU buffer
-						g_particle_pos_size_data[4 * particleCnt + 0] = p.pos.x;
-						g_particle_pos_size_data[4 * particleCnt + 1] = p.pos.y;
-						g_particle_pos_size_data[4 * particleCnt + 2] = p.pos.z;
-						g_particle_pos_size_data[4 * particleCnt + 3] = p.size;
-
-						g_particle_col_data[4 * particleCnt + 0] = p.r;
-						g_particle_col_data[4 * particleCnt + 1] = p.g;
-						g_particle_col_data[4 * particleCnt + 2] = p.b;
-						g_particle_col_data[4 * particleCnt + 3] = p.a;
+						setBufferData(p);  // fill the data for the GPU buffer
 					}
 					else {
 						p.camDist = -1;
 					}
-
 			}
 
 			particleCnt++;
@@ -176,7 +181,7 @@ public:
 
 private:
 	Shader* shader;
-	const static unsigned int maxParticles = 5000;
+	const static unsigned int maxParticles = MAX_PARTICLES;
 	const GLfloat g_vertex_buffer_data[12] = {
 	-0.5f, -0.5f, 0.0f,
 	 0.5f, -0.5f, 0.0f,
@@ -193,7 +198,6 @@ private:
 	Particle particleContainer[maxParticles];
 	unsigned int lastUsedParticleIdx = 0;
 	unsigned int numNewParticles = 0;
-	float delta = 0.1f;
 
 
 	void initParticleContainer() {
@@ -318,6 +322,19 @@ private:
 
 	int getParticlesPerFrame() {
 		return this->numNewParticles;
+	}
+
+
+	void setBufferData(Particle& p) {
+		g_particle_pos_size_data[4 * particleCnt + 0] = p.pos.x;
+		g_particle_pos_size_data[4 * particleCnt + 1] = p.pos.y;
+		g_particle_pos_size_data[4 * particleCnt + 2] = p.pos.z;
+		g_particle_pos_size_data[4 * particleCnt + 3] = p.size;
+
+		g_particle_col_data[4 * particleCnt + 0] = p.r;
+		g_particle_col_data[4 * particleCnt + 1] = p.g;
+		g_particle_col_data[4 * particleCnt + 2] = p.b;
+		g_particle_col_data[4 * particleCnt + 3] = p.a;
 	}
 };
 

@@ -123,6 +123,11 @@ const float COLLECTION_POINT_MASS = 0.0f;
 const glm::vec3 COLLECTION_POINT_BODY_SCALE(0.5, 2, 0.5);
 
 
+// PARTICLE SYSTEM
+const glm::vec3 PARTICLE_SYSTEM_MIDDLE = glm::vec3(0.0f, -70.0f, 0.0f);
+const float PARTICLE_SYSTEM_SPEED = 0.005;
+
+
 // PHYSICS
 bool debug = false;
 
