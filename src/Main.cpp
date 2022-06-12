@@ -51,7 +51,6 @@ GLFWwindow* initGLFWandGLEW();
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
@@ -507,7 +506,6 @@ GLFWwindow* initGLFWandGLEW()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouseCallback);
-    glfwSetScrollCallback(window, scrollCallback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 
@@ -637,13 +635,6 @@ void mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
     lastY = ypos;
 
     camera.processMouseMovement(xoffset, yoffset);
-}
-
-
-// except scrolling, which is handled here
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.processMouseScroll(static_cast<float>(yoffset));
 }
 
 

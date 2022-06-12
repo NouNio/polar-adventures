@@ -154,20 +154,6 @@ public:
     }
 
 
-    // process mouse input received from the vertical wheel-axis and clip any exceeding values
-    void processMouseScroll(float yoffset)
-    {
-        this->zoom -= (float)yoffset;
-        if (this->zoom < MIN_ZOOM)
-            this->zoom = MIN_ZOOM;
-        if (this->zoom > MAX_ZOOM)
-            this->zoom = MAX_ZOOM;
-
-        projection = (glm::perspective(glm::radians(zoom), aspect, near, far));
-        frustum->changeFOV(glm::radians(zoom));
-    }
-
-
 private:
     unsigned int cubeSide = CUBE_TOP;
 
