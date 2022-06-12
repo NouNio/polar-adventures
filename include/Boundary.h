@@ -3,7 +3,7 @@ class Boundary {
 private:
 	std::vector<glm::vec3> points;
 	std::vector <  float> xBounds, yBounds, zBounds;
-	
+
 	void resetPoints(){
 		points.clear();
 		glm::vec3 maxdist;
@@ -26,12 +26,33 @@ private:
 			}
 		}
 	
-
+		minCorner = glm::vec3(xBounds[0], yBounds[0], zBounds[0]);
+		maxCorner = glm::vec3(xBounds[1], yBounds[1], zBounds[1]);
+		center = glm::vec3(xBounds[0] + xBounds[1], xBounds[0] + yBounds[1], zBounds[0] + zBounds[1]) / 2.0f;
+		oobaxes.clear();
+		ooblengths.clear();
+		oobaxes.push_back(glm::vec3(maxCorner.x - minCorner.x, 0, 0));
+		oobaxes.push_back(glm::vec3(0, maxCorner.y - minCorner.y, 0));
+		oobaxes.push_back(glm::vec3(0, 0, maxCorner.z - minCorner.z));
+		ooblengths.push_back(glm::length(oobaxes[0])/1.0);
+		ooblengths.push_back(glm::length(oobaxes[1])/1.0);
+		ooblengths.push_back(glm::length(oobaxes[2])/1.0);
+		oobaxes[0] = glm::normalize(oobaxes[0]);
+		oobaxes[1] = glm::normalize(oobaxes[1]);
+		oobaxes[2] = glm::normalize(oobaxes[2]);
 	}
 
 
 public:
+	//OOB
+	glm::vec3 minCorner;
+	glm::vec3 maxCorner;
+	glm::vec3 center;
+	//onb
+	std::vector<glm::vec3> oobaxes;
+	std::vector<float> ooblengths;
 	Boundary(std::vector < float> xBounds, std::vector < float > yBounds, std::vector < float > zBounds) :xBounds(xBounds), yBounds(yBounds), zBounds(zBounds) {
+	
 		resetPoints();
 	}
 	
@@ -47,49 +68,37 @@ public:
 	
 	
 	void transform(glm::mat4 transformation) {
+		glm::vec4 temp;
 		for (size_t i = 0; i < points.size(); i++)
 		{
-			glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
+			temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
 			temp = transformation*temp ;
 			points[i] = glm::vec3(temp.x, temp.y, temp.z);
 		}
-		std::vector < float> xBound={0.0,0.0}, yBound={0.0,0.0}, zBound = { 0.0,0.0 };
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			if (points[i].x > xBound[1]) {
-				xBounds[1] = points[i].x;
-			}
-			if (points[i].y > yBound[1]) {
-				yBound[1] = points[i].y;
-			}
-			if (points[i].z > zBound[1]) {
-				zBound[1] = points[i].z;
-			}
-			if (points[i].x < xBound[0]) {
-				xBound[0] = points[i].x;
-			}
-			if (points[i].y < yBound[0]) {
-				yBound[0] = points[i].y;
-			}
-			if (points[i].z < zBound[0]) {
-				zBound[0] = points[i].z;
-			}
-		}
+		temp = glm::vec4(minCorner.x, minCorner.y, minCorner.z, 1.0f);
+		temp = transformation * temp;
+		minCorner = glm::vec3(temp.x, temp.y, temp.z);;
+		temp = glm::vec4(maxCorner.x, maxCorner.y, maxCorner.z, 1.0f);
+		temp = transformation * temp;
+		maxCorner = glm::vec3(temp.x, temp.y, temp.z);;
 
-		points.clear();
-
-		points.push_back(glm::vec3((xBound[0] + xBound[1]) / 2.0f, (yBound[0] + yBound[1]) / 2.0f, (zBound[0] + zBound[1]) / 2.0f));
-		for (size_t i = 0; i < xBound.size(); i++)
+		temp = glm::vec4(center.x, center.y, center.z, 1.0f);
+		temp = transformation * temp;
+		center = glm::vec3(temp.x, temp.y, temp.z);;
+		for (size_t i = 0; i < oobaxes.size(); i++)
 		{
-			for (size_t j = 0; j < yBound.size(); j++)
-			{
-				for (size_t k = 0; k < zBound.size(); k++)
-				{
-					glm::vec3 comparison(glm::vec3(xBound[i], yBound[j], zBound[k]));
-					points.push_back(comparison);
-				}
-			}
+			temp = glm::vec4(oobaxes[i].x, oobaxes[i].y, oobaxes[i].z, 1.0f);
+			temp = transformation * temp;
+			oobaxes[i] = glm::vec3(temp.x, temp.y, temp.z);
 		}
+		ooblengths.clear();
+		ooblengths.push_back(glm::length(oobaxes[0])/1.0);
+		ooblengths.push_back(glm::length(oobaxes[1])/1.0);
+		ooblengths.push_back(glm::length(oobaxes[2])/1.0);
+
+		oobaxes[0] = glm::normalize(oobaxes[0]);
+		oobaxes[1] = glm::normalize(oobaxes[1]);
+		oobaxes[2] = glm::normalize(oobaxes[2]);
 	};
 
 };

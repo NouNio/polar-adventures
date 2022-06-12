@@ -53,7 +53,7 @@ class Model
 {
 public:
     std::vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
-
+    glm::mat4 model = glm::mat4();
 
     Model(std::string const& path, bool withTextures = false, bool animated = false, const char* texFileType = "")
     {
@@ -78,33 +78,31 @@ public:
 
         bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++){
-            meshes[i].transformBound(modelMatrix);
+           // meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
-                if (isInFrustum(meshes[i]))
+                if (isInFrustum(meshes[i], modelMatrix))
                     meshes[i].draw(shader);
             }
             else {
                 meshes[i].draw(shader);
                 camera.frustum->increaseRenderedObjects();
             }
-            meshes[i].resetBound();
+       
            
         }
     }
 
-
-    void draw(Shader& shader) {
+    //only used for playe3r so yeah im ignoring that
+    void draw(Shader& shader, glm::mat4 model) {
 
         bool viewFrustumCulling = camera.getVFCEnabled();
         for (unsigned int i = 0; i < meshes.size(); i++) {
             if (viewFrustumCulling) {
-                if (isInFrustum(meshes[i]))
-                    meshes[i].draw(shader);
-            }
-            else {
-                meshes[i].draw(shader);
+               
+           
                 camera.frustum->increaseRenderedObjects();
             }
+            meshes[i].draw(shader);
             meshes[i].resetBound();
 
         }
@@ -127,10 +125,10 @@ public:
     }
 
 
-    bool isInFrustum (Mesh m) const {
+    bool isInFrustum (Mesh m, glm::mat4 transform) const {
         return 
             //true;
-            camera.frustum->isInside(m.bound.getPoints(), camera.GetProjection() * camera.GetViewMatrix());
+            camera.frustum->isInside(m.bound, camera.GetProjection() * camera.GetViewMatrix()*transform);
     }
 
 

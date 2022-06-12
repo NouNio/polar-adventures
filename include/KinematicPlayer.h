@@ -369,7 +369,7 @@ public:
 		model = glm::scale(model, playerScale * rescale);
 		shader->setMat4("model", model);
 
-		player->draw(*shader);
+		player->draw(*shader, model);
 	}
 
 

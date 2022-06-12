@@ -1,6 +1,7 @@
-#include <glm/gtx/rotate_vector.hpp>
+﻿#include <glm/gtx/rotate_vector.hpp>
 #include <vector>
 //adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
+//also inspired by https://bruop.github.io/improved_frustum_culling/
 class Frustum {
 private:
 	glm::vec3 viewDir;
@@ -14,8 +15,10 @@ private:
 	int renderedObjects = 0;
 	float pitch, yaw, fov, hfov, near, far, aspect;
 	std::vector<glm::vec3> normals;  //length 6 = top, bottom, right, left, front, back
+	std::vector<float> viewSize;
 
-
+	std::vector<glm::vec3> clipSpaceCoords ;
+	std::vector<glm::vec3> clipNormals;
 	//TODO: Fix this mess
 	bool facesPlane(glm::vec3 planeOrigin, glm::vec3 normal, glm::vec4 point) {
 		//FacesFromPlanes as in is inside frustum
@@ -34,7 +37,7 @@ private:
 			facesPlane(farPoint, normals[5], points)*/
 	};
 
-	//�TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
+	//´TODO ADD CHECK IF BOUNDARIES ARE NOT LARGER THAN frustum
 	bool FacesFromAllPlanes(std::vector<glm::vec4> points) {
 		bool isInAtLeastOnePlane = false;
 		for (size_t i = 0; i < points.size(); i++)
@@ -121,6 +124,65 @@ public:
 		this->up = up;
 		this->near=near;
 		this->far = far;
+
+
+
+		float tang = glm::tan(0.5f*fov);
+
+viewSize = {
+	//near - right
+	tang*near*aspect,
+	// near - top
+	tang*near,	
+	// near - plane
+	-near,
+	// far - plane
+	-far};
+		/*
+ (​−xnear​,xnear​,xnear​,−xnear​,
+​					ynear​,ynear​,−ynear​,−ynear​
+,					​znear ​znear ​znear ​znear​​))))​
+
+*/
+float znear = viewSize[2];
+float zfar = viewSize[3];
+float xnear = viewSize[0];
+float ynear = viewSize[1];
+	 clipSpaceCoords ={
+		 glm::vec3(-1,1,1),
+		 glm::vec3(1,1,1),
+		 glm::vec3(1,-1,1),
+		 glm::vec3(-1,-1,1)};
+	 for (size_t i = 0; i < clipSpaceCoords.size(); i++)
+	 {
+		 clipSpaceCoords[i] = clipSpaceCoords[i] * glm::vec3(xnear, ynear, znear);
+	 }
+		/*
+		* n0​= (n1​= (n2​= (n3​= (n4​=
+		( ​znear​, −znear​, 0,    0,     0,
+		   ​0,     0,    −znear​, znear​,0,
+		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
+		*/
+	 clipNormals = {
+		 glm::vec3(1,0,1),
+		 glm::vec3(-1,0,1),
+		 glm::vec3(0,-1,1),
+		 glm::vec3(0,1,-1),
+		 glm::vec3(0,0,1)
+	 };
+
+	 for (size_t i = 0; i < clipNormals.size()-1; i++)
+	 {
+		 float v = xnear;
+		 if (i >= (clipNormals.size() / 2)) v = ynear;
+		 clipNormals[i] = clipNormals[i] * glm::vec3(znear, znear, v);
+	 }
+
+
+
+
+
+
 	}
 	
 	
@@ -129,18 +191,45 @@ public:
 	}
 	
 	
-	bool isInside(std::vector<glm::vec3> points, glm::mat4 viewProj) {
-		std::vector<glm::vec4> p;
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			glm::vec4 temp = glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
-			temp = viewProj * temp;
-			p.push_back(temp);
-		}
-		if (FacesFromAllPlanes(p)) { increaseRenderedObjects(); }
-		return FacesFromAllPlanes(p);
+	bool isInside(Boundary b, glm::mat4 model) {
+		b.transform(projection*model);
+		bool isIn = true;
+
+		/*
+		ml​=ai,  ​nj, ​ai​xu, ai​xr, aixpk
+		*/
+		isIn = checkAxes(b);
+		if(isIn){ increaseRenderedObjects(); }
+		return isIn;
 	};
 	
+	bool checkAxes(Boundary b){
+		glm::vec3 M = { 0.0f, 0.0f, 1.0f };
+
+
+		// Projected center of our OBB
+		float projC = b.center.z;
+		// Projected size of OBB
+		float radius = 0.0f;
+		for (size_t i = 0; i < 3; i++) {
+			// dot(M, axes[i]) == axes[i].z;
+			radius += abs(glm::dot(b.oobaxes[i],M) * b.ooblengths[i]);
+		}
+		float obb_min = projC - radius;
+		float obb_max = projC + radius;
+		// We can skip calculating the projection here, it's known
+		float m0 = viewSize[3]; // Since the frustum's direction is negative z, far is smaller than near
+		float m1 = viewSize[2];
+		if (obb_min > m1 || obb_max < m0) {
+			return false;
+		}
+		return true;
+	}
+	bool checkFrustumCorners(Boundary b) {
+
+	}
+
+
 	void changeFOV(float fov) {
 		this->fov = fov;
 		hsize = 2 * far * tanf(fov * 0.5f);
