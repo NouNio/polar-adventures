@@ -51,7 +51,6 @@ GLFWwindow* initGLFWandGLEW();
 bool hasLost();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void setPointLightShaderParameters(Shader& shader, std::string pointLightNumber, glm::vec3 postion);
 void computeTimeLogic();
@@ -224,7 +223,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // Particle System
     /* ------------------------------------------------------------------------------------ */
-    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, SNOWBALL_BOTTOM_POS + glm::vec3(0, -35, 0), 0.01);
+    snowBottom = new ParticleSystem(&snowBottomShader, G_BOTTOM, PARTICLE_SYSTEM_MIDDLE, PARTICLE_SYSTEM_SPEED);
 
     /* ------------------------------------------------------------------------------------ */
     // HUD
@@ -299,7 +298,7 @@ int main(void)
         // INPUT 
         /* ------------------------------------------------------------------------------------ */
         processInput(window);
-        animator.UpdateAnimation(deltaTime);
+        animator.updateAnim(deltaTime);
 
         // render
         //glClearColor(0.6f, 0.7f, 0.9f, 1.0f);;
@@ -373,9 +372,9 @@ int main(void)
         if (playerController->isWalking()) {
             animModelShader.use();
 
-            auto transforms = animator.GetFinalBoneMatrices();
-            for (int i = 0; i < transforms.size(); ++i) {
-                animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+            auto boneTransforms = animator.getBoneTransforms();
+            for (int i = 0; i < boneTransforms->size(); ++i) {
+                animModelShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]",  (*boneTransforms)[i]);
             }
 
             // render the loaded model
@@ -507,7 +506,6 @@ GLFWwindow* initGLFWandGLEW()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouseCallback);
-    glfwSetScrollCallback(window, scrollCallback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 
@@ -580,19 +578,6 @@ void processInput(GLFWwindow* window)
         lastHUDPress = glfwGetTime();
     }
 
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetTime() - lastShotPress) >= BUTTON_PAUSE) {
-        if (sound) {
-            if (playerController->getSnowBallAmmo() > 0) {
-                soundEngine->play2D(fm->getAudioPath("throw").c_str(), false);
-            }
-            else {
-                soundEngine->play2D(fm->getAudioPath("noAmmo").c_str(), false);
-            }
-        }
-        playerController->shootSnowball();
-        lastShotPress = glfwGetTime();
-    }
-
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         playerController->setWalking(true);
         camera.processKeyboard(BACKWARD, deltaTime);
@@ -650,13 +635,6 @@ void mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
     lastY = ypos;
 
     camera.processMouseMovement(xoffset, yoffset);
-}
-
-
-// except scrolling, which is handled here
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.processMouseScroll(static_cast<float>(yoffset));
 }
 
 

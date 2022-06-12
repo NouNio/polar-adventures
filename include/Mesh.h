@@ -35,18 +35,39 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 texCoords;
-    int boneIDs[MAX_BONES_PER_VERTEX];       // idx of the bones that influence this vertex
-    float boneWeights[MAX_BONES_PER_VERTEX]; // weight of these bones
+    int boneIDs[MAX_BONES_PER_VERTEX];        // idx of the bones that influence this vertex
+    float boneWeights[MAX_BONES_PER_VERTEX];  // weight of these bones
+    
     Vertex() {
     }
+    
     Vertex(glm::vec3 position, glm::vec2 uv) {
         pos = (position);
         texCoords = uv;
     }
+    
     Vertex(glm::vec3 position, glm::vec3 n, glm::vec2 uv) {
         pos = (position);
         texCoords = uv;
         normal = n;
+    }
+
+    void setAllBoneDataToDefault() {
+        for (int i = 0; i < MAX_BONES_PER_VERTEX; i++) {
+            boneIDs[i] = -1;
+            boneWeights[i] = 0.0f;
+        }
+    }
+
+    void setBoneData(int boneID, float weight) {
+        // find a free slot in the array of weights / ids and put the data there
+        for (int i = 0; i < MAX_BONES_PER_VERTEX; ++i) {
+            if (boneIDs[i] < 0) {
+                boneWeights[i] = weight;
+                boneIDs[i] = boneID;
+                break;
+            }
+        }
     }
 };
 

@@ -148,23 +148,7 @@ public:
                 this->pitch = -MAX_PITCH;
         }
 
-        // TODO: add update of player left right rotation, with the yaw value
-
         updateCameraVectors();
-    }
-
-
-    // process mouse input received from the vertical wheel-axis and clip any exceeding values
-    void processMouseScroll(float yoffset)
-    {
-        this->zoom -= (float)yoffset;
-        if (this->zoom < MIN_ZOOM)
-            this->zoom = MIN_ZOOM;
-        if (this->zoom > MAX_ZOOM)
-            this->zoom = MAX_ZOOM;
-
-        projection = (glm::perspective(glm::radians(zoom), aspect, near, far));
-        frustum->changeFOV(glm::radians(zoom));
     }
 
 

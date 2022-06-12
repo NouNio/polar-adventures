@@ -150,7 +150,7 @@ private:
 
 
 	float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime) {
-		return (animationTime - lastTimeStamp) / (nextTimeStamp - lastTimeStamp);  // middle way length / frame Difference
+		return (animationTime - lastTimeStamp) / (nextTimeStamp - lastTimeStamp);  // length into animation frame / frame Difference
 	}
 
 

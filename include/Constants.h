@@ -18,7 +18,7 @@ bool firstWindowClose = false;
 
 // WIN / LOOSE
 double score = 0.0;
-const int highScore = 498;
+const int highScore = 503;
 bool hasWon = false;
 
 // SOUND
@@ -121,6 +121,11 @@ const float COLLECTION_POINT_ROT_ANGLE = 0.0f;
 const glm::vec3 COLLECTION_POINT_ROT_AXES(0.0f, 1.0f, 0.0f);
 const float COLLECTION_POINT_MASS = 0.0f;
 const glm::vec3 COLLECTION_POINT_BODY_SCALE(0.5, 2, 0.5);
+
+
+// PARTICLE SYSTEM
+const glm::vec3 PARTICLE_SYSTEM_MIDDLE = glm::vec3(0.0f, -70.0f, 0.0f);
+const float PARTICLE_SYSTEM_SPEED = 0.005;
 
 
 // PHYSICS

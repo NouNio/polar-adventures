@@ -43,9 +43,16 @@ extern Camera camera;
 #define MAX_NUM_BONES_PER_VERTEX 4
 
 
-struct BoneInfo {
+struct BoneData {
     int id;				// idx in finalBoneMatrices
     glm::mat4 offset;	// this transfrom vertex from model to bone space
+
+    BoneData() {};
+
+    BoneData(int initID, glm::mat4 initOffset) {
+        id = initID;
+        offset = initOffset;
+    }
 };
 
 
@@ -164,34 +171,22 @@ public:
     }
 
 
-    void getVertexToNumBones() {
-        int vertToNumBones[4322] = {};  // all zeros
-        for (int i = 0; i < scene->mNumMeshes; i++) {
-            for (int j = 0; j < scene->mMeshes[i]->mNumBones; j++) {
-                for (int k = 0; k < scene->mMeshes[i]->mBones[j]->mNumWeights; k++) {
-                    int idx = scene->mMeshes[i]->mBones[j]->mWeights[k].mVertexId;
-                    vertToNumBones[idx] += 1;
-                }
-            }
-        }
-
-        for (int i = 0; i < 4322; i++) {
-            if (vertToNumBones[i] > 4) {
-                printf("vertex with idx %d has %d bones\n", i, vertToNumBones[i]);
-            }
-        }
+    auto& getBoneInfo() { 
+        return boneInfo; 
     }
-
-    auto& GetBoneInfoMap() { return m_BoneInfoMap; }
-    int& GetBoneCount() { return m_BoneCounter; }
+    
+    
+    int& getNumBones() { 
+        return nBones; 
+    }
 
 
 protected:
+    // these are protected since there once was the idea to let an animated model class inherit from this class, so they could be made private again as well
     Assimp::Importer importer;
     const aiScene* scene = NULL;
-
-    std::map<std::string, BoneInfo> m_BoneInfoMap;
-    int m_BoneCounter = 0;
+    std::map<std::string, BoneData> boneInfo;
+    int nBones = 0;
 
 
 private:
@@ -260,7 +255,7 @@ private:
         parseMaterials(&material, mesh);            // 3. retrieve material data
 
         if (this->animated) {
-            extractBoneWeightForVertices(vertices, mesh, scene);
+            parseBones(vertices, mesh, scene);
         }
 
         if (this->hasTextures()){
@@ -277,28 +272,11 @@ private:
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             Vertex vertex;
-            SetVertexBoneDataToDefault(vertex);
+            vertex.setAllBoneDataToDefault();
             vertex.pos = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
             vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
             
-            if (vertex.pos.x > xBound[1]) {
-                xBound[1] = vertex.pos.x;
-            }
-            if (vertex.pos.y >yBound[1]) {
-                yBound[1] = vertex.pos.y;
-            }
-            if (vertex.pos.z > zBound[1]) {
-                zBound[1] = vertex.pos.z;
-            }
-            if (vertex.pos.x < xBound[0]) {
-                xBound[0] = vertex.pos.x;
-            }
-            if (vertex.pos.y < yBound[0]) {
-                yBound[0] = vertex.pos.y;
-            }
-            if (vertex.pos.z < zBound[0]) {
-                zBound[0] = vertex.pos.z;
-            }
+            checkVertexBounds(vertex);
             
             if (this->hasTextures() && mesh->mTextureCoords[0]) {
                 vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
@@ -395,80 +373,53 @@ private:
     }
 
 
-    // ANIM RELATED 
-    void SetVertexBoneDataToDefault(Vertex& vertex)
-    {
-        for (int i = 0; i < MAX_BONES_PER_VERTEX; i++)
-        {
-            vertex.boneIDs[i] = -1;
-            vertex.boneWeights[i] = 0.0f;
+    void checkVertexBounds(Vertex vertex) {
+        if (vertex.pos.x > xBound[1]) {
+            xBound[1] = vertex.pos.x;
+        }
+        if (vertex.pos.y > yBound[1]) {
+            yBound[1] = vertex.pos.y;
+        }
+        if (vertex.pos.z > zBound[1]) {
+            zBound[1] = vertex.pos.z;
+        }
+        if (vertex.pos.x < xBound[0]) {
+            xBound[0] = vertex.pos.x;
+        }
+        if (vertex.pos.y < yBound[0]) {
+            yBound[0] = vertex.pos.y;
+        }
+        if (vertex.pos.z < zBound[0]) {
+            zBound[0] = vertex.pos.z;
         }
     }
 
 
-    void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
-	{
-		bool foundFreeSlot = false;
-        for (int i = 0; i < MAX_BONES_PER_VERTEX; ++i) {
-            if (vertex.boneIDs[i] < 0){
-                vertex.boneWeights[i] = weight;
-                vertex.boneIDs[i] = boneID;
-                break;
-            }
-        }
-
-		/*if (!foundFreeSlot) {
-			float min_weight = 1.1f;
-			int min_idx = -1;
-			for (unsigned int i = 0; i < MAX_BONES_PER_VERTEX; ++i) {
-				if (vertex.boneWeights[i] < min_weight) {
-					min_weight = vertex.boneIDs[i];
-					min_idx = vertex.boneWeights[i];
-				}
-			}
-
-			if (min_weight < weight) {
-				vertex.boneIDs[min_idx] = boneID;
-				vertex.boneWeights[min_idx] = weight;
-			}
-		}*/
-	
-	}
-
-
-    void extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
-    {
-        auto& boneInfoMap = m_BoneInfoMap;
-        int& boneCount = m_BoneCounter;
-
-        for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-        {
+    void parseBones(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene) {
+        for (int boneIdx = 0; boneIdx < mesh->mNumBones; ++boneIdx) {
             int boneID = -1;
-            std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
-            if (boneInfoMap.find(boneName) == boneInfoMap.end())
-            {
-                BoneInfo newBoneInfo;
-                newBoneInfo.id = boneCount;
-                newBoneInfo.offset = ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
-                boneInfoMap[boneName] = newBoneInfo;
-                boneID = boneCount;
-                boneCount++;
+            std::string boneName = mesh->mBones[boneIdx]->mName.C_Str();
+            
+            if (boneInfo.find(boneName) == boneInfo.end()) {
+                BoneData newBoneData(nBones, ConvertMatrixToGLMFormat(mesh->mBones[boneIdx]->mOffsetMatrix));
+                boneInfo[boneName] = newBoneData;
+                boneID = nBones++;  // assign first, then increase number of bones
             }
-            else
-            {
-                boneID = boneInfoMap[boneName].id;
+            else {
+                boneID = boneInfo[boneName].id;
             }
-            assert(boneID != -1);
-            auto weights = mesh->mBones[boneIndex]->mWeights;
-            int numWeights = mesh->mBones[boneIndex]->mNumWeights;
 
-            for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
-            {
-                int vertexId = weights[weightIndex].mVertexId;
-                float weight = weights[weightIndex].mWeight;
-                assert(vertexId <= vertices.size());
-                SetVertexBoneData(vertices[vertexId], boneID, weight);
-            }
+            setVertexBoneData(boneID, mesh->mBones[boneIdx]->mWeights, mesh->mBones[boneIdx]->mNumWeights, vertices);
+        }
+    }
+
+
+    void setVertexBoneData(int boneID, aiVertexWeight* weights, int nWeights, std::vector<Vertex>& vertices) {
+        // given the data for a bone from assimp set the accroding vertex to hold the bone data, i.e. reverse the mapping boneID -> (vertID, weight) to vertID -> (boneID, weight)
+        for (int weightIdx = 0; weightIdx < nWeights; ++weightIdx) {
+            int vertexId = weights[weightIdx].mVertexId;
+            float weight = weights[weightIdx].mWeight;
+            vertices[vertexId].setBoneData(boneID, weight);
         }
     }
 };
