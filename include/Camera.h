@@ -148,8 +148,6 @@ public:
                 this->pitch = -MAX_PITCH;
         }
 
-        // TODO: add update of player left right rotation, with the yaw value
-
         updateCameraVectors();
     }
 
