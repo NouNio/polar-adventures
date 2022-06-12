@@ -32,8 +32,20 @@ struct Particle {
 		camDist = -1;
 	}
 
+	bool outOfXBounds() {
+		return pos.x > cubeBounds.x_max || pos.x < cubeBounds.x_min;
+	}
+
 	bool outOfYBounds() {
-		return pos.y > cubeBounds.y_min;
+		return pos.y > cubeBounds.y_min;  // y_max is not of interest here since the snow can be arbitrary high
+	}
+
+	bool outOfZBounds() {
+		return pos.z > cubeBounds.z_max || pos.z < cubeBounds.z_min;
+	}
+
+	bool outOfBounds() {
+		return outOfXBounds() || outOfYBounds() || outOfZBounds();
 	}
 
 	bool operator<(Particle& that) {
@@ -109,11 +121,11 @@ public:
 				p.life -= deltaLifeTime;
 					if (p.life > 0.0f) {
 						// simulate simple physics
-						p.speed += G * (float)deltaLifeTime * 0.01f ;
+						p.speed += G * (float)deltaLifeTime * 0.01f + ( (rand() % 2000 - 1000.0f) / 1000.0f );
 						p.pos += p.speed * speedFac * ((rand() % 4));
 
 						// check if out ouf bounds
-						if (p.outOfYBounds()) {
+						if (p.outOfBounds()) {
 							p.reset();
 							continue;
 						}
