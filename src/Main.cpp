@@ -413,12 +413,12 @@ int main(void)
         {
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
-
+        hud.renderLine(HUDShader, ("TIME: "  + std::to_string((int)glm::floor(maxGameTime-glfwGetTime()))), 1000, 700, glm::vec3(1, 0, 0));
         setCubeSides();
         if (renderMap) {
             drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
             hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
-            drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.5, glm::vec2(105.0, 100.0f), 75.0, glm::vec3(0.0));
+            drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.2, glm::vec2(105.0, 100.0f), 75.0, glm::vec3(0.0));
         }
 
         camera.frustum->resetRenderedObjects();
