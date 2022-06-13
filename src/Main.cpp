@@ -59,7 +59,7 @@ void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
 void transitionToEndOfGameScreen(GLFWwindow* window);
-
+glm::vec3 hsv2rgb(float h, float s, float v);
 void setCubeSides();
 std::vector<glm::vec3> determineColours(std::vector<int> numbers);
 glm::vec3 determineColour(int i);
@@ -73,6 +73,7 @@ void drawonHUd(Shader& s, Mesh& m);
 // gameplay 
 bool sound = false;
 bool spaceWasDown = false;
+bool renderMap = false;
 float currJumpForce = 2.0;
 const float START_JUMP_FORCE = 2.0;
 const float MAX_JUMP_FORCE = 20.0;
@@ -97,7 +98,7 @@ glm::vec3 directLightPos(30.f, 90.0f, 10.0f);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress, lastCPress = glfwGetTime();
+double lastHUDPress, lastShotPress, lastVFCPress, lastWalkSound, lastESCPress, lastCPress, lastMPress = glfwGetTime();
 Skybox* skybox;
 float fov, near, far;
 
@@ -179,6 +180,7 @@ int main(void)
     Model outline(fm->getObjPath("map_outline.fbx", true));
 
     Model map(fm->getObjPath("map.fbx", true));
+    Model renderQuad(fm->getObjPath("plane.fbx", true));
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
@@ -396,6 +398,9 @@ int main(void)
         // SKYBOX
         /* ------------------------------------------------------------------------------------ */
         skybox->draw(&skyboxShader);
+        combination.use();
+        combination.setBool("edgeActive", true);
+        //combination.setVec3("edgeCol", hsv2rgb( 0.0, 0.0, 1.0));
         doImageProcessing(color, normal, depth, edge, handle, postprocessor, processor, combination);
 
         currRenderedObjects = camera.frustum->getRenderedObjects();
@@ -409,10 +414,10 @@ int main(void)
         }
 
         setCubeSides();
-
-        drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
-        hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
-
+        if (renderMap) {
+            drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
+            hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
+        }
 
         camera.frustum->resetRenderedObjects();
 
@@ -541,6 +546,10 @@ void processInput(GLFWwindow* window)
             glfwSetWindowShouldClose(window, true);
 
         lastESCPress = glfwGetTime();
+    }
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && (glfwGetTime() - lastMPress) >= BUTTON_PAUSE) {
+     
+        renderMap = !renderMap;
     }
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
@@ -907,3 +916,29 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
     }
 }
+glm::vec3 hsv2rgb(float h, float s, float v) {
+    glm::vec3 result = glm::vec3(1.0,0.0,0.0);
+    float pi = glm::pi<float>();
+
+    while (h >= (2 * pi)) {
+        h = h - 2 * pi;
+    }
+    while (h < 0) {
+        h = h + 2 * pi;
+    }
+    float hi = ((h / (1 / 3 * pi)));//why floor doesnt cast to int is a mystery to me but whatever
+//float hi=0;
+    float f = (h / (1 / 3)) - hi;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    
+    if ((hi >= 0 && hi < 1) || (hi >= 6 && hi < 7))result = glm::vec3(v, t, p);
+    else if (hi >= 1 && hi < 2)result = glm::vec3(q, v, p);
+    else if (hi >= 2 && hi < 3)result = glm::vec3(p, v, t);
+    else if (hi >= 3 && hi < 4)result = glm::vec3(p, q, v);
+    else if (hi >= 4 && hi < 5)result = glm::vec3(t, p, v);
+    else if (hi >= 5 && hi < 6)result = glm::vec3(v, p, q);
+
+    return result;
+};

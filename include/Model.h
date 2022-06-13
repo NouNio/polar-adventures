@@ -87,8 +87,10 @@ public:
         for (unsigned int i = 0; i < meshes.size(); i++){
            // meshes[i].transformBound(modelMatrix);
             if (viewFrustumCulling) {
-                if (isInFrustum(meshes[i], modelMatrix))
+                if (isInFrustum(meshes[i], modelMatrix)) {
                     meshes[i].draw(shader);
+                    //camera.frustum->increaseRenderedObjects();
+                }
             }
             else {
                 meshes[i].draw(shader);
@@ -107,10 +109,11 @@ public:
             if (viewFrustumCulling) {
                
            
-                camera.frustum->increaseRenderedObjects();
+                
             }
+            camera.frustum->increaseRenderedObjects();
             meshes[i].draw(shader);
-            meshes[i].resetBound();
+           // meshes[i].resetBound();
 
         }
         
@@ -135,7 +138,8 @@ public:
     bool isInFrustum (Mesh m, glm::mat4 transform) const {
         return 
             //true;
-            camera.frustum->isInside(m.bound, camera.GetProjection() * camera.GetViewMatrix()*transform);
+            camera.frustum->isInside(m.bound, //camera.GetProjection() * 
+                camera.GetViewMatrix()*transform);
     }
 
 

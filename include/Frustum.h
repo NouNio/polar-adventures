@@ -192,7 +192,7 @@ float ynear = viewSize[1];
 	
 	
 	bool isInside(Boundary b, glm::mat4 model) {
-		b.transform(projection*model);
+		b.transform(model);
 		bool isIn = true;
 
 		/*
