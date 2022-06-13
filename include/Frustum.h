@@ -135,7 +135,7 @@ viewSize = {
 	// near - top
 	tang*near,	
 	// near - plane
-	-near,
+	near,
 	// far - plane
 	-far};
 		/*
@@ -164,11 +164,12 @@ float ynear = viewSize[1];
 		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
 		*/
 	 clipNormals = {
-		 glm::vec3(1,0,1),
-		 glm::vec3(-1,0,1),
+		 glm::vec3(1,0,-1),
+		 glm::vec3(-1,0,-1),
 		 glm::vec3(0,-1,1),
 		 glm::vec3(0,1,-1),
-		 glm::vec3(0,0,1)
+		 glm::vec3(0,0,1),
+			 glm::vec3(0,0,-1)
 	 };
 
 	 for (size_t i = 0; i < clipNormals.size()-1; i++)
@@ -213,14 +214,14 @@ float ynear = viewSize[1];
 		float radius = 0.0f;
 		for (size_t i = 0; i < 3; i++) {
 			// dot(M, axes[i]) == axes[i].z;
-			radius += abs(glm::dot(b.oobaxes[i],M) * b.ooblengths[i]);
+			radius += abs(b.oobaxes[i].z * b.ooblengths[i]);
 		}
 		float obb_min = projC - radius;
 		float obb_max = projC + radius;
 		// We can skip calculating the projection here, it's known
 		float m0 = viewSize[3]; // Since the frustum's direction is negative z, far is smaller than near
 		float m1 = viewSize[2];
-		if (obb_min > m1 || obb_max < m0) {
+		if (2*obb_min > m1 || obb_max < m0) {
 			return false;
 		}
 		return true;
@@ -236,6 +237,65 @@ float ynear = viewSize[1];
 		vsize = hsize * aspect;
 		glm::perspective(fov, aspect, near, far);
 		setPlanes();
+
+
+
+		float tang = glm::tan(0.5f * fov);
+
+		viewSize = {
+			//near - right
+			tang * near * aspect,
+			// near - top
+			tang * near,
+			// near - plane
+			near,
+			// far - plane
+			far };
+		/*
+ (​−xnear​,xnear​,xnear​,−xnear​,
+​					ynear​,ynear​,−ynear​,−ynear​
+,					​znear ​znear ​znear ​znear​​))))​
+
+*/
+		float znear = viewSize[2];
+		float zfar = viewSize[3];
+		float xnear = viewSize[0];
+		float ynear = viewSize[1];
+		clipSpaceCoords = {
+			glm::vec3(-1,1,1),
+			glm::vec3(1,1,1),
+			glm::vec3(1,-1,1),
+			glm::vec3(-1,-1,1) };
+		for (size_t i = 0; i < clipSpaceCoords.size(); i++)
+		{
+
+
+			clipSpaceCoords[i] = clipSpaceCoords[i] * glm::vec3(xnear, ynear, znear);
+		}
+		/*
+		* n0​= (n1​= (n2​= (n3​= (n4​=
+		( ​znear​, −znear​, 0,    0,     0,
+		   ​0,     0,    −znear​, znear​,0,
+		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
+		*/
+		clipNormals = {
+			glm::vec3(1,0,1),
+			glm::vec3(-1,0,1),
+			glm::vec3(0,-1,1),
+			glm::vec3(0,1,-1),
+			glm::vec3(0,0,1)
+		};
+
+		for (size_t i = 0; i < clipNormals.size() - 1; i++)
+		{
+			float v = xnear;
+			if (i >= (clipNormals.size() / 2)) v = ynear;
+			clipNormals[i] = clipNormals[i] * glm::vec3(znear, znear, v);
+		}
+
+
+
+
 	}
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{

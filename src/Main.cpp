@@ -65,7 +65,7 @@ std::vector<glm::vec3> determineColours(std::vector<int> numbers);
 glm::vec3 determineColour(int i);
 void drawMap(Shader& s, Mesh& a, Mesh& b, float transparency, glm::vec2 pos, float scale, glm::vec3 colour, glm::vec3 c2, std::vector <glm::vec2> offsets);
 void drawonHUd(Shader& s, Mesh& m);
-
+void drawCharge(Shader& s, Mesh& out, Mesh& quad, float transparency, glm::vec2 pos, float scale, glm::vec3 colour);
 
 /* ------------------------------------------------------------------------------------ */
 // Create Objects and make settings
@@ -180,7 +180,8 @@ int main(void)
     Model outline(fm->getObjPath("map_outline.fbx", true));
 
     Model map(fm->getObjPath("map.fbx", true));
-    Model renderQuad(fm->getObjPath("plane.fbx", true));
+    Model Quad(fm->getObjPath("plane.fbx", true));
+    Model quadline(fm->getObjPath("plane_edge.fbx", true));
     /* ------------------------------------------------------------------------------------ */
     // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
@@ -417,6 +418,7 @@ int main(void)
         if (renderMap) {
             drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
             hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
+            drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.5, glm::vec2(105.0, 100.0f), 75.0, glm::vec3(0.0));
         }
 
         camera.frustum->resetRenderedObjects();
@@ -821,7 +823,7 @@ glm::vec3 determineColour(int i) {
     }
     void drawMap(Shader &s, Mesh &a , Mesh &b , float transparency, glm::vec2 pos, float scale, glm::vec3 colour, glm::vec3 c2 ,std::vector <glm::vec2> offsets) {
         s.use();
-        s.setFloat("scale", scale);
+        s.setVec2("scale", glm::vec2(scale));
         s.setVec2("xyoffset", pos);
 
         s.setBool("front", true);
@@ -839,6 +841,30 @@ glm::vec3 determineColour(int i) {
    void drawonHUd(Shader &s, Mesh  &m) {
        s.use();
        m.drawMesh();
+
+   }
+   void drawCharge(Shader&s, Mesh &out, Mesh &quad, float transparency, glm::vec2 pos, float scale, glm::vec3 colour) {
+       float percentage = currJumpForce/MAX_JUMP_FORCE;
+       scale /= 3;
+       s.use();
+       s.setVec2("scale", glm::vec2(scale));
+       s.setVec2("xyoffset", pos);
+
+       s.setBool("front", true);
+       s.setVec3("colour", colour);
+  
+       s.setFloat("transparency", 0.0f);
+       drawonHUd(s, out);
+       colour = glm::vec3();
+       colour.r = glm::min(1.0f, 2 * percentage);
+       colour.g = 2*             glm::max(0.0f,  (percentage - 0.5f));
+       pos.y -= (1-percentage)*3 * scale;
+       s.setBool("front", false);;
+       s.setVec3("colour", colour);
+       s.setFloat("transparency", transparency);
+       s.setVec2("xyoffset", pos);
+       s.setVec2("scale", glm::vec2(scale,scale* percentage * 3));
+       drawonHUd(s, quad);
 
    }
 void setCubeSides() {
@@ -926,12 +952,13 @@ glm::vec3 hsv2rgb(float h, float s, float v) {
     while (h < 0) {
         h = h + 2 * pi;
     }
-    float hi = ((h / (1 / 3 * pi)));//why floor doesnt cast to int is a mystery to me but whatever
+
+    float hi = (glm::floor(h / (1.0 / 3.0 * pi)));//why floor doesnt cast to int is a mystery to me but whatever
 //float hi=0;
-    float f = (h / (1 / 3)) - hi;
-    float p = v * (1 - s);
-    float q = v * (1 - s * f);
-    float t = v * (1 - s * (1 - f));
+    float f = (h / (1.0 / 3.0)) - hi;
+    float p = v * (1.0 - s);
+    float q = v * (1.0 - s * f);
+    float t = v * (1.0 - s * (1.0 - f));
     
     if ((hi >= 0 && hi < 1) || (hi >= 6 && hi < 7))result = glm::vec3(v, t, p);
     else if (hi >= 1 && hi < 2)result = glm::vec3(q, v, p);

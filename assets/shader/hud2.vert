@@ -3,7 +3,7 @@ in vec2 vertex;  // first two items are position, the last two items are texture
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 uniform mat4 proj; 
-uniform float scale;
+uniform vec2 scale;
 uniform vec2 xyoffset;
 bool front;
 
