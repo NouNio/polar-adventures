@@ -216,12 +216,12 @@ float ynear = viewSize[1];
 			// dot(M, axes[i]) == axes[i].z;
 			radius += abs(b.oobaxes[i].z * b.ooblengths[i]);
 		}
-		float obb_min = projC - radius;
-		float obb_max = projC + radius;
+		float obb_min = projC - 2*radius;
+		float obb_max = projC + 2*radius;
 		// We can skip calculating the projection here, it's known
 		float m0 = viewSize[3]; // Since the frustum's direction is negative z, far is smaller than near
 		float m1 = viewSize[2];
-		if (2*obb_min > m1 || obb_max < m0) {
+		if (obb_min > m1 || obb_max < m0) {
 			return false;
 		}
 		return true;
