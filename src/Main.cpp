@@ -549,9 +549,11 @@ void processInput(GLFWwindow* window)
 
         lastESCPress = glfwGetTime();
     }
+    
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && (glfwGetTime() - lastMPress) >= BUTTON_PAUSE) {
      
         renderMap = !renderMap;
+        lastMPress = glfwGetTime();
     }
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
