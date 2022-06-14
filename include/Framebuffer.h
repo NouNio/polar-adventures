@@ -1,13 +1,13 @@
 /*
 For some reason the standard mesh treatment did not work, put a bunch of exceptions in there, something about swapbuffers and google helped nothing:
-so taken from learnopengl.com, I'd have preferred the mesh solution because that makes a shitton more of sense but whatever, when opengl is being dumb its being fucking dumb
+so taken from learnopengl.com, I'd have preferred the mesh solution because that makes a shitton more of sense but whatever,im not putting up with the texture nonsense when opengl is being dumb its being fucking dumb
 */
 
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
+unsigned int VAO = 0;
+unsigned int vbo;
 void renderQuad()
 {
-    if (quadVAO == 0)
+    if (VAO == 0)
     {
         float quadVertices[] = {
             // positions        // texture Coords
@@ -17,17 +17,17 @@ void renderQuad()
              1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
         };
         // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &vbo);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     }
-    glBindVertexArray(quadVAO);
+    glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }

@@ -1,4 +1,6 @@
-//adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
+//iiinitially partly inspired by https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
+//obb-calculation adapted from https://bruop.github.io/improved_frustum_culling/, for this the approach of
+
 class Boundary {
 private:
 	std::vector<glm::vec3> points;
@@ -89,9 +91,9 @@ public:
 		oobaxes[1] = points[2] - points[0];
 		oobaxes[2] = points[1] - points[0];
 		ooblengths.clear();
-		ooblengths.push_back(glm::length(oobaxes[0]) / 1.0);
-		ooblengths.push_back(glm::length(oobaxes[1]) / 1.0);
-		ooblengths.push_back(glm::length(oobaxes[2]) / 1.0);
+		ooblengths.push_back(glm::length(oobaxes[0]) / 2.0);
+		ooblengths.push_back(glm::length(oobaxes[1]) / 2.0);
+		ooblengths.push_back(glm::length(oobaxes[2]) / 2.0);
 
 		oobaxes[0] = glm::normalize(oobaxes[0]);
 		oobaxes[1] = glm::normalize(oobaxes[1]);

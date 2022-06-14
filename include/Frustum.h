@@ -1,7 +1,7 @@
 ﻿#include <glm/gtx/rotate_vector.hpp>
 #include <vector>
-//adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
-//also inspired by https://bruop.github.io/improved_frustum_culling/
+//initially adapted from https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling, changed representations to fit project
+//mainly inspired by https://bruop.github.io/improved_frustum_culling/, for this the approach of
 class Frustum {
 private:
 	glm::vec3 viewDir;
@@ -135,7 +135,7 @@ viewSize = {
 	// near - top
 	tang*near,	
 	// near - plane
-	near,
+	-near,
 	// far - plane
 	-far};
 		/*
@@ -164,12 +164,12 @@ float ynear = viewSize[1];
 		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
 		*/
 	 clipNormals = {
-		 glm::vec3(1,0,-1),
-		 glm::vec3(-1,0,-1),
+		 glm::vec3(1,0,1),
+		 glm::vec3(-1,0,1),
 		 glm::vec3(0,-1,1),
-		 glm::vec3(0,1,-1),
-		 glm::vec3(0,0,1),
-			 glm::vec3(0,0,-1)
+		 glm::vec3(0,1,1),
+		// glm::vec3(0,0,1)
+			 //,glm::vec3(0,0,-1)
 	 };
 
 	 for (size_t i = 0; i < clipNormals.size()-1; i++)
@@ -199,35 +199,65 @@ float ynear = viewSize[1];
 		/*
 		ml​=ai,  ​nj, ​ai​xu, ai​xr, aixpk
 		*/
-		isIn = checkAxes(b);
+		isIn = checkNear(b);
+		//&&
+			//checkFrustumNormals(b);
 		if(isIn){ increaseRenderedObjects(); }
 		return isIn;
 	};
-	
-	bool checkAxes(Boundary b){
-		glm::vec3 M = { 0.0f, 0.0f, 1.0f };
+	//*
+	bool checkNear(Boundary b){
+		glm::vec2 bounds = getProjectedBoundary(glm::vec3(0.0f, 0.0f, 1.0f), b);
+		return (!(bounds[0] > viewSize[2] || bounds[1] < viewSize[3]));
+	}
+	//*/
+	bool checkFrustumNormals(Boundary b) {
+
+		return checkAgainstCollectionOfAxes(b, clipNormals);
+	}
+	bool checkAgainstCollectionOfAxes(Boundary b, std::vector<glm::vec3> axes) {
+		for (size_t i = 0; i <axes.size(); i++) {
 
 
-		// Projected center of our OBB
+			glm::vec2 bounds = getProjectedBoundary(axes[i], b);
+			glm::vec2 projectionBound = ProjectionBoundary(axes[i]);
+			if ((bounds[0] > projectionBound[1] || bounds[1] < projectionBound[0])) return false;
+
+		}
+		return true;
+	}
+
+		glm::vec2 ProjectionBoundary(glm::vec3 vector) {
+			float znear = viewSize[2];
+			float zfar = viewSize[3];
+			float xnear = viewSize[0];
+			float ynear = viewSize[1];
+
+
+			float p = xnear * glm::abs(vector.x) + ynear * glm::abs(vector.y);
+			glm::vec2 bound = glm::vec2();
+			bound[0] = znear * vector.z - p;
+			bound[1] = znear * vector.z + p;
+
+			if (bound[0] < 0.0f) {
+				bound[0] *= zfar / znear;
+			}
+			if (bound[1] > 0.0f) {
+				bound[1] *= zfar / znear;
+			}
+			return bound;
+		}
+	glm::vec2 getProjectedBoundary(glm::vec3 axis, Boundary b ) {
 		float projC = b.center.z;
 		// Projected size of OBB
 		float radius = 0.0f;
 		for (size_t i = 0; i < 3; i++) {
 			// dot(M, axes[i]) == axes[i].z;
-			radius += abs(b.oobaxes[i].z * b.ooblengths[i]);
+			radius += abs(glm::dot(axis, b.oobaxes[i]) * b.ooblengths[i]);
 		}
-		float obb_min = projC - radius;
-		float obb_max = projC + radius;
-		// We can skip calculating the projection here, it's known
-		float m0 = viewSize[3]; // Since the frustum's direction is negative z, far is smaller than near
-		float m1 = viewSize[2];
-		if (obb_min > m1 || obb_max < m0) {
-			return false;
-		}
-		return true;
-	}
-	bool checkFrustumCorners(Boundary b) {
-
+		float oob_min = projC - radius;
+		float oob_max = projC + radius;
+		return glm::vec2(oob_min, oob_max);
 	}
 
 
@@ -282,8 +312,9 @@ float ynear = viewSize[1];
 			glm::vec3(1,0,1),
 			glm::vec3(-1,0,1),
 			glm::vec3(0,-1,1),
-			glm::vec3(0,1,-1),
-			glm::vec3(0,0,1)
+			glm::vec3(0,1,1),
+			glm::vec3(0,0,1),
+				glm::vec3(0,0,-1)
 		};
 
 		for (size_t i = 0; i < clipNormals.size() - 1; i++)
