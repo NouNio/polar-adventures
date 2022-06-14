@@ -124,63 +124,65 @@ public:
 		this->up = up;
 		this->near=near;
 		this->far = far;
+		setFrustumVariables(fov, aspect);
+
+	
 
 
 
-		float tang = glm::tan(0.5f*fov);
+	}
+	void setFrustumVariables(float fov, float aspect) {
+		float tang = glm::tan(0.5f * fov);
 
-viewSize = {
-	//near - right
-	tang*near*aspect,
-	// near - top
-	tang*near,	
-	// near - plane
-	-near,
-	// far - plane
-	-far};
+		viewSize = {
+			//near - right
+			tang * near * aspect,
+			// near - top
+			tang * near,
+			// near - plane
+			-near,
+			// far - plane
+			-far };
 		/*
  (​−xnear​,xnear​,xnear​,−xnear​,
 ​					ynear​,ynear​,−ynear​,−ynear​
 ,					​znear ​znear ​znear ​znear​​))))​
 
 */
-float znear = viewSize[2];
-float zfar = viewSize[3];
-float xnear = viewSize[0];
-float ynear = viewSize[1];
-	 clipSpaceCoords ={
-		 glm::vec3(-1,1,1),
-		 glm::vec3(1,1,1),
-		 glm::vec3(1,-1,1),
-		 glm::vec3(-1,-1,1)};
-	 for (size_t i = 0; i < clipSpaceCoords.size(); i++)
-	 {
-		 clipSpaceCoords[i] = clipSpaceCoords[i] * glm::vec3(xnear, ynear, znear);
-	 }
+		float znear = viewSize[2];
+		float zfar = viewSize[3];
+		float xnear = viewSize[0];
+		float ynear = viewSize[1];
+		clipSpaceCoords = {
+			glm::vec3(-1,1,1),
+			glm::vec3(1,1,1),
+			glm::vec3(1,-1,1),
+			glm::vec3(-1,-1,1) };
+		for (size_t i = 0; i < clipSpaceCoords.size(); i++)
+		{
+			clipSpaceCoords[i] = clipSpaceCoords[i] * glm::vec3(xnear, ynear, znear);
+		}
 		/*
 		* n0​= (n1​= (n2​= (n3​= (n4​=
 		( ​znear​, −znear​, 0,    0,     0,
 		   ​0,     0,    −znear​, znear​,0,
 		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
 		*/
-	 clipNormals = {
-		 glm::vec3(1,0,1),
-		 glm::vec3(-1,0,1),
-		 glm::vec3(0,-1,1),
-		 glm::vec3(0,1,1),
-		// glm::vec3(0,0,1)
-			 //,glm::vec3(0,0,-1)
-	 };
 
-	 for (size_t i = 0; i < clipNormals.size()-1; i++)
-	 {
-		 float v = xnear;
-		 if (i >= (clipNormals.size() / 2)) v = ynear;
-		 clipNormals[i] = clipNormals[i] * glm::vec3(znear, znear, v);
-	 }
-
-
-
+		clipNormals = {
+	glm::vec3(1,0,1),
+	glm::vec3(-1,0,1),
+	glm::vec3(0,-1,1),
+	glm::vec3(0,1,1),
+	//glm::vec3(0,0,1)
+		 //,glm::vec3(0,0,-1)
+		};
+		for (size_t i = 0; i < clipNormals.size() - 1; i++)
+		{
+			float v = xnear;
+			if (i >= (clipNormals.size() / 2)) v = ynear;
+			clipNormals[i] = clipNormals[i] * glm::vec3(znear, znear, v);
+		}
 
 
 
@@ -199,21 +201,63 @@ float ynear = viewSize[1];
 		/*
 		ml​=ai,  ​nj, ​ai​xu, ai​xr, aixpk
 		*/
-		isIn = checkNear(b);
+		isIn = checkNear(b)&&
 		//&&
-			//checkFrustumNormals(b);
+			checkFrustumNormals(b)
+			//check up and right
+			//&& checkAgainstCross(b, { glm::vec3(0,1,0), glm::vec3(1,0,0)}, false)
+			//&& checkAgainstCross(b, clipSpaceCoords, false)
+			;
 		if(isIn){ increaseRenderedObjects(); }
 		return isIn;
 	};
 	//*
 	bool checkNear(Boundary b){
-		glm::vec2 bounds = getProjectedBoundary(glm::vec3(0.0f, 0.0f, 1.0f), b);
-		return (!(bounds[0] > viewSize[2] || bounds[1] < viewSize[3]));
+		glm::vec2 bounds = getProjectedBoundary(glm::vec3(0, 0, 1), b);
+		glm::vec2 projBounds = glm::vec2( viewSize[3]  ,viewSize[2] );
+		return (!checkForCondition(bounds,projBounds));
+	}
+	bool checkForCondition(glm::vec2 object, glm::vec2 projection) {
+		return (object[0] > projection[1] || object[1] < projection[0]);
 	}
 	//*/
 	bool checkFrustumNormals(Boundary b) {
 
 		return checkAgainstCollectionOfAxes(b, clipNormals);
+	}
+	bool checkFrustum(Boundary b) {
+
+		return checkAgainstCollectionOfAxes(b, clipNormals);
+	}
+	bool checkAxes(Boundary b) {
+		for (size_t i = 0; i < b.oobaxes.size(); i++)
+		{
+			float center = glm::dot(b.oobaxes[i], b.center);
+			float radius = b.ooblengths[i];
+			glm::vec2 bounds = glm::vec2(center - radius, center + radius);
+			glm::vec2 projectionBound = ProjectionBoundary(b.oobaxes[i]);
+			if (checkForCondition(bounds, projectionBound)) return false;
+		}
+		return true;
+	}
+	bool checkAgainstCross(Boundary b,  std::vector<glm::vec3>  cross, bool isUPRIGHT) {
+		std::vector<glm::vec3> values;
+		for (size_t i = 0; i < cross.size(); i++)
+		{
+			for (size_t j = 0; j < b.oobaxes.size(); j++)
+			{
+				glm::vec3 value = glm::cross(cross[i], b.oobaxes[j]);
+				const float epsilon = 1e-3;
+				if (!isUPRIGHT){
+					if ((glm::abs(value.x)) <= (glm::abs(value.y)) <= epsilon && (glm::abs(value.z)) <= epsilon) continue;
+					}
+					glm::vec2 bounds = getProjectedBoundary(value, b);
+				glm::vec2 projectionBound = ProjectionBoundary(value);
+				if (checkForCondition(bounds, projectionBound)) return false;
+			}
+		}
+
+		return checkAgainstCollectionOfAxes(b, values);
 	}
 	bool checkAgainstCollectionOfAxes(Boundary b, std::vector<glm::vec3> axes) {
 		for (size_t i = 0; i <axes.size(); i++) {
@@ -221,7 +265,7 @@ float ynear = viewSize[1];
 
 			glm::vec2 bounds = getProjectedBoundary(axes[i], b);
 			glm::vec2 projectionBound = ProjectionBoundary(axes[i]);
-			if ((bounds[0] > projectionBound[1] || bounds[1] < projectionBound[0])) return false;
+			if (checkForCondition( bounds, projectionBound)) return false;
 
 		}
 		return true;
@@ -248,7 +292,7 @@ float ynear = viewSize[1];
 			return bound;
 		}
 	glm::vec2 getProjectedBoundary(glm::vec3 axis, Boundary b ) {
-		float projC = b.center.z;
+		float projC = glm::dot(axis,b.center);
 		// Projected size of OBB
 		float radius = 0.0f;
 		for (size_t i = 0; i < 3; i++) {
@@ -263,73 +307,25 @@ float ynear = viewSize[1];
 
 	void changeFOV(float fov) {
 		this->fov = fov;
-		hsize = 2 * far * tanf(fov * 0.5f);
+		/*hsize = 2 * far * tanf(fov * 0.5f);
 		vsize = hsize * aspect;
 		glm::perspective(fov, aspect, near, far);
 		setPlanes();
+		*/
 
-
-
-		float tang = glm::tan(0.5f * fov);
-
-		viewSize = {
-			//near - right
-			tang * near * aspect,
-			// near - top
-			tang * near,
-			// near - plane
-			near,
-			// far - plane
-			far };
 		/*
  (​−xnear​,xnear​,xnear​,−xnear​,
 ​					ynear​,ynear​,−ynear​,−ynear​
 ,					​znear ​znear ​znear ​znear​​))))​
 
 */
-		float znear = viewSize[2];
-		float zfar = viewSize[3];
-		float xnear = viewSize[0];
-		float ynear = viewSize[1];
-		clipSpaceCoords = {
-			glm::vec3(-1,1,1),
-			glm::vec3(1,1,1),
-			glm::vec3(1,-1,1),
-			glm::vec3(-1,-1,1) };
-		for (size_t i = 0; i < clipSpaceCoords.size(); i++)
-		{
-
-
-			clipSpaceCoords[i] = clipSpaceCoords[i] * glm::vec3(xnear, ynear, znear);
-		}
-		/*
-		* n0​= (n1​= (n2​= (n3​= (n4​=
-		( ​znear​, −znear​, 0,    0,     0,
-		   ​0,     0,    −znear​, znear​,0,
-		  ​−xnear, −xnear,​−ynear​,−ynear,​ 1​)))))​
-		*/
-		clipNormals = {
-			glm::vec3(1,0,1),
-			glm::vec3(-1,0,1),
-			glm::vec3(0,-1,1),
-			glm::vec3(0,1,1),
-			glm::vec3(0,0,1),
-				glm::vec3(0,0,-1)
-		};
-
-		for (size_t i = 0; i < clipNormals.size() - 1; i++)
-		{
-			float v = xnear;
-			if (i >= (clipNormals.size() / 2)) v = ynear;
-			clipNormals[i] = clipNormals[i] * glm::vec3(znear, znear, v);
-		}
-
-
+		setFrustumVariables(fov, aspect);
 
 
 	}
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{
+		/*
 		for (size_t i = 0; i < normals.size(); i++){
 			normals[i] = glm::rotate(normals[i], dpitch, up);
 		}
@@ -344,12 +340,13 @@ float ynear = viewSize[1];
 		up = glm::rotate(right, dpitch, right);
 		yaw += yaw;
 		pitch += pitch;
+		*/
 	};
 	
 	
 	void reset(float pitch, float yaw, glm::vec3 position, glm::vec3 up, glm::vec3 viewDir) {
 		resetRenderedObjects();
-		this->yaw = yaw;
+		/*this->yaw = yaw;
 		this->pitch = pitch;
 		this->viewDir = glm::normalize(viewDir);
 		this->up = glm::normalize(up);
@@ -359,6 +356,7 @@ float ynear = viewSize[1];
 		farPoint = originPoint + far * viewDir;
 		normals.clear();
 		setPlanes();
+		*/
 
 	};
 

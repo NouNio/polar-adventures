@@ -12,6 +12,10 @@ public:
 	{
 		pathToProject = std::filesystem::current_path().string();
 	}
+	//ASSUMPTION NAME IS CORRECT
+	std::string getPath(std::string key) {
+		return this->pathToProject + ASSETS + key;
+	}
 
 
 	std::string getAudioPath(std::string audioKey) {

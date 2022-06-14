@@ -148,9 +148,9 @@ public:
 
 	}
 
-	void renderEndOfGame(Shader& shader, float x, float y) {
-		renderLine(shader, "YOUR SCORE: " +  std::to_string(lround(score)), x, y - 0 * newLineOffset);
-		renderLine(shader, "HIGH SCORE: " + std::to_string(highScore), x, y - 1 * newLineOffset);
+	void renderEndOfGame(Shader& shader, float x, float y, glm::vec3 c= glm::vec3(0.1f, 0.6f, 0.9f)) {
+		renderLine(shader, "YOUR SCORE: " +  std::to_string(lround(score)), x, y - 0 * newLineOffset,c);
+		renderLine(shader, "HIGH SCORE: " + std::to_string(highScore), x, y - 1 * newLineOffset,c);
 	}
 
 

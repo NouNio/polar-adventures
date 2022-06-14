@@ -36,9 +36,9 @@ private:
 		oobaxes.push_back(glm::vec3(maxCorner.x - minCorner.x, 0, 0));
 		oobaxes.push_back(glm::vec3(0, maxCorner.y - minCorner.y, 0));
 		oobaxes.push_back(glm::vec3(0, 0, maxCorner.z - minCorner.z));
-		ooblengths.push_back(glm::length(oobaxes[0]) / 1.0);
-		ooblengths.push_back(glm::length(oobaxes[1]) / 1.0);
-		ooblengths.push_back(glm::length(oobaxes[2]) / 1.0);
+		ooblengths.push_back(glm::length(oobaxes[0]) / 2.0);
+		ooblengths.push_back(glm::length(oobaxes[1]) / 2.0);
+		ooblengths.push_back(glm::length(oobaxes[2]) / 2.0);
 		oobaxes[0] = glm::normalize(oobaxes[0]);
 		oobaxes[1] = glm::normalize(oobaxes[1]);
 		oobaxes[2] = glm::normalize(oobaxes[2]);

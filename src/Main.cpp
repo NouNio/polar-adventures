@@ -58,7 +58,7 @@ void activateShader(Shader* shader);
 void delay(double seconds);
 void playWalkSound();
 void playEndOfGameSound();
-void transitionToEndOfGameScreen(GLFWwindow* window);
+void transitionToEndOfGameScreen(GLFWwindow* window, unsigned int texture, Shader& combination);
 glm::vec3 hsv2rgb(float h, float s, float v);
 void setCubeSides();
 std::vector<glm::vec3> determineColours(std::vector<int> numbers);
@@ -275,7 +275,7 @@ int main(void)
     /* ------------------------------------------------------------------------------------ */
     // sound
     /* ------------------------------------------------------------------------------------ */
-    if (sound)soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
+    soundEngine->play2D(fm->getAudioPath("background1").c_str(), true);
 
 
     /* ------------------------------------------------------------------------------------ */
@@ -414,6 +414,8 @@ int main(void)
             hud.renderAll(HUDShader, HUDxOffset, HUDstart);
         }
         hud.renderLine(HUDShader, ("TIME: "  + std::to_string((int)glm::floor(maxGameTime-glfwGetTime()))), 1000, 700, glm::vec3(1, 0, 0));
+        hud.renderLine(HUDShader, std::to_string(savedSnowballs.size()) + "/6", 1000, 650, glm::vec3(1, 0, 0));
+
         setCubeSides();
         if (renderMap) {
             drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
@@ -428,8 +430,8 @@ int main(void)
         glfwPollEvents();
         clearAll(handle, postprocessor);
     } while (!firstWindowClose && !hasWon && !hasLost());
-
-    transitionToEndOfGameScreen(window);
+    unsigned int texture = Model::textureFromFile(fm->getPath("end_screen.png"));
+    transitionToEndOfGameScreen(window, texture, combination);
 
     /* ------------------------------------------------------------------------------------ */
     // end of game render loop
@@ -441,8 +443,13 @@ int main(void)
         // render
         glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        hud.renderEndOfGame(HUDShader, SCR_WIDTH / 2.0f - 100.0f, SCR_HEIGHT / 2.0f);
+        combination.use();
+        glUniform1i(glGetUniformLocation(combination.ID, "diffuseTexture"), 0);
+        glActiveTexture(GL_TEXTURE0);
+        // set the appropriate texture sampler variable in the fragment shader
+        glBindTexture(GL_TEXTURE_2D, texture);
+        renderQuad();
+        hud.renderEndOfGame(HUDShader, SCR_WIDTH / 2.0f - 100.0f, SCR_HEIGHT / 2.0f, glm::vec3(0,0,0.25));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -530,7 +537,7 @@ GLFWwindow* initGLFWandGLEW()
 
 
 bool hasLost() {
-    if (glfwGetTime() > maxGameTime) {
+    if (glfwGetTime() >= maxGameTime) {
         return true;
     }
 
@@ -696,8 +703,14 @@ void playEndOfGameSound() {
 }
 
 
-void transitionToEndOfGameScreen(GLFWwindow* window) {
+void transitionToEndOfGameScreen(GLFWwindow* window, unsigned int texture, Shader &combination) {
     glClearColor(0.6f, 0.7f, 0.9f, 1.0f);
+    combination.use();
+    glUniform1i(glGetUniformLocation(combination.ID, "diffuseTexture"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    // set the appropriate texture sampler variable in the fragment shader
+    glBindTexture(GL_TEXTURE_2D, texture);
+    renderQuad();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glfwSwapBuffers(window);
     delay(1);
@@ -971,3 +984,7 @@ glm::vec3 hsv2rgb(float h, float s, float v) {
 
     return result;
 };
+
+
+
+

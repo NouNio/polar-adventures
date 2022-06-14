@@ -62,6 +62,32 @@ public:
     std::vector<Mesh> meshes;          // all the meshes of the model, usually our models have aroudn 2-3 meshes
     glm::mat4 model = glm::mat4();
 
+
+    static unsigned int textureFromFile(std::string name)
+    {
+        std::string filename = name;
+
+        unsigned int textureID;
+        glGenTextures(1, &textureID);
+        //std::cout << "trying to load file: " << filename << std::endl;
+
+        int width, height, nComponents;
+        unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nComponents, 0);
+        if (data)
+        {
+            glTextureConfig(nComponents, width, height, textureID, data);
+        }
+        else
+        {
+            std::cout << "There was an error loading the texture file: " << filename << std::endl;
+        }
+
+        stbi_image_free(data);
+
+        return textureID;
+    }
+
+
     Model(std::string const& path, bool withTextures = false, bool animated = false, const char* texFileType = "")
     {
         this->withTextures = withTextures;
@@ -356,7 +382,7 @@ private:
     }
 
 
-    void glTextureConfig(int nComponents, int width, int height, unsigned int textureID, unsigned char* data)
+    static void glTextureConfig(int nComponents, int width, int height, unsigned int textureID, unsigned char* data)
     {
         GLenum format = GL_RGB;
         if (nComponents == 1)
