@@ -59,10 +59,10 @@ float maxDist= 10;
     for(int i = 0; i < N_PT_LIGHTS; i++){
       result += computePointLight(pointLights[i], norm, FragPos, viewDir, material); 
       }    // compute influence on the vertex from all the point lights
-    vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, norm)).rgb;
+    vec3 reflection  = texture(skybox, reflect(viewDir, norm)).rgb;
     if(isSnowball){
         result=mix(result*2, reflection*2,0.7);
-        normal=vec4((position-viewPos), 1.0);
+        normal=vec4(normalize(position-viewPos), 1.0);
         depth=vec4(vec3(length(FragPos)/maxDist),1.0);
     
     }

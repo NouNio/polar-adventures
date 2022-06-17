@@ -83,7 +83,7 @@ double maxGameTime = 300.0;  // time in seconds until player looses
 
 // sound
 irrklang::ISoundEngine* soundEngine = irrklang::createIrrKlangDevice();
-
+bool partyMode = false;
 
 // camera & physics
 Camera camera(0.0f, 0.0f, 0.0f, 0.0f, glm::vec3(0.0f, 22.0f, 3.0f));
@@ -267,7 +267,7 @@ int main(void)
 
     Shader combination(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("screen.frag", true));
     combination.use();
-    glm::vec3 edgeCol(1.0,1,1.0);
+    glm::vec3 edgeCol(1.0, 1, 1.0);
     combination.setFloat("brightness", brightness);
     combination.setVec3("edgeCol", edgeCol);
     Shader processor(fm->getShaderPath("passOn.vert", true), fm->getShaderPath("sobel.frag", true));
@@ -403,7 +403,12 @@ int main(void)
         skybox->draw(&skyboxShader);
         combination.use();
         combination.setBool("edgeActive", true);
-        //combination.setVec3("edgeCol", hsv2rgb( 0.0, 0.0, 1.0));
+
+        if (partyMode) {
+            glm::vec3 edgeCol((glfwGetTime() * 6.0), 0.5, 1.0);
+            edgeCol = hsv2rgb(edgeCol.x, edgeCol.y, edgeCol.z);
+            combination.setVec3("edgeCol", edgeCol);
+        }
         doImageProcessing(color, normal, depth, edge, handle, postprocessor, processor, combination);
 
         currRenderedObjects = camera.frustum->getRenderedObjects();
@@ -420,9 +425,15 @@ int main(void)
         
         setCubeSides();
         if (renderMap) {
-            drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);
+            if (!partyMode) edgeCol = glm::vec3();
+
+            else {
+                edgeCol = glm::vec3(1.0);
+               
+            }
+            drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), edgeCol, offsets);
             hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
-            drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.2, glm::vec2(105.0, 100.0f), 75.0, glm::vec3(0.0));
+            drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.2, glm::vec2(105.0, 100.0f), 75.0, edgeCol);
         }
 
         camera.frustum->resetRenderedObjects();
@@ -489,6 +500,7 @@ void readINI()
     // gameplay
     maxGameTime = iniReader.GetReal("gameplay", "maxGameTime", 300.0);
 
+    partyMode = iniReader.GetBoolean("gameplay", "partyMode", false);
     // sound 
     sound = iniReader.GetBoolean("sound", "sound", true);
 }
@@ -960,19 +972,18 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 glm::vec3 hsv2rgb(float h, float s, float v) {
-    glm::vec3 result = glm::vec3(1.0,0.0,0.0);
-    float pi = glm::pi<float>();
+    glm::vec3 result = glm::vec3(1.0,1.0,1.0);
+    constexpr float pi = glm::pi<float>();
 
-    while (h >= (2 * pi)) {
-        h = h - 2 * pi;
+    while (h >= (2.0 * pi)) {
+        h = h - 2.0 * pi;
     }
-    while (h < 0) {
-        h = h + 2 * pi;
+    while (h < 0.0) {
+        h = h + 2.0 * pi;
     }
 
-    float hi = (glm::floor(h / (1.0 / 3.0 * pi)));//why floor doesnt cast to int is a mystery to me but whatever
-//float hi=0;
-    float f = (h / (1.0 / 3.0)) - hi;
+    float hi = (glm::floor(h / ((1.0 / 3.0) * pi)));//why floor doesnt cast to int is a mystery to me but whatever
+    float f = (h / ((1.0 / 3.0))*pi) - hi;
     float p = v * (1.0 - s);
     float q = v * (1.0 - s * f);
     float t = v * (1.0 - s * (1.0 - f));
