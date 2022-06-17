@@ -234,10 +234,12 @@ int main(void)
     HUD hud(fm->getFontPath("arial"));
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     HUDShader.use();
+    HUDShader.setFloat("brightness", brightness);
     glUniformMatrix4fv(glGetUniformLocation(HUDShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
     hud.update(&camera, FPS, msPerFrame, pHandler, playerController);
-
+   
     hud2.use();
+    hud2.setFloat("brightness", brightness);
     glUniformMatrix4fv(glGetUniformLocation(hud2.ID, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
 
 
@@ -415,7 +417,7 @@ int main(void)
         }
         hud.renderLine(HUDShader, ("TIME: "  + std::to_string((int)glm::floor(maxGameTime-glfwGetTime()))), 1000, 700, glm::vec3(1, 0, 0));
         hud.renderLine(HUDShader, std::to_string(savedSnowballs.size()) + "/6", 1000, 650, glm::vec3(1, 0, 0));
-
+        
         setCubeSides();
         if (renderMap) {
             drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), glm::vec3(), offsets);

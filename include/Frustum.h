@@ -54,12 +54,13 @@ private:
 
 	void setPlanes() {
 		//top, bottom, right, left, front, back
-		normals.push_back(glm::cross(glm::rotate(viewDir, hfov * 0.5f, right), right));
+		/*normals.push_back(glm::cross(glm::rotate(viewDir, hfov * 0.5f, right), right));
 		normals.push_back(-glm::cross(glm::rotate(viewDir, -hfov * 0.5f, right), right));
 		normals.push_back(glm::cross(glm::rotate(viewDir, fov * 0.5f, up), up));
 		normals.push_back(-glm::cross(glm::rotate(viewDir, -fov * 0.5f, up), up));
 		normals.push_back(glm::normalize(viewDir));
 		normals.push_back(glm::normalize(-viewDir));
+		*/
 
 		/*
 		normals.push_back(glm::normalize(glm::cross(right, (farPoint - originPoint) - up * (vsize * 0.5f))));
@@ -201,12 +202,20 @@ public:
 		/*
 		ml​=ai,  ​nj, ​ai​xu, ai​xr, aixpk
 		*/
+
+		std::vector<glm::vec3> upandright;
+		for (size_t i = 0; i < b.oobaxes.size(); i++)
+		{
+			upandright.push_back(b.oobaxes[i] * glm::vec3(0, -1, 1));
+			upandright.push_back(b.oobaxes[i] * glm::vec3(1, 0, -1));
+		}
 		isIn = checkNear(b)&&
 		//&&
 			checkFrustumNormals(b)
-			//check up and right
-			//&& checkAgainstCross(b, { glm::vec3(0,1,0), glm::vec3(1,0,0)}, false)
-			//&& checkAgainstCross(b, clipSpaceCoords, false)
+			//check up and right, barely influence the result but do cause some false negatives, so nope, not doing that
+			//&& checkAgainstCross(b, { glm::vec3(0,1,0), glm::vec3(-1,0,0)}, false)
+			//&& checkAgainstCollectionOfAxes(b,upandright)
+			//&& checkAgainstCross(b, clipNormals, false)
 			;
 		if(isIn){ increaseRenderedObjects(); }
 		return isIn;
@@ -307,56 +316,21 @@ public:
 
 	void changeFOV(float fov) {
 		this->fov = fov;
-		/*hsize = 2 * far * tanf(fov * 0.5f);
-		vsize = hsize * aspect;
-		glm::perspective(fov, aspect, near, far);
-		setPlanes();
-		*/
 
-		/*
- (​−xnear​,xnear​,xnear​,−xnear​,
-​					ynear​,ynear​,−ynear​,−ynear​
-,					​znear ​znear ​znear ​znear​​))))​
 
-*/
+
 		setFrustumVariables(fov, aspect);
 
 
 	}
 	void update(float dpitch, float dyaw, glm::vec3 positionChange) 
 	{
-		/*
-		for (size_t i = 0; i < normals.size(); i++){
-			normals[i] = glm::rotate(normals[i], dpitch, up);
-		}
-
-		right = glm::rotate(right, dpitch, up);
-		viewDir = glm::rotate(viewDir, dpitch, up);
 		
-		for (size_t i = 0; i < normals.size(); i++){
-			normals[i] = glm::rotate(normals[i], dyaw, right);
-		}
-		
-		up = glm::rotate(right, dpitch, right);
-		yaw += yaw;
-		pitch += pitch;
-		*/
 	};
 	
 	
 	void reset(float pitch, float yaw, glm::vec3 position, glm::vec3 up, glm::vec3 viewDir) {
 		resetRenderedObjects();
-		/*this->yaw = yaw;
-		this->pitch = pitch;
-		this->viewDir = glm::normalize(viewDir);
-		this->up = glm::normalize(up);
-		right = glm::normalize(glm::cross(viewDir, up));
-		originPoint = position;
-		nearPoint = originPoint + near * viewDir;
-		farPoint = originPoint + far * viewDir;
-		normals.clear();
-		setPlanes();
-		*/
 
 	};
 

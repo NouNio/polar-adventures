@@ -61,7 +61,7 @@ float maxDist= 10;
       }    // compute influence on the vertex from all the point lights
     vec3 reflection  = texture(skybox, reflect(FragPos-viewPos, norm)).rgb;
     if(isSnowball){
-        result=mix(result, reflection,0.4);
+        result=mix(result*2, reflection*2,0.7);
         normal=vec4((position-viewPos), 1.0);
         depth=vec4(vec3(length(FragPos)/maxDist),1.0);
     
