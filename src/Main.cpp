@@ -405,7 +405,7 @@ int main(void)
         combination.setBool("edgeActive", true);
 
         if (partyMode) {
-            glm::vec3 edgeCol((glfwGetTime() * 6.0), 0.5, 1.0);
+            glm::vec3 edgeCol((glfwGetTime() * 6.0), 0.3, 1.0);
             edgeCol = hsv2rgb(edgeCol.x, edgeCol.y, edgeCol.z);
             combination.setVec3("edgeCol", edgeCol);
         }
@@ -748,7 +748,7 @@ void activateShader(Shader* shader)
     // be sure to activate shader when setting uniforms/drawing objects
     shader->use();
     //for efficiency reasons
-    shader->setFloat("pi", glm::pi<float>());
+    shader->setFloat("PI", glm::pi<float>());
     shader->setVec3("viewPos", camera.pos);
 
     /*
@@ -972,30 +972,26 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 glm::vec3 hsv2rgb(float h, float s, float v) {
-    glm::vec3 result = glm::vec3(1.0,1.0,1.0);
-    constexpr float pi = glm::pi<float>();
-
-    while (h >= (2.0 * pi)) {
-        h = h - 2.0 * pi;
+    while (h >= 6 * glm::pi<float>()) {
+        h -=6* glm::pi<float>();
     }
-    while (h < 0.0) {
-        h = h + 2.0 * pi;
-    }
+    //transform result back into rgb
+    float hi = (glm::floor(h / glm::pi<float>()));//why floor doesnt cast to int is a mystery to me but whatever
+    //float hi=0;
+  
+    float f = (h / glm::pi<float>()) - hi;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    glm::vec3 retVal = glm::vec3(0);
+    if ((hi >= 0 && hi < 1) || (hi >= 6 && hi < 7))retVal = glm::vec3(v, t, p);
+    else if (hi >= 1 && hi < 2)retVal = glm::vec3(q, v, p);
+    else if (hi >= 2 && hi < 3)retVal = glm::vec3(p, v, t);
+    else if (hi >= 3 && hi < 4)retVal = glm::vec3(p, q, v);
+    else if (hi >= 4 && hi < 5)retVal = glm::vec3(t, p, v);
+    else if (hi >= 5 && hi < 6)retVal = glm::vec3(v, p, q);
 
-    float hi = (glm::floor(h / ((1.0 / 3.0) * pi)));//why floor doesnt cast to int is a mystery to me but whatever
-    float f = (h / ((1.0 / 3.0))*pi) - hi;
-    float p = v * (1.0 - s);
-    float q = v * (1.0 - s * f);
-    float t = v * (1.0 - s * (1.0 - f));
-    
-    if ((hi >= 0 && hi < 1) || (hi >= 6 && hi < 7))result = glm::vec3(v, t, p);
-    else if (hi >= 1 && hi < 2)result = glm::vec3(q, v, p);
-    else if (hi >= 2 && hi < 3)result = glm::vec3(p, v, t);
-    else if (hi >= 3 && hi < 4)result = glm::vec3(p, q, v);
-    else if (hi >= 4 && hi < 5)result = glm::vec3(t, p, v);
-    else if (hi >= 5 && hi < 6)result = glm::vec3(v, p, q);
-
-    return result;
+    return retVal;
 };
 
 
