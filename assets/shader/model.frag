@@ -114,7 +114,7 @@ float discretize(float f, int steps){
         f=1.0;
     }
     */
-    float times = floor((steps+1)*f);
+    float times = ceil(steps*f);
     f= (times)/steps;
     //return f;
     return f;
@@ -132,8 +132,8 @@ vec3 useCel(vec3 result){
         float b;
         float c;
         
-    if (v>0.0){
-        s=(cmax-cmin)/cmax;
+    if (cmax>0.0){
+        s=(diff)/cmax;
    
         if(cmax==result.r){
             a=result.g;
@@ -153,27 +153,28 @@ vec3 useCel(vec3 result){
 
     //leave out the pi meaning 
  
-        h=(PI)*(((a-b)/diff)+c);
+        h=(((a-b)/(cmax-cmin))+c);
 
 
     }
     //discretize value
-    v=discretize(v, 10);
+        v=discretize(v, 5);
     //transform result back into rgb
-    float hi  = (floor(h/PI));//why floor doesnt cast to int is a mystery to me but whatever
+    float hi  = (floor(h));//why floor doesnt cast to int is a mystery to me but whatever
     //float hi=0;
 
-    float f = (h/PI)-hi;
+    float f = (h)-hi;
     float p= v*(1-s);
     float q = v*(1-s*f);
     float t = v*(1-s*(1-f)); 
-    vec3 retVal = result;
-    if((hi>=0&&hi<1)||(hi>=6&&hi<7))retVal=vec3(v,t,p);
-    else if(hi>=1&&hi<2)retVal=vec3(q,v,p);
-    else if(hi>=2&&hi<3)retVal=vec3(p,v,t);
-    else if(hi>=3&&hi<4)retVal=vec3(p,q,v);
-    else if(hi>=4&&hi<5)retVal=vec3(t,p,v); 
-    else if(hi>=5&&hi<6)retVal=vec3(v,p,q);
+    vec3 retVal = vec3(0);
+     retVal = result;
+    if((h<1)||(h>=6))retVal=vec3(v,t,p);
+    else if(h>=1&&h<2)retVal=vec3(q,v,p);
+    else if(h>=2&&h<3)retVal=vec3(p,v,t);
+    else if(h>=3&&h<4)retVal=vec3(p,q,v);
+    else if(h>=4&&h<5)retVal=vec3(t,p,v); 
+    else if(h>=5&&h<6)retVal=vec3(v,p,q);
 
 return retVal;
 }
