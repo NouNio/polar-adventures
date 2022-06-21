@@ -73,7 +73,7 @@ void drawCharge(Shader& s, Mesh& out, Mesh& quad, float transparency, glm::vec2 
 // gameplay 
 bool sound = false;
 bool spaceWasDown = false;
-bool renderMap = false;
+bool renderMap = true;
 float currJumpForce = 2.0;
 const float START_JUMP_FORCE = 2.0;
 const float MAX_JUMP_FORCE = 20.0;
