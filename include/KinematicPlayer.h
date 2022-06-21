@@ -49,8 +49,8 @@ enum worldSide {
 	cBOTTOM,
 };
 
-class KinematicPlayer
-{
+
+class KinematicPlayer {
 private:
 	Camera* camera;
 	btTransform transform;
@@ -109,6 +109,60 @@ private:
 
 
 	void updateGravity() {
+		updateViaImplicitGravityModel();
+		//updateViaPlanesGravityModel(); NOT WORKING PROPERLY
+	}
+
+
+	void updateViaPlanesGravityModel() {
+		// check which side of the cube the player is on, hard coded and set gravity and jump dir accordingly
+		glm::vec3 currPos = this->getPos();
+
+		// LEFT
+		if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
+			&& currPos.x < cubeBounds.x_min) {
+
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_LEFT));
+			cubeSide = CUBE_LEFT;
+		}
+		// RIGHT
+		else if (currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_max && currPos.z > cubeBounds.z_min
+			&& currPos.x > cubeBounds.x_max) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_RIGHT));
+			cubeSide = CUBE_RIGHT;
+		}
+		// FRONT
+		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
+			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z > cubeBounds.z_max) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_FRONT));
+			cubeSide = CUBE_FRONT;
+		}
+		// BACK
+		else if (currPos.x > cubeBounds.x_min && currPos.x < cubeBounds.x_max
+			&& currPos.y < cubeBounds.y_max && currPos.y > cubeBounds.y_min
+			&& currPos.z < cubeBounds.z_min) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BACK));
+			cubeSide = CUBE_BACK;
+		}
+		// TOP
+		else if (currPos.y > cubeBounds.y_max) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_TOP));
+			cubeSide = CUBE_TOP;
+		}
+		// BOTTOM
+		else if (currPos.y < cubeBounds.y_min) {
+			controller->setGravity(pHandler->GlmVec3ToBulletVec3(G_BOTTOM));
+			cubeSide = CUBE_BOTTOM;
+		}
+
+		updateJumpDir();
+	}
+
+
+	void updateViaImplicitGravityModel() {
 		glm::vec3 newG = cubeGravity.getGradient(this->getPos());
 		controller->setGravity(pHandler->GlmVec3ToBulletVec3(newG));
 
