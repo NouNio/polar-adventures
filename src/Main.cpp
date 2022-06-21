@@ -403,9 +403,8 @@ int main(void)
         skybox->draw(&skyboxShader);
         combination.use();
         combination.setBool("edgeActive", true);
-
+        glm::vec3 edgeCol((glfwGetTime() * 6.0), 0.3, 1.0);
         if (partyMode) {
-            glm::vec3 edgeCol((glfwGetTime() * 6.0), 0.3, 1.0);
             edgeCol = hsv2rgb(edgeCol.x, edgeCol.y, edgeCol.z);
             combination.setVec3("edgeCol", edgeCol);
         }
@@ -425,13 +424,14 @@ int main(void)
         
         setCubeSides();
         if (renderMap) {
+            glm::vec3 c1= glm::vec3(1);
             if (!partyMode) edgeCol = glm::vec3();
 
             else {
-                edgeCol = glm::vec3(1.0);
+               edgeCol = glm::vec3(1.0);
                
             }
-            drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.8), edgeCol, offsets);
+            drawMap(hud2, outline.meshes[0], map.meshes[0], 0.5, glm::vec2(1015.0, 100.0f), 75.0, glm::vec3(0.5,0.7,0.5), edgeCol, offsets);
             hud.renderNumbers(HUDShader, 1000.0f, 100.0f, sides, offsets, determineColours(sides), 50.f);
             drawCharge(hud2, quadline.meshes[0], Quad.meshes[0], 0.2, glm::vec2(105.0, 100.0f), 75.0, edgeCol);
         }

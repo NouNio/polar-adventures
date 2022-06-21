@@ -55,21 +55,22 @@ float maxDist= 10;
 
     vec3 viewDir = normalize(viewPos - FragPos);  // get the direction of view, pointing from fragment (fragPos) to the view (Camera)
         depth = vec4(vec3(length(FragPos)/maxDist),1);
-    vec3 prelim = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
+    vec3 result = computeDirectionalLight(directionalLight, norm, viewDir, material);      // influence from the directional light
     //vec3 result = vec3(normalize(norm));
     for(int i = 0; i < N_PT_LIGHTS; i++){
-      prelim += computePointLight(pointLights[i], norm, FragPos, viewDir, material); 
+      result += computePointLight(pointLights[i], norm, FragPos, viewDir, material); 
       }    // compute influence on the vertex from all the point lights
-     
+  
     if(isSnowball){
       vec3 reflection  = texture(skybox, reflect(viewDir, norm)).rgb;
-        prelim=mix(prelim*2, reflection*2,0.7);
+        result=mix(result*2, reflection*2,0.7);
         normal=vec4(normalize(position-viewPos), 1.0);
         depth=vec4(vec3(length(FragPos)/maxDist),1.0);
     
     }
+           result = useCel(result);
     //translate to hsv
-   vec3 result = useCel(prelim);
+
     //result = prelim;
     result+=computeDirectionalLightSpec(directionalLight, norm, viewDir, material);
 
@@ -77,14 +78,14 @@ float maxDist= 10;
 
     for(int i = 0; i < N_PT_LIGHTS; i++){
         result += computePointLightSpec(pointLights[i], norm, FragPos, viewDir, material); } 
-   // result = useCel(result);
+    //result = useCel(result);
     FragColor = vec4(result, 1.0);
       //FragColor = vec4(1.0);
 }
 
 //TODO: change this with 1D texture though not necessarily necessary
 float discretize(float f, int steps){
-
+if(steps==1) return 1;
    /*if(f>=0.0 && f<0.1){
     f=0.1;
     }
@@ -158,7 +159,7 @@ vec3 useCel(vec3 result){
 
     }
     //discretize value
-        v=discretize(v, 5);
+        v=discretize(v, 10);
     //transform result back into rgb
     float hi  = (floor(h));//why floor doesnt cast to int is a mystery to me but whatever
     //float hi=0;

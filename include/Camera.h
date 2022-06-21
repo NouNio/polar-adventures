@@ -77,7 +77,74 @@ public:
     }
 
     void setCubeSide(unsigned int newCubeSide){
-        this->cubeSide = newCubeSide;
+        
+   
+      //*
+       unsigned int prev = this->cubeSide;
+     this->cubeSide = newCubeSide;
+       if (cubeSide != prev) {
+   
+           /*
+           switch (this->cubeSide) {
+           case CUBE_LEFT:
+               this->front = glm::normalize(glm::vec3(-22, 0, 0) - this->pos);
+
+               break;
+           case CUBE_RIGHT:
+               this->front = glm::normalize(glm::vec3(22, 0, 0) - this->pos);
+               break;
+           case CUBE_FRONT:
+               this->front = glm::normalize(glm::vec3(0, 0, -22) - this->pos);
+               break;
+           case CUBE_BACK:
+               this->front = glm::normalize(glm::vec3(0, 0, 22) - this->pos);
+               break;
+           case CUBE_TOP:
+               this->front = glm::normalize(glm::vec3(0, 22, 0) - this->pos);
+               break;
+           case CUBE_BOTTOM:
+               this->front = glm::normalize(glm::vec3(0, -22, 0) - this->pos);
+
+               break;
+           }
+       //*/
+           pitch = 0;
+         
+           unsigned int s1 = CUBE_TOP;
+           unsigned int s2 = CUBE_LEFT;
+           bool c = (cubeSide == s1 && prev == s2) || (prev == s1 && cubeSide == s2);
+           if (c) {
+                   processMouseMovement((180.0)/mouseSensitivity, 0.0f, true);
+           }
+             s1 = CUBE_BOTTOM;
+             s2 = CUBE_RIGHT;
+            c = (cubeSide == s1 && prev == s2) || (prev == s1 && cubeSide == s2);
+           if (c) {
+               processMouseMovement((180.0) / mouseSensitivity, 0.0f, true);
+           }
+
+
+
+
+           std::vector<unsigned int> pathsides = { CUBE_LEFT, CUBE_FRONT, CUBE_RIGHT, CUBE_BACK };
+           if (std::find(pathsides.begin(), pathsides.end(), prev) != pathsides.end() && std::find(pathsides.begin(), pathsides.end(), cubeSide) != pathsides.end()) {
+               float v = 90;
+               c = (prev == CUBE_FRONT && cubeSide == CUBE_LEFT) || (prev == CUBE_LEFT && cubeSide == CUBE_BACK) || (prev == CUBE_RIGHT && cubeSide == CUBE_FRONT) || (prev == CUBE_BACK && cubeSide == CUBE_RIGHT)
+                   ;
+               if (CUBE_RIGHT == prev || CUBE_RIGHT == cubeSide)v *= -1;
+               if (c)v *= -1;
+               processMouseMovement((v) / mouseSensitivity, 0.0f, true);
+               updateCameraVectors();
+           }
+
+
+
+           processMouseMovement(0.0f, 0.0f, true);
+           processKeyboard(FORWARD, 0.5f);
+          
+       }
+ 
+      
     }
 
 
@@ -197,6 +264,7 @@ private:
                 this->front = glm::normalize(glm::vec3(cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
                                              -sin(glm::radians(this->pitch)),
                                              -sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))));
+
                 break;  
         }
     }
