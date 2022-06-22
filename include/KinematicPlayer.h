@@ -236,7 +236,7 @@ private:
 
 	void updateMovement(Movement direction, float deltaTime) {
 		if (direction == pUP)
-			if (controller->canJump()) {
+			if (controller->canJump()&&isActive) {
 				if (sound)
 					soundEngine->play2D(fm->getAudioPath("jump").c_str(), false);
 				controller->jump(jumpDir);
@@ -326,6 +326,7 @@ private:
 
 
 public:
+	bool isActive = true;
 	unsigned int cubeSide = CUBE_TOP;
 	Physics* pHandler;
 	Model* player;

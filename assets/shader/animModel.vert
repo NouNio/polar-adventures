@@ -17,7 +17,7 @@ uniform mat4 finalBonesMatrices[MAX_BONES];
 out vec2 TexCoords;
 out vec3 n;
 out vec3 position;
-
+out vec3 coorN;
 void main()
 {
  vec3 localNormal=vec3(0);
@@ -39,6 +39,7 @@ void main()
     mat4 viewModel = view * model;
     gl_Position =  projection * viewModel * totalPosition;
     n=localNormal;
-    position=totalPosition.rgb;
+      position = vec3(viewModel * vec4(totalPosition));
+    coorN = mat3(transpose(inverse(viewModel))) * norm; 
 	TexCoords = tex;
 }

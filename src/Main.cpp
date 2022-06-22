@@ -186,6 +186,11 @@ int main(void)
     // ANIMATED PLAYER MODEL
     /* ------------------------------------------------------------------------------------ */
     Model animPlayer(fm->getPlayerPath("player"), true, true, PNG);
+    animPlayer.meshes[0].material.ambientCol = glm::vec3(0.5);
+  animPlayer.meshes[0].material.diffuseCol = glm::vec3(0.7);
+  /*  animPlayer.meshes[0].material.specularCol = glm::vec3(0.1);
+    animPlayer.meshes[0].material.shininess = 0.4f;
+    */
     Animation walkAnim(fm->getPlayerPath("player"), &animPlayer);
     Animator animator(&walkAnim);
     playerController = new KinematicPlayer(pHandler, camera.pos, &camera, &animPlayer);
@@ -309,7 +314,11 @@ int main(void)
         //glClearColor(0.6f, 0.7f, 0.9f, 1.0f);;
         animModelShader.use();
         animModelShader.setVec3("viewPos", camera.pos);
+        activateShader(&animModelShader);
+
+        activateShader(&idleShader);
         activateShader(&modelShader);
+
 
 
         // view/projection transformations
@@ -443,6 +452,7 @@ int main(void)
         glfwPollEvents();
         clearAll(handle, postprocessor);
     } while (!firstWindowClose && !hasWon && !hasLost());
+    playerController->isActive = false;
     unsigned int texture = Model::textureFromFile(fm->getPath("end_screen.png"));
     transitionToEndOfGameScreen(window, texture, combination);
 
@@ -748,7 +758,6 @@ void activateShader(Shader* shader)
     // be sure to activate shader when setting uniforms/drawing objects
     shader->use();
     //for efficiency reasons
-    shader->setFloat("PI", glm::pi<float>());
     shader->setVec3("viewPos", camera.pos);
 
     /*
